@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export default function TermosPage() {
   return (
-    <main className="min-h-screen bg-white text-slate-900 py-16 px-6">
+    <main id="conteudo" className="min-h-screen bg-white text-slate-900 py-16 px-6">
       <div className="max-w-3xl mx-auto">
         <div className="mb-10">
           <Link href="/" className="text-sm font-medium text-slate-500 hover:text-slate-950 transition">
