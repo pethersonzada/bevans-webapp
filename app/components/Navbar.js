@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 
 const navigation = [
@@ -25,9 +24,9 @@ export default function Navbar() {
   return (
     <header className={'site-header ' + (scrolled || open ? 'site-header--scrolled' : '')}>
       <nav className="site-nav container" aria-label="Navegação principal">
-        <Link href="/" className="brand" aria-label="VanBora, ir para o início" onClick={() => setOpen(false)}>
-          <span className="brand-icon"><Image src="/images/logo-app-icon.png" alt="" width={36} height={36} priority /></span>
-          <span className="brand-name">van<span>bora</span><span className="brand-dot">.</span></span>
+        <Link href="/" className="brand" aria-label="BeVans, ir para o início" onClick={() => setOpen(false)}>
+          <span className="brand-icon"><img src="https://raw.githubusercontent.com/pethersonzada/bevans-frontend/main/assets/images/logo-app-sem-fundo-sem-titulo.png" alt="" width="48" height="48" /></span>
+          <span className="brand-name">BeVans<span className="brand-dot">.</span></span>
         </Link>
 
         <div className="nav-links">

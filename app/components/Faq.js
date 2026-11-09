@@ -1,6 +1,6 @@
 const faqs = [
-  {q:'O VanBora é indicado para quem trabalha sozinho?', a:'Sim. O plano Autônomo foi pensado para quem gerencia uma van e precisa organizar rotas, passageiros e informações da operação.'},
-  {q:'Posso utilizar o VanBora com mais de uma van?', a:'Sim. Existem opções para diferentes tamanhos de frota. O plano Frota contempla até 8 vans; operações maiores podem solicitar uma proposta personalizada.'},
+  {q:'O BeVans é indicado para quem trabalha sozinho?', a:'Sim. O plano Autônomo foi pensado para quem gerencia uma van e precisa organizar rotas, passageiros e informações da operação.'},
+  {q:'Posso utilizar o BeVans com mais de uma van?', a:'Sim. Existem opções para diferentes tamanhos de frota. O plano Frota contempla até 8 vans; operações maiores podem solicitar uma proposta personalizada.'},
   {q:'Como funciona a contratação?', a:'O primeiro passo é entrar em contato para entender as necessidades da sua operação, confirmar recursos disponíveis e conhecer as condições de contratação.'},
   {q:'O site já oferece acesso ao painel de gestão?', a:'A área do gestor está em desenvolvimento. Entre em contato para conhecer o estágio atual da plataforma e as possibilidades de demonstração.'},
 ];

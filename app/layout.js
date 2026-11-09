@@ -4,11 +4,12 @@ import './globals.css';
 const geist = Geist({ variable: '--font-geist', subsets: ['latin'], display: 'swap' });
 
 export const metadata = {
-  title: { default: 'VanBora | Gestão inteligente de transporte', template: '%s | VanBora' },
-  description: 'Organize rotas, acompanhe embarques e simplifique a comunicação no transporte escolar. Conheça o VanBora.',
-  applicationName: 'VanBora',
+  title: { default: 'BeVans | Gestão inteligente de transporte', template: '%s | BeVans' },
+  description: 'Organize rotas, acompanhe embarques e simplifique a comunicação no transporte escolar. Conheça o BeVans.',
+  applicationName: 'BeVans',
+  icons: { icon: 'https://raw.githubusercontent.com/pethersonzada/bevans-frontend/main/assets/images/logo-app-sem-fundo-sem-titulo.png', apple: 'https://raw.githubusercontent.com/pethersonzada/bevans-frontend/main/assets/images/logo-app-sem-fundo-sem-titulo.png' },
   robots: { index: true, follow: true },
-  openGraph: { title: 'VanBora | Vá mais longe, junto', description: 'Mais organização para quem dirige, gerencia e acompanha o transporte.', locale: 'pt_BR', type: 'website' },
+  openGraph: { title: 'BeVans | Vá mais longe, junto', description: 'Mais organização para quem dirige, gerencia e acompanha o transporte.', locale: 'pt_BR', type: 'website' },
 };
 
 export default function RootLayout({children}) {

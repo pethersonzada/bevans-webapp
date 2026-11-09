@@ -10,7 +10,7 @@ export default function Pricing() {
   return <section id="precos" className="pricing-section section-pad"><div className="container">
     <div className="pricing-heading"><span className="section-label"><span/> PLANOS E VALORES</span><h2>Um plano para cada<br /><span>tamanho de jornada.</span></h2><p>Escolha o ponto de partida ideal para a sua operação. Converse com a equipe antes de contratar.</p></div>
     <div className="pricing-grid">{plans.map(plan=><article className={'pricing-card '+(plan.featured?'pricing-card-featured':'')} key={plan.name}>
-      {plan.featured && <div className="pricing-recommended">✦ MAIS POPULAR</div>}
+      {plan.featured && <div className="pricing-recommended">MAIS POPULAR</div>}
       <div className="pricing-eyebrow">{plan.eyebrow}</div><h3>{plan.name}</h3><p className="pricing-description">{plan.description}</p>
       <div className="pricing-amount">{plan.price ? <><span className="currency">R$</span><strong>{plan.price}</strong><span className="period">{plan.suffix}</span></> : <strong className="custom-price">Sob consulta</strong>}</div>
       <p className="pricing-detail">{plan.detail}</p>

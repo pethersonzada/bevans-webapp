@@ -20,16 +20,16 @@ export default function TermosPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-slate-950">1. Aceitação dos termos</h2>
             <p>
-              Ao usar o VanBora, seja pelo site ou pelo aplicativo, você concorda com as condições
+              Ao usar o BeVans, seja pelo site ou pelo aplicativo, você concorda com as condições
               descritas aqui. Se algo neste documento não fizer sentido pra você, entre em contato
               antes de continuar usando a plataforma.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold text-slate-950">2. Sobre o VanBora</h2>
+            <h2 className="text-xl font-semibold text-slate-950">2. Sobre o BeVans</h2>
             <p>
-              O VanBora é uma plataforma de rastreamento e gestão de rotas de transporte escolar
+              O BeVans é uma plataforma de rastreamento e gestão de rotas de transporte escolar
               que conecta motoristas, gestores de frota e responsáveis por estudantes num só lugar.
             </p>
           </section>
@@ -46,7 +46,7 @@ export default function TermosPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-slate-950">4. Propriedade intelectual</h2>
             <p>
-              O código-fonte, a marca, o layout e os demais elementos do VanBora pertencem aos seus
+              O código-fonte, a marca, o layout e os demais elementos do BeVans pertencem aos seus
               criadores. Reprodução, engenharia reversa ou distribuição não autorizada desses ativos
               não é permitida.
             </p>

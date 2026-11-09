@@ -17,7 +17,7 @@ export default function Features() {
   return <>
     <section id="funcionalidades" className="features-section section-pad">
       <div className="container">
-        <div className="section-intro"><div><span className="section-label"><span/> O QUE O VANBORA OFERECE</span><h2>O controle que sua<br />operação <span>merece.</span></h2></div><p>Chega de improvisar com planilhas, mensagens perdidas e informações espalhadas. Conheça as possibilidades de uma rotina conectada.</p></div>
+        <div className="section-intro"><div><span className="section-label"><span/> O QUE O BEVANS OFERECE</span><h2>O controle que sua<br />operação <span>merece.</span></h2></div><p>Chega de improvisar com planilhas, mensagens perdidas e informações espalhadas. Conheça as possibilidades de uma rotina conectada.</p></div>
         <div className="feature-grid">
           {features.map((feature) => <article className="feature-card" key={feature.number}><div className="feature-card-top"><span className="feature-icon" aria-hidden="true">{feature.icon}</span><span className="feature-number">{feature.number} / 06</span></div><h3>{feature.title}</h3><p>{feature.text}</p><span className="feature-arrow" aria-hidden="true">↗</span></article>)}
         </div>
@@ -25,7 +25,7 @@ export default function Features() {
     </section>
     <section id="beneficios" className="audience-section section-pad">
       <div className="container">
-        <div className="audience-intro"><span className="section-label"><span/> FEITO PARA PESSOAS REAIS</span><h2>Cada pessoa tem seu papel.<br /><span>O VanBora conecta todos.</span></h2><p>Uma experiência pensada para cada ponta do trajeto.</p></div>
+        <div className="audience-intro"><span className="section-label"><span/> FEITO PARA PESSOAS REAIS</span><h2>Cada pessoa tem seu papel.<br /><span>O BeVans conecta todos.</span></h2><p>Uma experiência pensada para cada ponta do trajeto.</p></div>
         <div className="audience-grid">{audience.map((person) => <article key={person.index} className={'audience-card audience-'+person.theme}><div className="audience-top"><span>{person.label}</span><span className="audience-index">{person.index} / 03</span></div><div className="audience-decoration" aria-hidden="true">{person.theme==='driver'?'↗':person.theme==='manager'?'▦':'♡'}</div><div className="audience-content"><h3>{person.title}</h3><p>{person.text}</p><ul>{person.items.map((item)=><li key={item}><span aria-hidden="true">✓</span>{item}</li>)}</ul></div></article>)}</div>
       </div>
     </section>

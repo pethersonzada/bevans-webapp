@@ -17,8 +17,8 @@ export default function ContactForm() {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!email) return;
-    const subject = 'Contato comercial VanBora - ' + (plan || 'Geral');
-    const body = ['Olá, gostaria de saber mais sobre o VanBora.','','Nome: '+name,'E-mail: '+sender,'Plano: '+(plan || 'Ainda não sei'),'','Mensagem:',message].join('\n');
+    const subject = 'Contato comercial BeVans - ' + (plan || 'Geral');
+    const body = ['Olá, gostaria de saber mais sobre o BeVans.','','Nome: '+name,'E-mail: '+sender,'Plano: '+(plan || 'Ainda não sei'),'','Mensagem:',message].join('\n');
     window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
   };
 

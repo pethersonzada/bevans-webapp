@@ -1,6 +1,6 @@
-# VanBora WebApp
+# BeVans WebApp
 
-Landing page institucional do VanBora, desenvolvida com Next.js 16 (App Router), React 19 e Tailwind CSS 4.
+Landing page institucional do BeVans, desenvolvida com Next.js 16 (App Router), React 19 e Tailwind CSS 4.
 
 ## Executar localmente
 
@@ -37,4 +37,8 @@ A URL canônica usada no sitemap só é criada quando `NEXT_PUBLIC_SITE_URL` est
 
 As telas de rota e os números apresentados são **ilustrativos**. A landing page não implementa rastreamento, cadastro, autenticação nem serviços de backend. Os preços devem ser confirmados antes de comercializar o serviço. A equipe deve validar os textos sobre recursos e condições antes da publicação.
 
-© 2026 Autores do projeto VanBora. Todos os direitos reservados.
+© 2026 Autores do projeto BeVans. Todos os direitos reservados.
+
+## Identidade visual
+
+A identidade foi alinhada ao app mobile `pethersonzada/bevans-frontend`: azul primário `#007BFF`, azul escuro `#0056b3`, superfícies brancas e fundo `#F8F9FA`. A logo exibida no site usa a imagem oficial `assets/images/logo-app-sem-fundo-sem-titulo.png` do repositório mobile, referenciada por sua URL pública no GitHub. Essa referência exige disponibilidade de rede e do arquivo remoto; uma futura migração para asset local é recomendada.
