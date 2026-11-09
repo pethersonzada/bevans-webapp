@@ -1,63 +1,40 @@
-# Documentação Técnica e Arquitetural do Site (Landing Page) - VanBora
+# VanBora WebApp
 
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38Bdf8?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+Landing page institucional do VanBora, desenvolvida com Next.js 16 (App Router), React 19 e Tailwind CSS 4.
 
-## 1. Visão Geral da Arquitetura da Vitrine Institucional e Objetivos de Negócio
+## Executar localmente
 
-O repositório `rota-estudantil-site` consubstancia a vitrine comercial, institucional e ponto de entrada digital do ecossistema Rota Estudantil. Desenvolvido como uma Landing Page de alta performance, SEO otimizado e conversão direcionada, o site tem como propósito fundamental atrair, educar e converter leads qualificados compostos por transportadoras autônomas, motoristas de vans escolares e gestores de redes de ensino.
+Requer Node.js 20.9 ou superior e npm.
 
-A arquitetura do projeto foi estruturada para garantir carregamentos ultrarrápidos, acessibilidade universal e uma experiência visual imersiva que reflete a confiabilidade tecnológica exigida por um sistema crítico de gestão e monitoramento de transporte infantojuvenil.
+```bash
+npm ci
+npm run dev
+```
 
-## 2. Stack Tecnológica, Ecossistema e Padrões de Desenvolvimento
+Acesse http://localhost:3000. Execute `npm run lint` e `npm run build` antes de publicar.
 
-* **Framework Web Principal:** Next.js (utilizando a arquitetura moderna de App Router para otimização de rotas, renderização híbrida e componentes de servidor eficientes).
-* **Biblioteca de Interface:** React para construção de componentes modulares, reutilizáveis e altamente reativos.
-* **Estilização e Design System:** Tailwind CSS para prototipagem rápida, design responsivo adaptativo e consistência visual rigorosa com identidade corporativa própria.
-* **Tipografia e Recursos Visuais:** Integração otimizada de fontes tipográficas de alto impacto (como Bebas Neue e Inter) para hierarquia visual clara entre títulos comerciais e blocos de leitura fluida.
-* **Hospedagem e Infraestrutura de Deploy:** Otimizado para implantação contínua na nuvem através da Vercel, garantindo distribuição global via CDN, certificados SSL automáticos e alta disponibilidade.
+## Configuração
 
-## 3. Estrutura de Seções, Componentes e Hierarquia de Conversão
+Crie um arquivo `.env.local` com estas variáveis opcionais:
 
-A página inicial (`app/page.js`) é construída em blocos semânticos modulares orientados à jornada de compra e captação de clientes:
+```env
+NEXT_PUBLIC_CONTACT_EMAIL=contato@seu-dominio.com
+NEXT_PUBLIC_SITE_URL=https://seu-dominio.com
+```
 
-* **Barra de Navegação Superior (Header / Navbar):**
-  * Contém a identidade visual corporativa do produto, links de navegação interna ancorados para as seções de funcionalidades, benefícios e preços, além de um botão de destaque institucional direcionando para a área de gestão.
-* **Seção Principal de Impacto (Hero Section):**
-  * Desenvolvida com títulos de forte apelo visual, subtópicos explicativos e chamadas de ação primárias (CTAs) para agendamento de demonstrações gratuitas e visualização de funcionamento do software.
-* **Diagrama Interativo de Trajeto (Assinatura Visual):**
-  * Elemento gráfico animado em CSS que simula o rastreamento em tempo real de uma rota escolar, destacando marcos operacionais como embarque confirmado, status em trajeto e chegada segura na instituição de ensino.
-* **Barra de Métricas e Indicadores de Impacto (Stats Section):**
-  * Bloco de destaque com contadores e dados numéricos consolidados sobre a operação diária de crianças transportadas, volume de vans conectadas e taxa de pontualidade das viagens.
-* **Módulo Detalhado de Funcionalidades:**
-  * Seção em formato de linhas alternadas detalhando os três pilares que resolvem lacunas de planilhas tradicionais e grupos de mensagens: rastreamento ao vivo, confirmação individualizada de embarque/desembarque e notificações automáticas aos responsáveis.
-* **Segmentação de Benefícios por Público-Alvo:**
-  * Estrutura em cards comparativos segmentando o valor entregue especificamente para cada participante da operação: o motorista, o gestor da frota e o responsável pelo aluno.
-* **Tabela e Cards de Precificação (Pricing Section):**
-  * Apresenta de forma transparente os planos de escalabilidade comercial da solução, divididos entre perfis de van autônoma, frotas pequenas e redes completas sob consulta institucional.
-* **Seção de Chamada Final para Ação (Final CTA & Rodapé):**
-  * Bloco focado em conversão de leads com fechamento institucional contendo avisos de direitos autorais e metadados de rodapé.
+**Não existe um e-mail comercial fixo no código.** Sem `NEXT_PUBLIC_CONTACT_EMAIL`, o formulário de contato exibe um aviso e impede o envio. Com a variável definida, o formulário prepara um e-mail no aplicativo do visitante; ele **não** envia uma solicitação por API nem salva dados em um banco.
 
-## 4. Estratégias de Otimização, SEO e Performance Web
+A URL canônica usada no sitemap só é criada quando `NEXT_PUBLIC_SITE_URL` estiver configurada.
 
-* **Server-Side Rendering (SSR) e Static Generation:** Aproveitamento dos recursos nativos do App Router do Next.js para renderizar páginas estáticas com alta velocidade de indexação por motores de busca (Google, Bing).
-* **Otimização de Ativos Estáticos:** Compressão rigorosa de imagens, minimização de folhas de estilo e carregamento assíncrono de fontes externas para reduzir o tempo de carregamento inicial (First Contentful Paint).
-* **Responsividade Nativa:** Layout totalmente fluido construído com propriedades de Grid e Flexbox do Tailwind CSS, assegurando usabilidade perfeita em smartphones, tablets e monitores corporativos de grande porte.
+## Rotas
 
-## 5. Pré-requisitos de Desenvolvimento e Configuração de Ambiente
+- `/`: apresentação, funcionalidades, públicos, planos e FAQ.
+- `/contato`: mensagem comercial via aplicativo de e-mail.
+- `/gestor`: aviso transparente de que a autenticação ainda está em desenvolvimento.
+- `/termos`: informações institucionais e termos preliminares. Antes de operar com dados reais, é necessária revisão jurídica e política de privacidade completa.
 
-* **Ferramentas Necessárias:** Node.js versão 18 ou superior instalado localmente, junto ao gerenciador de pacotes npm ou yarn.
-* **Procedimento de Instalação e Execução Local:**
-  1. Clone o repositório oficial do site utilizando o terminal.
-  2. Acesse a pasta do projeto e execute o comando `npm install` para instalar as dependências descritas no `package.json`.
-  3. Execute o comando de desenvolvimento `npm run dev` para iniciar o servidor local na porta padrão (`http://localhost:3000`).
+## Importante
 
-## 🔒 Licença e Direitos Autorais
+As telas de rota e os números apresentados são **ilustrativos**. A landing page não implementa rastreamento, cadastro, autenticação nem serviços de backend. Os preços devem ser confirmados antes de comercializar o serviço. A equipe deve validar os textos sobre recursos e condições antes da publicação.
 
-Copyright© 2026 Miguel Petherson Silva. Todos os direitos reservados.
-
-Este software e sua documentação associada (o "Projeto Rota Estudantil") são de propriedade exclusiva do autor. 
-
-É expressamente proibida a cópia, modificação, distribuição, comercialização ou utilização total ou parcial deste código-fonte sem a autorização prévia e expressa por escrito do autor.
+© 2026 Autores do projeto VanBora. Todos os direitos reservados.

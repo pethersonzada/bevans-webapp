@@ -1,94 +1,22 @@
-import React from 'react';
+import Link from 'next/link';
+
+const plans = [
+  { name: 'Autônomo', eyebrow: 'PARA QUEM COMEÇA', price: '79', suffix: '/mês', detail: '1 van', description: 'Tudo que você precisa para organizar sua rota com mais praticidade.', features: ['Rastreamento da rota','Registro de embarque','Comunicação com responsáveis','Suporte por e-mail'] },
+  { name: 'Frota', eyebrow: 'MAIS ESCOLHIDO', price: '249', suffix: '/mês', detail: 'Até 8 vans', description: 'Um painel central para acompanhar diferentes veículos e rotas.', features: ['Tudo do plano Autônomo','Visão centralizada da frota','Relatórios de pontualidade','Suporte prioritário'], featured: true },
+  { name: 'Rede', eyebrow: 'SOLUÇÃO SOB MEDIDA', price: null, suffix: '', detail: 'Frotas maiores', description: 'Para operações com necessidades específicas de gestão e integração.', features: ['Gestão com múltiplos usuários','Integrações sob avaliação','Atendimento especializado','Proposta personalizada'] },
+];
 
 export default function Pricing() {
-  return (
-    <section id="precos" className="px-6 py-28 bg-white">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-20">
-          <h2 className="text-4xl font-extrabold tracking-tight text-slate-950 mb-4">
-            Um plano pra cada tamanho de operação
-          </h2>
-          <p className="text-lg text-slate-500">
-            De uma van só até uma frota inteira, sem pagar por recurso que você não usa.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6 items-stretch">
-          <PriceCard
-            name="Autônomo"
-            price="R$ 79"
-            period="por mês / 1 van"
-            description="Pra quem dirige e gerencia a própria rota, sem intermediário."
-            features={['Rastreamento ao vivo', 'Lista de embarque digital', 'Avisos automáticos aos responsáveis', 'Suporte por e-mail']}
-            cta="Começar agora"
-          />
-          <PriceCard
-            name="Frota"
-            price="R$ 249"
-            period="por mês / até 8 vans"
-            description="Pra quem administra várias rotas e quer ver tudo num lugar só."
-            features={['Tudo do plano Autônomo', 'Painel de gestão central', 'Relatórios de pontualidade', 'Suporte prioritário no WhatsApp']}
-            cta="Começar agora"
-            highlight={true}
-          />
-          <PriceCard
-            name="Rede"
-            price="Sob consulta"
-            period="frotas grandes e escolas"
-            description="Pra redes de ensino e operações que precisam de integração à parte."
-            features={['Múltiplos gestores', 'API para sistemas escolares', 'Gestor de conta dedicado', 'Treinamento presencial']}
-            cta="Falar com a gente"
-          />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function PriceCard({ name, price, period, description, features, cta, highlight = false }) {
-  return (
-    <div
-      className={`relative rounded-2xl p-8 ${
-        highlight
-          ? 'border-2 border-[#feb723] bg-[#FFFBF0]'
-          : 'border border-slate-200 bg-white'
-      }`}
-    >
-      {highlight && (
-        <div className="absolute -top-3 left-8 bg-[#feb723] text-[#0E1524] text-xs font-semibold px-3 py-1 rounded-full">
-          Recomendado
-        </div>
-      )}
-      <h3 className="text-xl font-bold text-slate-950 mb-2">{name}</h3>
-      <p className="text-sm text-slate-500 mb-6 h-10">{description}</p>
-
-      <div className="mb-8">
-        <span className="text-4xl font-extrabold tracking-tight text-slate-950">{price}</span>
-        <span className="text-sm text-slate-500 ml-2">{period}</span>
-      </div>
-
-      <button
-        className={`w-full py-3.5 rounded-xl font-semibold transition-all mb-8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E1524] ${
-          highlight
-            ? 'bg-[#feb723] text-[#0E1524] hover:bg-[#f5aa10]'
-            : 'bg-slate-100 text-slate-950 hover:bg-slate-200'
-        }`}
-      >
-        {cta}
-      </button>
-
-      <ul className="space-y-4">
-        {features.map((f, idx) => (
-          <li key={idx} className="flex items-start gap-3 text-sm">
-            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#feb723]">
-              <svg className="w-3 h-3 text-[#0E1524]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
-            </span>
-            <span className="text-slate-600">{f}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  return <section id="precos" className="pricing-section section-pad"><div className="container">
+    <div className="pricing-heading"><span className="section-label"><span/> PLANOS E VALORES</span><h2>Um plano para cada<br /><span>tamanho de jornada.</span></h2><p>Escolha o ponto de partida ideal para a sua operação. Converse com a equipe antes de contratar.</p></div>
+    <div className="pricing-grid">{plans.map(plan=><article className={'pricing-card '+(plan.featured?'pricing-card-featured':'')} key={plan.name}>
+      {plan.featured && <div className="pricing-recommended">✦ MAIS POPULAR</div>}
+      <div className="pricing-eyebrow">{plan.eyebrow}</div><h3>{plan.name}</h3><p className="pricing-description">{plan.description}</p>
+      <div className="pricing-amount">{plan.price ? <><span className="currency">R$</span><strong>{plan.price}</strong><span className="period">{plan.suffix}</span></> : <strong className="custom-price">Sob consulta</strong>}</div>
+      <p className="pricing-detail">{plan.detail}</p>
+      <Link className={'button pricing-button '+(plan.featured?'button-yellow':'button-outline')} href={'/contato?plano='+encodeURIComponent(plan.name)}>{plan.price?'Quero conhecer o plano':'Solicitar uma proposta'} <span aria-hidden="true">↗</span></Link>
+      <div className="pricing-divider"/><p className="pricing-includes">O QUE ESTÁ INCLUÍDO</p><ul>{plan.features.map(feature=><li key={feature}><span aria-hidden="true">✓</span>{feature}</li>)}</ul>
+    </article>)}</div>
+    <p className="pricing-footnote">Valores apresentados como referência comercial. Condições e disponibilidade dos recursos devem ser confirmadas com a equipe.</p>
+  </div></section>;
 }

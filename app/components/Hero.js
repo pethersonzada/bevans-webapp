@@ -1,118 +1,74 @@
-import React from 'react';
 import Link from 'next/link';
 
-export default function Hero() {
-  return (
-    <section className="bg-white px-6 pt-20 pb-10">
-      <div className="max-w-4xl mx-auto text-center">
-        <h1 className="text-[56px] md:text-[76px] leading-[1.02] font-extrabold tracking-tight text-slate-950">
-          Vá mais longe,{' '}
-          <span className="inline-flex items-center bg-[#feb723] text-[#0E1524] px-4 py-1 rounded-2xl align-middle">
-            junto
-          </span>
-          .
-        </h1>
-
-        <p className="mt-7 text-lg md:text-xl text-slate-500 max-w-xl mx-auto leading-relaxed">
-          Rastreie a van, confirme quem embarcou e avise a família, tudo automático.
-        </p>
-
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-          <button className="bg-[#feb723] text-[#0E1524] px-6 py-3 rounded-xl font-semibold shadow-sm hover:bg-[#f5aa10] active:scale-[0.98] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E1524]">
-            Agendar demonstração
-          </button>
-          <Link href="#funcionalidades" className="bg-white text-slate-900 border border-slate-200 px-6 py-3 rounded-xl font-semibold hover:bg-slate-50 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E1524]">
-            Ver como funciona
-          </Link>
-        </div>
-      </div>
-
-      <div className="max-w-5xl mx-auto mt-16 relative">
-        <div className="rounded-2xl border border-slate-200 shadow-[0_30px_60px_-15px_rgba(254,183,35,0.28)] overflow-hidden bg-white">
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-slate-50">
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-            <span className="mx-auto text-xs text-slate-400">vanbora.app/rotas</span>
-          </div>
-
-          <div className="flex h-[360px]">
-            <div className="hidden sm:block w-48 bg-[#0E1524] px-4 py-5 text-slate-300 text-sm shrink-0">
-              <p className="text-white font-semibold mb-5">Rota 12 · Manhã</p>
-              <div className="space-y-1">
-                <SidebarItem label="Rotas ativas" active />
-                <SidebarItem label="Motoristas" />
-                <SidebarItem label="Relatórios" />
-                <SidebarItem label="Responsáveis" />
-              </div>
-            </div>
-
-            <div className="relative flex-1 bg-slate-50">
-              <svg viewBox="0 0 400 280" className="w-full h-full">
-                <path
-                  d="M40 220 C 100 180, 140 140, 190 120 S 280 70, 350 50"
-                  stroke="#feb723"
-                  strokeWidth="4"
-                  strokeDasharray="1 10"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <circle cx="40" cy="220" r="6" fill="#1B8A5A" />
-                <circle cx="190" cy="120" r="7" fill="#feb723" stroke="#0E1524" strokeWidth="2" />
-                <circle cx="350" cy="50" r="6" fill="#0E1524" />
-              </svg>
-
-              <div className="absolute top-6 right-6 bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3 w-52">
-                <p className="text-xs text-slate-400 mb-1">18:32</p>
-                <p className="text-sm font-semibold text-slate-950">Embarque confirmado</p>
-                <p className="text-xs text-slate-500">Maria S. na Av. Principal</p>
-              </div>
-
-              <div className="absolute bottom-6 left-6 sm:left-8 bg-white border border-slate-200 border-l-4 border-l-[#feb723] rounded-xl shadow-sm px-4 py-3 w-52">
-                <p className="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#feb723]" />
-                  Ao vivo
-                </p>
-                <p className="text-sm font-semibold text-slate-950">Faltam 2 paradas</p>
-                <p className="text-xs text-slate-500">Chegada estimada às 19:24</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto mt-16 pb-6">
-        <p className="text-center text-xs uppercase tracking-wide text-slate-400 mb-5">
-          Feito para quem roda todo santo dia
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-slate-400 font-semibold text-sm">
-          <span>Vans escolares</span>
-          <Dot />
-          <span>Fretados universitários</span>
-          <Dot />
-          <span>Transporte corporativo</span>
-          <Dot />
-          <span>Cooperativas de motoristas</span>
-        </div>
-      </div>
-    </section>
-  );
+function Check({ children }) {
+  return <span className="hero-check"><span aria-hidden="true">✓</span> {children}</span>;
 }
 
-function SidebarItem({ label, active = false }) {
+function DashboardPreview() {
   return (
-    <div
-      className={`px-3 py-1.5 rounded-md border-l-2 ${
-        active
-          ? 'bg-white/10 text-white font-medium border-[#feb723]'
-          : 'border-transparent'
-      }`}
-    >
-      {label}
+    <div className="dashboard-shell" aria-label="Prévia ilustrativa do painel de gestão VanBora">
+      <div className="dashboard-caption"><span className="pulse-dot" /> VISUALIZAÇÃO ILUSTRATIVA DA PLATAFORMA <span className="caption-line" /></div>
+      <div className="dashboard-window">
+        <div className="dashboard-sidebar">
+          <div className="sidebar-brand"><span className="sidebar-mark">v<span>.</span></span> vanbora</div>
+          <div className="sidebar-label">MENU PRINCIPAL</div>
+          <div className="sidebar-link selected"><span>▦</span> Visão geral</div>
+          <div className="sidebar-link"><span>⌁</span> Minhas rotas</div>
+          <div className="sidebar-link"><span>♧</span> Passageiros</div>
+          <div className="sidebar-link"><span>▤</span> Relatórios</div>
+          <div className="sidebar-bottom"><span className="avatar">VB</span><div><strong>Minha operação</strong><small>Painel demonstrativo</small></div></div>
+        </div>
+        <div className="dashboard-content">
+          <div className="dashboard-top"><div><small>PAINEL DE CONTROLE</small><h3>Bom dia! <span aria-hidden="true">☀</span></h3><p>Uma visão mais clara de cada trajeto.</p></div><span className="dashboard-date">Hoje <span aria-hidden="true">⌄</span></span></div>
+          <div className="dashboard-stats">
+            <div className="mini-stat"><span>Rotas planejadas</span><strong>04 <small>rotas</small></strong><em>Visão centralizada</em></div>
+            <div className="mini-stat"><span>Passageiros</span><strong>128 <small>alunos</small></strong><em>Gestão simplificada</em></div>
+            <div className="mini-stat"><span>Veículos</span><strong>08 <small>vans</small></strong><em>Tudo em um lugar</em></div>
+          </div>
+          <div className="dashboard-lower">
+            <div className="preview-map">
+              <div className="preview-heading"><strong>Visão da rota</strong><span className="preview-pill">Exemplo</span></div>
+              <div className="map-area">
+                <svg viewBox="0 0 500 245" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustração de rota conectando pontos de parada">
+                  <defs><pattern id="grid" width="27" height="27" patternUnits="userSpaceOnUse"><path d="M 27 0 L 0 0 0 27" fill="none" stroke="#e6eaf0" strokeWidth="1"/></pattern></defs>
+                  <rect width="500" height="245" fill="#f7f9fb"/><rect width="500" height="245" fill="url(#grid)"/>
+                  <path d="M0 170 L500 20 M0 50 L500 220 M130 0 L235 245 M380 0 L300 245" stroke="#e5eaf0" strokeWidth="14" fill="none"/>
+                  <path d="M48 189 C105 204 115 102 202 133 S307 192 370 101 S445 79 468 44" stroke="#f7b731" strokeWidth="6" strokeLinecap="round" fill="none" strokeDasharray="1 13"/>
+                  <circle cx="48" cy="189" r="10" fill="#fff" stroke="#15233b" strokeWidth="4"/>
+                  <circle cx="202" cy="133" r="11" fill="#f7b731" stroke="#fff" strokeWidth="4"/>
+                  <circle cx="370" cy="101" r="10" fill="#fff" stroke="#15233b" strokeWidth="4"/>
+                  <circle cx="468" cy="44" r="10" fill="#15233b" stroke="#fff" strokeWidth="4"/>
+                  <g transform="translate(173 94)"><rect width="59" height="28" rx="14" fill="#15233b"/><text x="29" y="18" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="bold">VAN 01</text></g>
+                </svg>
+                <div className="map-overlay"><span className="status-circle" /> Rota em destaque</div>
+              </div>
+            </div>
+            <div className="preview-activity"><strong>Atividades da rota</strong><p>Exemplos de eventos que podem ser acompanhados</p>
+              <div className="activity-line"><span className="activity-icon green">✓</span><div><b>Embarque registrado</b><small>Parada 01 • 07:15</small></div></div>
+              <div className="activity-line"><span className="activity-icon yellow">↗</span><div><b>Trajeto iniciado</b><small>Rota da manhã • 07:20</small></div></div>
+              <div className="activity-line"><span className="activity-icon blue">⌁</span><div><b>Próxima parada</b><small>Previsão • 07:35</small></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="floating-notice"><span className="floating-notice-icon">✓</span><div><strong>Mais controle da operação</strong><small>Do embarque à chegada</small></div></div>
     </div>
   );
 }
 
-function Dot() {
-  return <span className="w-1 h-1 rounded-full bg-[#feb723] hidden sm:block" />;
+export default function Hero() {
+  return <section className="hero-section" id="inicio">
+    <div className="hero-glow hero-glow-one" /><div className="hero-glow hero-glow-two" />
+    <div className="container hero-container">
+      <div className="hero-copy">
+        <div className="eyebrow"><span className="eyebrow-dot"/> A NOVA FORMA DE GERENCIAR TRANSPORTE</div>
+        <h1>Menos preocupação.<br /><span className="hero-highlight">Mais caminho</span><br />pela frente<span className="title-dot">.</span></h1>
+        <p className="hero-description">Rotas organizadas, embarques acompanhados e famílias bem informadas. Tudo que você precisa para uma operação mais tranquila, em um só lugar.</p>
+        <div className="hero-buttons"><Link href="/contato" className="button button-yellow button-large">Conhecer o VanBora <span aria-hidden="true">↗</span></Link><Link href="/#funcionalidades" className="button button-outline button-large">Ver como funciona <span aria-hidden="true">↓</span></Link></div>
+        <div className="hero-points"><Check>Feito para quem está na estrada</Check><Check>Simples de usar</Check></div>
+      </div>
+      <DashboardPreview />
+    </div>
+    <div className="trusted-strip"><div className="container trusted-inner"><span>PENSADO PARA DIFERENTES OPERAÇÕES</span><div>Vans escolares <i/> Transporte universitário <i/> Frotas e cooperativas <i/> Transporte corporativo</div></div></div>
+  </section>;
 }

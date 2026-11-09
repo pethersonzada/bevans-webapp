@@ -1,28 +1,16 @@
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { Geist } from 'next/font/google';
+import './globals.css';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const geist = Geist({ variable: '--font-geist', subsets: ['latin'], display: 'swap' });
 
 export const metadata = {
-  title: "VanBora — vá mais longe, junto",
-  description: "Rastreamento em tempo real e gestão de rotas de transporte escolar.",
+  title: { default: 'VanBora | Gestão inteligente de transporte', template: '%s | VanBora' },
+  description: 'Organize rotas, acompanhe embarques e simplifique a comunicação no transporte escolar. Conheça o VanBora.',
+  applicationName: 'VanBora',
+  robots: { index: true, follow: true },
+  openGraph: { title: 'VanBora | Vá mais longe, junto', description: 'Mais organização para quem dirige, gerencia e acompanha o transporte.', locale: 'pt_BR', type: 'website' },
 };
 
-export default function RootLayout({ children }) {
-  return (
-    <html
-      lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
-    </html>
-  );
+export default function RootLayout({children}) {
+  return <html lang="pt-BR" className={geist.variable}><body><a className="skip-link" href="#conteudo">Pular para o conteúdo</a>{children}</body></html>;
 }

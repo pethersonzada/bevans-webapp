@@ -1,34 +1,11 @@
-import React from 'react';
 import Link from 'next/link';
 
 export default function Footer() {
-  return (
-    <footer className="bg-white text-slate-500 text-sm border-t border-slate-100">
-      <div className="px-6 py-24 text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-4xl font-extrabold tracking-tight text-slate-950 mb-6">
-            Bora ver se o VanBora encaixa na sua rotina?
-          </h2>
-          <p className="text-slate-500 mb-9">
-            Quinze minutos de conversa já mostram se ele resolve o seu dia a dia. Sem compromisso, sem letra miúda.
-          </p>
-          <button className="bg-[#0E1524] text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-[#1B2740] transition">
-            Marcar uma conversa
-          </button>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-6 py-10 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p>&copy; {new Date().getFullYear()} VanBora. Todos os direitos reservados.</p>
-        <div className="flex items-center gap-6">
-          <Link href="/termos" className="hover:text-slate-950 transition underline">
-            Termos de Uso e Privacidade
-          </Link>
-        </div>
-      </div>
-      <div className="text-center pb-8 text-xs text-slate-400">
-        Feito por Miguel Petherson, Maria Rafaela, Arthur Almeida e Yalle Rívika.
-      </div>
-    </footer>
-  );
+  return <footer className="site-footer">
+    <div className="container">
+      <div className="footer-cta"><div><span className="section-label"><span/> SEU PRÓXIMO PASSO</span><h2>O futuro da sua rota<br />começa <em>por aqui.</em></h2><p>Vamos conversar sobre como organizar melhor sua operação?</p><Link href="/contato" className="button button-yellow button-large">Vamos conversar <span aria-hidden="true">↗</span></Link></div><div className="footer-cta-art" aria-hidden="true"><div className="art-loop art-loop-one"/><div className="art-loop art-loop-two"/><div className="art-dot dot-a"/><div className="art-dot dot-b"/><span className="art-arrow">↗</span></div></div>
+      <div className="footer-main"><div><Link href="/" className="footer-logo">van<span>bora</span><b>.</b></Link><p>Mais tranquilidade em cada caminho.</p></div><div className="footer-columns"><div><strong>Explore</strong><Link href="/#funcionalidades">Funcionalidades</Link><Link href="/#beneficios">Para quem é</Link><Link href="/#precos">Planos</Link></div><div><strong>VanBora</strong><Link href="/contato">Contato</Link><Link href="/gestor">Área do gestor</Link><Link href="/termos">Termos e privacidade</Link></div></div></div>
+      <div className="footer-bottom"><span>© {new Date().getFullYear()} VanBora. Todos os direitos reservados.</span><span>Feito por Miguel Petherson, Maria Rafaela, Arthur Almeida e Yalle Rívika.</span></div>
+    </div>
+  </footer>;
 }
