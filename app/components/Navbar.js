@@ -63,7 +63,7 @@ export default function Navbar() {
 
         <div className="justify-self-end flex items-center gap-2">
           <Link
-            href="/login"
+            href="/gestor"
             className="hidden sm:inline-flex px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-slate-950 hover:bg-slate-100/80 transition-colors focus-visible:outline-2 focus-visible:outline-[#0E1524]"
           >
             Fazer login
@@ -110,7 +110,7 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
-          <Link href="/login" onClick={() => setOpen(false)} className="py-3 text-base font-medium text-slate-700">
+          <Link href="/gestor" onClick={() => setOpen(false)} className="py-3 text-base font-medium text-slate-700">
             Fazer login
           </Link>
           <Link

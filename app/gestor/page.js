@@ -34,11 +34,14 @@ export default function GestorLogin() {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-slate-200">
           <form className="space-y-6" onSubmit={handleLogin}>
             <div>
-              <label className="block text-sm font-medium text-slate-700">
+              <label htmlFor="gestor-email" className="block text-sm font-medium text-slate-700">
                 E-mail
               </label>
               <div className="mt-1">
                 <input
+                  id="gestor-email"
+                  name="email"
+                  autoComplete="email"
                   type="email"
                   required
                   value={email}
@@ -50,11 +53,14 @@ export default function GestorLogin() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700">
+              <label htmlFor="gestor-senha" className="block text-sm font-medium text-slate-700">
                 Senha
               </label>
               <div className="mt-1">
                 <input
+                  id="gestor-senha"
+                  name="password"
+                  autoComplete="current-password"
                   type="password"
                   required
                   value={senha}

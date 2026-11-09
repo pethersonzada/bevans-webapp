@@ -3,7 +3,7 @@ import React from 'react';
 export default function Features() {
   return (
     <>
-      <section id="funcionalidades" className="relative px-6 py-28 overflow-hidden">
+      <section id="funcionalidades" className="scroll-mt-24 relative px-6 py-28 overflow-hidden">
         <div
           className="absolute inset-0 -z-10"
           style={{
@@ -70,6 +70,19 @@ export default function Features() {
         </div>
       </section>
 
+      <section id="beneficios" className="scroll-mt-24 bg-white px-6 py-24" aria-labelledby="beneficios-titulo">
+        <div className="max-w-5xl mx-auto">
+          <div className="max-w-2xl mx-auto text-center mb-12">
+            <h2 id="beneficios-titulo" className="text-4xl font-extrabold tracking-tight text-slate-950 mb-4">Feito para cada pessoa da rota</h2>
+            <p className="text-slate-600">Mais informação para quem dirige, organiza e acompanha o transporte.</p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
+            <AudienceCard audience="Motoristas" accent="#feb723" items={["Lista de passageiros sempre à mão", "Confirmação de embarque e desembarque", "Acompanhamento de paradas e horários"]} />
+            <AudienceCard audience="Gestores" accent="#1B8A5A" items={["Visão das rotas e veículos", "Histórico de viagens e pontualidade", "Mais organização para a operação"]} />
+            <AudienceCard audience="Responsáveis" accent="#0E1524" items={["Acompanhamento da rota", "Avisos sobre a viagem", "Informações de embarque e chegada"]} />
+          </div>
+        </div>
+      </section>
     </>
   );
 }
