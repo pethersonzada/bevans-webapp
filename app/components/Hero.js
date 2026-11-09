@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 export default function Hero() {
   return (
@@ -20,9 +21,9 @@ export default function Hero() {
           <button className="bg-[#feb723] text-[#0E1524] px-6 py-3 rounded-xl font-semibold shadow-sm hover:bg-[#f5aa10] active:scale-[0.98] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E1524]">
             Agendar demonstração
           </button>
-          <button className="bg-white text-slate-900 border border-slate-200 px-6 py-3 rounded-xl font-semibold hover:bg-slate-50 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E1524]">
+          <Link href="#funcionalidades" className="bg-white text-slate-900 border border-slate-200 px-6 py-3 rounded-xl font-semibold hover:bg-slate-50 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E1524]">
             Ver como funciona
-          </button>
+          </Link>
         </div>
       </div>
 
