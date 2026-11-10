@@ -518,3 +518,39 @@ button { cursor:pointer; }
 .new-price-featured .new-price-availability>span{background:#00d2ff22;color:#00d2ff}
 @media(max-width:850px){.mobile-nav{max-height:calc(100dvh - 70px);overflow-y:auto}.mobile-nav a{min-height:44px;display:flex;align-items:center}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.new-price-card,.button{transition:none!important}}
+
+/* BeVans homepage: driver and passenger walkthrough */
+.experience-section{background:#f3f8ff;color:#13263e;padding:112px 0;scroll-margin-top:80px}
+.experience-intro{max-width:790px;margin:0 auto 43px;text-align:center}
+.experience-kicker{font-size:11px;font-weight:850;letter-spacing:1.8px;color:#0068c9}
+.experience-intro h2{font-size:clamp(39px,5.2vw,68px);line-height:1.1;letter-spacing:-.065em;font-weight:850;margin:19px 0 18px}
+.experience-intro h2 em{font-style:normal;color:#007bff}
+.experience-intro>p{color:#627b95;font-size:15px;line-height:1.85;max-width:600px;margin:0 auto}
+.experience-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:21px}
+.experience-card{position:relative;display:flex;flex-direction:column;padding:35px 35px 29px;border-radius:23px;overflow:hidden;border:1px solid #d5e4f2;background:white;box-shadow:0 16px 48px #234c6b0d}
+.experience-card-driver{background:#0c2945;color:#f5faff;border-color:#234b71;box-shadow:0 25px 55px #0b35502c}
+.experience-card-head{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.experience-card-index{font-size:10px;letter-spacing:1.3px;font-weight:850;color:#8ca8c2}
+.experience-card-driver .experience-card-index{color:#8badce}
+.experience-role{display:inline-flex;padding:9px 14px;border-radius:100px;font-size:11px;font-weight:850;background:#e5f2ff;color:#0068c9}
+.experience-card-driver .experience-role{background:#00d2ff22;color:#79e9ff}
+.experience-card h3{font-size:clamp(25px,3vw,35px);line-height:1.16;letter-spacing:-1.5px;font-weight:850;margin:40px 0 12px;max-width:380px}
+.experience-card-description{color:#68829c;font-size:13px;line-height:1.8}
+.experience-card-driver .experience-card-description{color:#abc5dc}
+.experience-steps{display:grid;gap:0;margin:34px 0 30px}
+.experience-step{display:flex;gap:18px;align-items:flex-start;padding:19px 0;border-top:1px solid #dce9f4}
+.experience-card-driver .experience-step{border-top-color:#31516e}
+.experience-step-num{font-size:12px;font-weight:900;color:#007bff;flex:none;padding-top:2px}
+.experience-card-driver .experience-step-num{color:#64e7ff}
+.experience-step strong{font-size:15px;font-weight:850}
+.experience-step p{font-size:12px;line-height:1.65;color:#748ba3;margin-top:5px}
+.experience-card-driver .experience-step p{color:#a3bcd1}
+.experience-card-foot{margin-top:auto;font-size:10px;letter-spacing:1.3px;font-weight:850;color:#64839e;display:flex;align-items:center;gap:10px}
+.experience-card-driver .experience-card-foot{color:#87abc9}
+.experience-dot{display:inline-block;flex:none;width:7px;height:7px;border-radius:50%;background:#007bff}
+.experience-card-driver .experience-dot{background:#00d2ff}
+.experience-outro{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-top:30px}
+.experience-outro p{font-size:12px;line-height:1.75;color:#70869a;max-width:580px}
+.experience-outro a{display:inline-flex;gap:15px;align-items:center;color:#0056b3;font-size:13px;font-weight:850;white-space:nowrap}
+@media(max-width:750px){.experience-section{padding:74px 0}.experience-grid{grid-template-columns:1fr;gap:14px}.experience-card h3{margin-top:28px}.experience-outro{display:block}.experience-outro a{margin-top:18px}.bev-hero-bottom{margin-top:68px}}
+@media(max-width:480px){.experience-card{padding:26px 23px}.experience-intro h2{font-size:39px}.experience-steps{margin:25px 0}.experience-intro>p{font-size:14px}}

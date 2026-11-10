@@ -5,13 +5,21 @@ import { readFileSync, existsSync } from 'node:fs';
 const read = (path) => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const css = read('app/globals.css');
 
-test('hero and interactive route have their layout styles', () => {
+test('homepage hero and driver/passenger experience have layout styles', () => {
   const hero = read('app/components/Hero.js');
-  for (const selector of ['.bev-hero{', '.bev-hero-inner{', '.bev-hero-actions{', '.route-demo{', '.route-demo-layout{', '.route-map-canvas{', '.route-control-panel{']) {
-    assert.ok(css.includes(selector), `Missing stylesheet rule: ${selector}`);
+  const experience = read('app/components/Experience.js');
+  const page = read('app/page.js');
+  for (const selector of ['.bev-hero{', '.bev-hero-inner{', '.bev-hero-actions{', '.experience-section{', '.experience-grid{', '.experience-card{', '.experience-step{']) {
+    assert.ok(css.includes(selector), 'Missing stylesheet rule: ' + selector);
   }
   assert.match(hero, /className="bev-hero"/);
-  assert.match(hero, /<RouteDemo\s*\/>/);
+  assert.match(hero, /href="\/#experiencia"/);
+  assert.match(page, /<Experience\s*\/>/);
+  assert.match(experience, /id="experiencia"/);
+  assert.match(experience, /Motorista/);
+  assert.match(experience, /Passageiro/);
+  assert.doesNotMatch(hero, /RouteDemo/);
+  assert.equal(existsSync(new URL('../app/components/RouteDemo.js', import.meta.url)), false);
 });
 
 test('marketing and public pages retain their styles', () => {

@@ -42,7 +42,7 @@ export default function Features(){
       <div className="journey-copy">
         <span className="section-label"><span/> A EXPERIÊNCIA BEVANS</span>
         <h2 id="journey-heading">Do primeiro ponto ao destino.<br/><em>Sem perder o rumo.</em></h2>
-        <p>O aplicativo conecta etapas que normalmente ficam espalhadas entre mapas, listas e mensagens. Acompanhe a ideia por trás de cada viagem na demonstração acima.</p>
+        <p>O aplicativo conecta etapas que normalmente ficam espalhadas entre mapas, listas e mensagens. Veja como motorista e passageiro utilizam o BeVans na seção de experiência.</p>
         <Link href="/#experiencia" className="journey-link">Explorar a demonstração <span aria-hidden="true">↗</span></Link>
       </div>
     </div>
