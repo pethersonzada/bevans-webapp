@@ -9,6 +9,7 @@ const navigation = [
   { label: 'Funcionalidades', href: '/#funcionalidades' },
   { label: 'Para quem é', href: '/#beneficios' },
   { label: 'Planos', href: '/#precos' },
+  { label: 'Excursões', href: '/excursoes' },
   { label: 'Dúvidas', href: '/#faq' },
 ];
 
@@ -45,7 +46,7 @@ export default function Navbar() {
         </div>
 
         <div className="nav-actions">
-          <Link className="nav-login" href="/gestor">Área do gestor</Link>
+          <Link className="nav-login" href="/gestor">Painel do gestor</Link>
           <Link className="button button-dark nav-cta" href="/contato">Agendar uma conversa <span aria-hidden="true">↗</span></Link>
           <button type="button" className="menu-toggle" onClick={() => setOpen(!open)}
             aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? 'Fechar menu' : 'Abrir menu'}>

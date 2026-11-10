@@ -48,3 +48,12 @@ A identidade foi alinhada ao app mobile `pethersonzada/bevans-frontend`: azul pr
 O pipeline `.github/workflows/quality.yml` executa testes de contato (`node --test`), lint e build em cada push e pull request. Cabeçalhos HTTP básicos são configurados em `next.config.mjs`. O formulário comercial continua sendo um fluxo `mailto:`, sem armazenamento nem envio de dados por API.
 
 A política de privacidade do site (`/privacidade`) é separada dos termos (`/termos`) e não deve ser confundida com a documentação de privacidade do aplicativo React Native.
+
+## Design de modalidades e painel (prévia)
+
+- `/gestor`: workspace visual demonstrativo dos módulos de rotas, excursões, turmas e embarques. **Não é um painel autenticado**, não consulta nem altera dados reais e não faz parte da grade de preços.
+- `/excursoes`: apresentação do fluxo planejado pelo MVP (backend #28-32 e frontend mobile #16); sem convites, inscrições ou reserva de vaga ativos.
+- `/login` e `/cadastro`: telas de prévia de interface, sem campos interativos, coleta de senhas, integrações com Firebase ou chamadas de API.
+- `/#precos`: planos comerciais de referência; não pressupõem que os módulos futuros estejam disponíveis.
+
+Nenhuma variável de ambiente, token ou segredo de Firebase/Mapbox foi adicionada com esta entrega. A integração será feita separadamente quando os contratos e regras de autorização estiverem definidos.

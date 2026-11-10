@@ -1,22 +1,24 @@
 import Link from 'next/link';
 
-const plans = [
-  { name: 'Autônomo', eyebrow: 'PARA QUEM COMEÇA', price: '79', suffix: '/mês', detail: '1 van', description: 'Tudo que você precisa para organizar sua rota com mais praticidade.', features: ['Rastreamento da rota','Registro de embarque','Comunicação com responsáveis','Suporte por e-mail'] },
-  { name: 'Frota', eyebrow: 'PARA PEQUENAS FROTAS', price: '249', suffix: '/mês', detail: 'Até 8 vans', description: 'Um painel central para acompanhar diferentes veículos e rotas.', features: ['Tudo do plano Autônomo','Visão centralizada da frota','Relatórios de pontualidade','Suporte prioritário'], featured: true },
-  { name: 'Rede', eyebrow: 'SOLUÇÃO SOB MEDIDA', price: null, suffix: '', detail: 'Frotas maiores', description: 'Para operações com necessidades específicas de gestão e integração.', features: ['Gestão com múltiplos usuários','Integrações sob avaliação','Atendimento especializado','Proposta personalizada'] },
+const plans=[
+ {tag:'ESSENCIAL',name:'Autônomo',price:'79',detail:'1 veículo',lead:'Para quem cuida da própria rota.',features:['Organização das rotas','Lista de embarque digital','Informações de trajeto','Suporte por e-mail'],code:'AUTÔNOMO'},
+ {tag:'PARA EQUIPES',name:'Frota',price:'249',detail:'Até 8 veículos',lead:'Mais visibilidade para diferentes veículos.',features:['Recursos do plano Autônomo','Visão de múltiplas rotas','Indicadores operacionais','Suporte prioritário'],code:'FROTA',highlight:true},
+ {tag:'SOB MEDIDA',name:'Rede',price:null,detail:'Operações maiores',lead:'Uma proposta para necessidades específicas.',features:['Estrutura personalizada','Integrações sob avaliação','Atendimento especializado','Proposta adaptada à operação'],code:'REDE'},
 ];
 
-export default function Pricing() {
-  return <section id="precos" className="pricing-section section-pad"><div className="container">
-    <div className="pricing-heading"><span className="section-label"><span/> PLANOS E VALORES</span><h2>Um plano para cada<br /><span>tamanho de jornada.</span></h2><p>Escolha o ponto de partida ideal para a sua operação. Converse com a equipe antes de contratar.</p></div>
-    <div className="pricing-grid">{plans.map(plan=><article className={'pricing-card '+(plan.featured?'pricing-card-featured':'')} key={plan.name}>
-      {plan.featured && <div className="pricing-recommended">PARA FROTAS</div>}
-      <div className="pricing-eyebrow">{plan.eyebrow}</div><h3>{plan.name}</h3><p className="pricing-description">{plan.description}</p>
-      <div className="pricing-amount">{plan.price ? <><span className="currency">R$</span><strong>{plan.price}</strong><span className="period">{plan.suffix}</span></> : <strong className="custom-price">Sob consulta</strong>}</div>
-      <p className="pricing-detail">{plan.detail}</p>
-      <Link className={'button pricing-button '+(plan.featured?'button-yellow':'button-outline')} href={'/contato?plano='+encodeURIComponent(plan.name)}>{plan.price?'Quero conhecer o plano':'Solicitar uma proposta'} <span aria-hidden="true">↗</span></Link>
-      <div className="pricing-divider"/><p className="pricing-includes">O QUE ESTÁ INCLUÍDO</p><ul>{plan.features.map(feature=><li key={feature}><span aria-hidden="true">✓</span>{feature}</li>)}</ul>
-    </article>)}</div>
-    <p className="pricing-footnote">Valores apresentados como referência comercial. Condições e disponibilidade dos recursos devem ser confirmadas com a equipe.</p>
-  </div></section>;
+export default function Pricing(){
+ return <section id="precos" className="new-pricing-section">
+  <div className="container">
+   <div className="new-pricing-head"><div><span className="section-label"><span/> PLANOS COMERCIAIS</span><h2>Escolha a rota.<br/><em>O resto a gente constrói.</em></h2></div><p>Opções comerciais de referência para diferentes tamanhos de operação. Recursos e valores dependem de validação com a equipe.</p></div>
+   <div className="new-pricing-grid">{plans.map(plan=><article className={'new-price-card '+(plan.highlight?'new-price-featured':'')} key={plan.name}>
+    <div className="new-price-top"><span>{plan.tag}</span><span className="new-price-code">{plan.code}</span></div><h3>{plan.name}</h3><p className="new-price-lead">{plan.lead}</p>
+    <div className="new-price-value">{plan.price?<><span>R$</span><strong>{plan.price}</strong><small>/mês</small></>:<strong className="new-price-custom">Sob consulta</strong>}</div>
+    <p className="new-price-capacity">{plan.detail}</p>
+    <Link href={'/contato?plano='+encodeURIComponent(plan.name)} className={'new-price-action '+(plan.highlight?'is-highlighted':'')}>{plan.price?'Conversar sobre o plano':'Solicitar proposta'} <span aria-hidden="true">↗</span></Link>
+    <div className="new-price-divider"/><span className="new-price-includes">O QUE ESTÁ PREVISTO</span><ul>{plan.features.map(f=><li key={f}><span aria-hidden="true">✓</span>{f}</li>)}</ul>
+   </article>)}</div>
+   <div className="new-pricing-note"><span aria-hidden="true">ⓘ</span><p><strong>Painel do gestor e excursões são módulos do produto, não planos independentes.</strong> A disponibilidade desses recursos será definida conforme a evolução do frontend e backend. Preços e condições acima são apenas referências a confirmar.</p></div>
+   <div className="new-pricing-links"><Link href="/gestor">Explorar o futuro painel do gestor <span aria-hidden="true">↗</span></Link><Link href="/excursoes">Conhecer o módulo de excursões <span aria-hidden="true">↗</span></Link></div>
+  </div>
+ </section>;
 }
