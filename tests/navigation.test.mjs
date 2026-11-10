@@ -28,3 +28,28 @@ test('direct navigation works without hydration for public actions',()=>{
   assert.match(navbar,/<a href="\/contato" className="button button-yellow">/);
   assert.match(navbar,/item\.href === '\/excursoes' \? <a/);
 });
+
+
+test('mobile navigation stays hidden until opened', () => {
+  const navbar=read('app/components/Navbar.js');
+  const css=read('app/globals.css');
+  assert.match(navbar, /hidden=\{!open\}/);
+  assert.match(css, /\.mobile-nav\[hidden\]\{display:none!important\}/);
+});
+
+test('product modalities and contact match planned status', () => {
+  const pricing=read('app/components/Pricing.js');
+  const form=read('app/components/ContactForm.js');
+  assert.match(pricing, /Gestão de frotas/);
+  assert.match(pricing, /EM DESENVOLVIMENTO/);
+  assert.match(pricing, /EVOLUÇÃO FUTURA/);
+  assert.doesNotMatch(pricing, /R\$\s*79|R\$\s*249/);
+  assert.match(form, /subject === 'Gestão de frotas'/);
+});
+
+test('sitemap and robots always list the public routes', () => {
+  const sitemap=read('app/sitemap.js');
+  const robots=read('app/robots.js');
+  assert.match(sitemap, /https:\/\/bevans-webapp\.vercel\.app/);
+  assert.match(robots, /\/sitemap\.xml/);
+});

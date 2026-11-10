@@ -8,7 +8,7 @@ import Link from 'next/link';
 const navigation = [
   { label: 'Funcionalidades', href: '/#funcionalidades' },
   { label: 'Para quem é', href: '/#beneficios' },
-  { label: 'Planos', href: '/#precos' },
+  { label: 'Modalidades', href: '/#precos' },
   { label: 'Excursões', href: '/excursoes' },
   { label: 'Dúvidas', href: '/#faq' },
 ];
@@ -54,7 +54,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      <div className="mobile-nav" id="mobile-navigation" hidden={!open}>
+      <div className="mobile-nav" id="mobile-navigation" hidden={!open} aria-label="Navegação para dispositivos móveis">
         {navigation.map((item) => item.href === '/excursoes' ? <a key={item.href} href={item.href}>{item.label}</a> : <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>{item.label}</Link>)}
         <a href="/contato" className="button button-yellow">Entrar em contato ↗</a>
       </div>

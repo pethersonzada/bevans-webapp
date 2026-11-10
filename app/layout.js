@@ -2,14 +2,18 @@ import { Geist } from 'next/font/google';
 import './globals.css';
 
 const geist = Geist({ variable: '--font-geist', subsets: ['latin'], display: 'swap' });
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bevans-webapp.vercel.app';
 
 export const metadata = {
-  title: { default: 'BeVans | Gestão inteligente de transporte', template: '%s | BeVans' },
-  description: 'Organize rotas, acompanhe embarques e simplifique a comunicação no transporte escolar. Conheça o BeVans.',
+  metadataBase: new URL(siteUrl),
+  title: { default: 'BeVans | Rotas e transporte mais organizados', template: '%s | BeVans' },
+  description: 'Conheça o BeVans: aplicativo para motoristas e passageiros com turmas, presença, mapas e navegação. Veja também as próximas modalidades de excursões e gestão de frotas.',
   applicationName: 'BeVans',
+  alternates: { canonical: '/' },
   icons: { icon: 'https://raw.githubusercontent.com/pethersonzada/bevans-frontend/main/assets/images/logo-app-sem-fundo-sem-titulo.png', apple: 'https://raw.githubusercontent.com/pethersonzada/bevans-frontend/main/assets/images/logo-app-sem-fundo-sem-titulo.png' },
   robots: { index: true, follow: true },
-  openGraph: { title: 'BeVans | Vá mais longe, junto', description: 'Mais organização para quem dirige, gerencia e acompanha o transporte.', locale: 'pt_BR', type: 'website' },
+  openGraph: { title: 'BeVans | Rotas e transporte mais organizados', description: 'Turmas, confirmação de presença e navegação no app. Conheça o projeto BeVans.', siteName: 'BeVans', locale: 'pt_BR', type: 'website', url: '/' },
+  twitter: { card: 'summary', title: 'BeVans | Rotas e transporte mais organizados', description: 'Conheça as funcionalidades atuais e futuras do BeVans.' },
 };
 
 export default function RootLayout({children}) {

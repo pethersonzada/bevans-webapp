@@ -1,24 +1,51 @@
 import Link from 'next/link';
 
-const plans=[
- {tag:'ESSENCIAL',name:'Autônomo',price:'79',detail:'1 veículo',lead:'Para quem cuida da própria rota.',features:['Organização das rotas','Lista de embarque digital','Informações de trajeto','Suporte por e-mail'],code:'AUTÔNOMO'},
- {tag:'PARA EQUIPES',name:'Frota',price:'249',detail:'Até 8 veículos',lead:'Mais visibilidade para diferentes veículos.',features:['Recursos do plano Autônomo','Visão de múltiplas rotas','Indicadores operacionais','Suporte prioritário'],code:'FROTA',highlight:true},
- {tag:'SOB MEDIDA',name:'Rede',price:null,detail:'Operações maiores',lead:'Uma proposta para necessidades específicas.',features:['Estrutura personalizada','Integrações sob avaliação','Atendimento especializado','Proposta adaptada à operação'],code:'REDE'},
+const plans = [
+  {
+    tag: 'APP MOBILE', name: 'Motorista autônomo', code: 'ROTAS E TURMAS',
+    lead: 'A operação de uma van, com foco no dia a dia do motorista.',
+    features: ['Cadastro e organização de turmas', 'Confirmação de presença por viagem', 'Mapa, paradas e navegação', 'Gestão de passageiros vinculados'],
+    action: 'Conversar sobre o aplicativo', status: 'Recursos do aplicativo', highlight: true,
+  },
+  {
+    tag: 'EM DESENVOLVIMENTO', name: 'Excursões', code: 'VIAGENS OCASIONAIS',
+    lead: 'Inscrições por convite, mesmo para passageiros sem o aplicativo.',
+    features: ['Criação de excursões pelo organizador', 'Link de convite para inscrição web', 'Controle de vagas e embarques', 'Check-in manual pelo motorista'],
+    action: 'Conhecer as excursões', status: 'Fluxo planejado', href: '/excursoes',
+  },
+  {
+    tag: 'EVOLUÇÃO FUTURA', name: 'Gestão de frotas', code: 'ORGANIZAÇÕES',
+    lead: 'Uma operação compartilhada entre gestores, motoristas e veículos.',
+    features: ['Organizações e motoristas vinculados', 'Atribuição de turmas a motoristas', 'Gestão de veículos e disponibilidade', 'Painel próprio para o gestor'],
+    action: 'Conversar sobre frotas', status: 'Escopo em planejamento',
+  },
 ];
 
-export default function Pricing(){
- return <section id="precos" className="new-pricing-section">
-  <div className="container">
-   <div className="new-pricing-head"><div><span className="section-label"><span/> PLANOS COMERCIAIS</span><h2>Escolha a rota.<br/><em>O resto a gente constrói.</em></h2></div><p>Opções comerciais de referência para diferentes tamanhos de operação. Recursos e valores dependem de validação com a equipe.</p></div>
-   <div className="new-pricing-grid">{plans.map(plan=><article className={'new-price-card '+(plan.highlight?'new-price-featured':'')} key={plan.name}>
-    <div className="new-price-top"><span>{plan.tag}</span><span className="new-price-code">{plan.code}</span></div><h3>{plan.name}</h3><p className="new-price-lead">{plan.lead}</p>
-    <div className="new-price-value">{plan.price?<><span>R$</span><strong>{plan.price}</strong><small>/mês</small></>:<strong className="new-price-custom">Sob consulta</strong>}</div>
-    <p className="new-price-capacity">{plan.detail}</p>
-    <Link href={'/contato?plano='+encodeURIComponent(plan.name)} className={'new-price-action '+(plan.highlight?'is-highlighted':'')}>{plan.price?'Conversar sobre o plano':'Solicitar proposta'} <span aria-hidden="true">↗</span></Link>
-    <div className="new-price-divider"/><span className="new-price-includes">O QUE ESTÁ PREVISTO</span><ul>{plan.features.map(f=><li key={f}><span aria-hidden="true">✓</span>{f}</li>)}</ul>
-   </article>)}</div>
-   <div className="new-pricing-note"><span aria-hidden="true">ⓘ</span><p><strong>Excursões é uma modalidade futura do produto, não um plano independente.</strong> A disponibilidade desses recursos será definida conforme a evolução do frontend e backend. Preços e condições acima são apenas referências a confirmar.</p></div>
-   <div className="new-pricing-links"><Link href="/excursoes">Conhecer o módulo de excursões <span aria-hidden="true">↗</span></Link></div>
-  </div>
- </section>;
+export default function Pricing() {
+  return <section id="precos" className="new-pricing-section" aria-labelledby="pricing-heading">
+    <div className="container">
+      <div className="new-pricing-head">
+        <div>
+          <span className="section-label"><span/> MODALIDADES DO BEVANS</span>
+          <h2 id="pricing-heading">Uma plataforma.<br/><em>Três caminhos.</em></h2>
+        </div>
+        <p>Conheça os fluxos do aplicativo e o que está sendo desenvolvido. As condições comerciais serão definidas antes da contratação.</p>
+      </div>
+      <div className="new-pricing-grid">
+        {plans.map((plan) => <article className={'new-price-card ' + (plan.highlight ? 'new-price-featured' : '')} key={plan.name}>
+          <div className="new-price-top"><span>{plan.tag}</span><span className="new-price-code">{plan.code}</span></div>
+          <h3>{plan.name}</h3><p className="new-price-lead">{plan.lead}</p>
+          <div className="new-price-availability"><span aria-hidden="true">◎</span><strong>{plan.status}</strong></div>
+          <Link href={plan.href || '/contato?assunto=' + encodeURIComponent(plan.name)} className={'new-price-action ' + (plan.highlight ? 'is-highlighted' : '')}>
+            {plan.action} <span aria-hidden="true">↗</span>
+          </Link>
+          <div className="new-price-divider"/><span className="new-price-includes">O QUE ESTA MODALIDADE ENVOLVE</span>
+          <ul>{plan.features.map(f => <li key={f}><span aria-hidden="true">✓</span>{f}</li>)}</ul>
+        </article>)}
+      </div>
+      <div className="new-pricing-note"><span aria-hidden="true">ⓘ</span>
+        <p><strong>Transparência sobre o estágio do produto.</strong> O aplicativo mobile já possui fluxos de motoristas e passageiros. Excursões e gestão de frotas ainda dependem de implementação e validação. Não há preços ou planos contratáveis diretamente neste site.</p>
+      </div>
+    </div>
+  </section>;
 }

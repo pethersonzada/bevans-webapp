@@ -24,7 +24,7 @@ NEXT_PUBLIC_SITE_URL=https://seu-dominio.com
 
 **Não existe um e-mail comercial fixo no código.** Sem `NEXT_PUBLIC_CONTACT_EMAIL`, o formulário de contato exibe um aviso e impede o envio. Com a variável definida, o formulário prepara um e-mail no aplicativo do visitante; ele **não** envia uma solicitação por API nem salva dados em um banco.
 
-A URL canônica usada no sitemap só é criada quando `NEXT_PUBLIC_SITE_URL` estiver configurada.
+O sitemap e os metadados usam como base padrão `https://bevans-webapp.vercel.app`. Configure `NEXT_PUBLIC_SITE_URL` caso utilize um domínio próprio.
 
 ## Rotas
 
@@ -62,3 +62,7 @@ Nenhuma variável de ambiente, token ou segredo de Firebase/Mapbox foi adicionad
 ## Administração
 
 A antiga rota `/gestor` e o componente `ManagerPreview` foram removidos. Não há papel ADMINISTRADOR implementado no aplicativo/backend nem escopo formal de administração da plataforma. Uma futura interface administrativa exige definição de permissões no backend; não deve ser confundida com a gestão de turmas pelo motorista.
+
+## Estado comercial
+
+A seção de modalidades separa funcionalidades do aplicativo mobile de projetos futuros (excursões e gestão de frotas). Preços antigos não confirmados foram retirados da interface para evitar confusão com serviços já contratáveis.

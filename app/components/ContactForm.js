@@ -12,7 +12,13 @@ export default function ContactForm() {
   const [plan, setPlan] = useState(() => normalizePlan(params.get('plano')));
   const [name, setName] = useState('');
   const [sender, setSender] = useState('');
-  const [message, setMessage] = useState(() => params.get('assunto') === 'excursoes' ? 'Quero saber mais sobre o módulo de excursões do BeVans.' : '');
+  const [message, setMessage] = useState(() => {
+    const subject = params.get('assunto');
+    if (subject === 'excursoes') return 'Quero saber mais sobre o módulo de excursões do BeVans.';
+    if (subject === 'Motorista autônomo') return 'Gostaria de conhecer os recursos do aplicativo para motoristas autônomos.';
+    if (subject === 'Gestão de frotas') return 'Gostaria de conversar sobre a futura gestão de frotas no BeVans.';
+    return '';
+  });
   const [error, setError] = useState('');
 
   function handleSubmit(event) {
