@@ -19,7 +19,7 @@ test('excursion contact CTA routes to contact with prefilled subject',()=>{
   const excursions=read('app/excursoes/page.js');
   const form=read('app/components/ContactForm.js');
   assert.match(excursions,/href="\/contato\?assunto=excursoes"/);
-  assert.match(form,/params\.get\('assunto'\) === 'excursoes'/);
+  assert.match(form,/subject === 'excursoes'/);
 });
 
 test('direct navigation works without hydration for public actions',()=>{
