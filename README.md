@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Acesse http://localhost:3000. Execute `npm run lint` e `npm run build` antes de publicar.
+Acesse http://localhost:3000. Execute `npm test`, `npm run lint` e `npm run build` antes de publicar. O workflow do GitHub Actions executa as três verificações em cada alteração.
 
 ## Configuração
 

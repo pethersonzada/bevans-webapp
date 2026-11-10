@@ -342,3 +342,6 @@ button { cursor:pointer; }
 .sidebar-brand-logo { width:35px; height:35px; object-fit:contain; }
 .contact-benefits p span { color:var(--brand-primary); background:#eaf3ff; }
 @media(max-width:600px) { .brand-icon,.brand-icon img { width:42px; height:42px; } }
+
+/* Respeitar o estado acessível do menu mobile em qualquer breakpoint. */
+.mobile-nav[hidden] { display:none; }

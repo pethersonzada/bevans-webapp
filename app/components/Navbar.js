@@ -17,6 +17,15 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [open]);
+
+  useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -45,11 +54,11 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {open && <div className="mobile-nav" id="mobile-navigation">
+      <div className="mobile-nav" id="mobile-navigation" hidden={!open}>
         {navigation.map((item) => <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>{item.label}</Link>)}
         <Link href="/gestor" onClick={() => setOpen(false)}>Área do gestor</Link>
         <Link href="/contato" onClick={() => setOpen(false)} className="button button-yellow">Agendar uma conversa ↗</Link>
-      </div>}
+      </div>
     </header>
   );
 }

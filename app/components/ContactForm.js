@@ -3,36 +3,67 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { buildContactMailto, normalizeContactEmail, normalizePlan, PLANOS } from '../lib/contact.mjs';
 
-const email = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+const commercialEmail = normalizeContactEmail(process.env.NEXT_PUBLIC_CONTACT_EMAIL);
 
 export default function ContactForm() {
-  const search = useSearchParams();
-  const initialPlan = ['Autônomo','Frota','Rede'].includes(search.get('plano')) ? search.get('plano') : '';
-  const [plan, setPlan] = useState(initialPlan);
+  const params = useSearchParams();
+  const [plan, setPlan] = useState(() => normalizePlan(params.get('plano')));
   const [name, setName] = useState('');
   const [sender, setSender] = useState('');
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (event) => {
+  function handleSubmit(event) {
     event.preventDefault();
-    if (!email) return;
-    const subject = 'Contato comercial BeVans - ' + (plan || 'Geral');
-    const body = ['Olá, gostaria de saber mais sobre o BeVans.','','Nome: '+name,'E-mail: '+sender,'Plano: '+(plan || 'Ainda não sei'),'','Mensagem:',message].join('\n');
-    window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-  };
+    setError('');
+    try {
+      const destination = buildContactMailto({ recipient: commercialEmail, name, email: sender, plan, message });
+      window.location.assign(destination);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível preparar a mensagem.');
+    }
+  }
 
-  return <div className="contact-card">
-    <h2>Conte um pouco sobre sua operação.</h2>
-    <p>Preencha os dados para preparar uma mensagem de contato comercial.</p>
-    {!email && <div role="status" className="contact-warning">O canal comercial ainda está sendo configurado. O formulário ficará disponível quando a equipe definir um e-mail de atendimento.</div>}
-    <form className="contact-form" onSubmit={handleSubmit}>
-      <label htmlFor="contact-name">Seu nome <input id="contact-name" autoComplete="name" name="name" required minLength={2} maxLength={100} placeholder="Como podemos chamar você?" value={name} onChange={(e)=>setName(e.target.value)}/></label>
-      <label htmlFor="contact-email">Seu e-mail <input id="contact-email" type="email" autoComplete="email" name="email" required maxLength={160} placeholder="voce@exemplo.com" value={sender} onChange={(e)=>setSender(e.target.value)}/></label>
-      <label htmlFor="contact-plan">Plano de interesse <select id="contact-plan" name="plan" value={plan} onChange={(e)=>setPlan(e.target.value)}><option value="">Ainda não sei</option><option value="Autônomo">Autônomo</option><option value="Frota">Frota</option><option value="Rede">Rede</option></select></label>
-      <label htmlFor="contact-message">O que você precisa? <textarea id="contact-message" name="message" maxLength={1200} required minLength={10} placeholder="Conte quantas vans você tem e o que gostaria de melhorar..." value={message} onChange={(e)=>setMessage(e.target.value)}/></label>
-      <button className="button button-yellow" type="submit" disabled={!email} aria-disabled={!email}>Preparar e-mail de contato <span aria-hidden="true">↗</span></button>
-      <p className="form-hint">O botão abre seu aplicativo de e-mail com a mensagem preenchida. O site não armazena os dados deste formulário. Leia os <Link className="underline" href="/termos">termos e informações de privacidade</Link>.</p>
-    </form>
-  </div>;
+  return (
+    <div className="contact-card">
+      <h2>Conte um pouco sobre sua operação.</h2>
+      <p>Prepare uma mensagem para conversar com a equipe BeVans.</p>
+      {!commercialEmail && (
+        <div role="status" className="contact-warning">
+          O canal comercial ainda não foi configurado. O formulário estará disponível após a publicação de um endereço de atendimento.
+        </div>
+      )}
+      <form className="contact-form" onSubmit={handleSubmit} noValidate={false}>
+        <label htmlFor="contact-name">Seu nome
+          <input id="contact-name" autoComplete="name" name="name" required minLength={2} maxLength={100}
+            placeholder="Como podemos chamar você?" value={name} onChange={event => setName(event.target.value)} />
+        </label>
+        <label htmlFor="contact-email">Seu e-mail
+          <input id="contact-email" type="email" autoComplete="email" name="email" required maxLength={160}
+            placeholder="voce@exemplo.com" value={sender} onChange={event => setSender(event.target.value)} />
+        </label>
+        <label htmlFor="contact-plan">Plano de interesse
+          <select id="contact-plan" name="plan" value={plan} onChange={event => setPlan(event.target.value)}>
+            <option value="">Ainda não sei</option>
+            {PLANOS.map(item => <option key={item} value={item}>{item}</option>)}
+          </select>
+        </label>
+        <label htmlFor="contact-message">O que você precisa?
+          <textarea id="contact-message" name="message" maxLength={1200} required minLength={10}
+            placeholder="Conte quantas vans você tem e o que gostaria de melhorar..."
+            value={message} onChange={event => setMessage(event.target.value)} />
+        </label>
+        {error && <p className="contact-warning" role="alert">{error}</p>}
+        <button className="button button-yellow" type="submit" disabled={!commercialEmail}>
+          Abrir mensagem no meu e-mail <span aria-hidden="true">↗</span>
+        </button>
+        <p className="form-hint">
+          O botão abre seu aplicativo de e-mail. Você precisará confirmar o envio nele. Nenhuma mensagem é enviada diretamente pelo site.
+          Consulte nossa <Link className="underline" href="/privacidade">Política de Privacidade</Link>.
+        </p>
+      </form>
+    </div>
+  );
 }

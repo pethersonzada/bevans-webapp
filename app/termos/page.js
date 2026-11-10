@@ -1,66 +1,26 @@
-import React from 'react';
 import Link from 'next/link';
+
+export const metadata = {
+  title: 'Termos de uso',
+  description: 'Condições de uso da página institucional BeVans.',
+};
 
 export default function TermosPage() {
   return (
-    <main id="conteudo" className="min-h-screen bg-white text-slate-900 py-16 px-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-10">
-          <Link href="/" className="text-sm font-medium text-slate-500 hover:text-slate-950 transition">
-            &larr; Voltar para a página inicial
-          </Link>
+    <main id="conteudo" className="min-h-screen bg-[#F8F9FA] px-6 py-16 text-[#212529]">
+      <article className="mx-auto max-w-3xl rounded-2xl border border-[#DEE2E6] bg-white p-7 shadow-sm sm:p-12">
+        <Link href="/" className="font-semibold text-[#0056b3] hover:underline">← Voltar ao início</Link>
+        <p className="mt-10 text-sm font-bold uppercase tracking-wider text-[#0056b3]">Informações institucionais</p>
+        <h1 className="mt-3 text-4xl font-extrabold tracking-tight">Termos de uso do site</h1>
+        <p className="mt-4 text-sm text-slate-500">Revisão: novembro de 2026.</p>
+        <div className="mt-10 space-y-9 leading-8 text-slate-700">
+          <section><h2 className="mb-2 text-xl font-bold text-slate-900">1. Finalidade</h2><p>Este site apresenta o projeto BeVans, suas propostas de funcionalidades e possibilidades de contato comercial. A apresentação de uma funcionalidade não garante sua disponibilidade imediata. A área do gestor permanece em desenvolvimento.</p></section>
+          <section><h2 className="mb-2 text-xl font-bold text-slate-900">2. Informações comerciais</h2><p>Valores e características de planos apresentados no site são referências e podem ser alterados. A disponibilidade de recursos, condições de contratação, suporte e integrações devem ser confirmadas com a equipe antes de qualquer compromisso.</p></section>
+          <section><h2 className="mb-2 text-xl font-bold text-slate-900">3. Ilustrações</h2><p>As imagens do painel, números, nomes, registros e trajetos apresentados na página inicial são demonstrativos e não representam dados operacionais reais.</p></section>
+          <section><h2 className="mb-2 text-xl font-bold text-slate-900">4. Conteúdo e propriedade intelectual</h2><p>Elementos de identidade visual, textos e código do projeto são apresentados para consulta. Direitos sobre marcas e materiais de terceiros permanecem com seus respectivos titulares.</p></section>
+          <section><h2 className="mb-2 text-xl font-bold text-slate-900">5. Privacidade</h2><p>As práticas informadas para a página institucional estão descritas na <Link className="font-semibold text-[#0056b3] underline" href="/privacidade">Política de Privacidade</Link>. As regras operacionais do aplicativo móvel exigem documentação própria.</p></section>
         </div>
-
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-950 mb-4" style={{ fontFamily: 'var(--font-display)' }}>
-          Termos de Uso e Política de Privacidade
-        </h1>
-        <p className="text-sm text-slate-500 mb-10">Última atualização: 2026</p>
-
-        <div className="space-y-8 text-slate-600 leading-relaxed text-sm md:text-base">
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold text-slate-950">1. Aceitação dos termos</h2>
-            <p>
-              Ao usar o BeVans, seja pelo site ou pelo aplicativo, você concorda com as condições
-              descritas aqui. Se algo neste documento não fizer sentido pra você, entre em contato
-              antes de continuar usando a plataforma.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold text-slate-950">2. Sobre o BeVans</h2>
-            <p>
-              O BeVans é uma plataforma de rastreamento e gestão de rotas de transporte escolar
-              que conecta motoristas, gestores de frota e responsáveis por estudantes num só lugar.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold text-slate-950">3. Privacidade e dados</h2>
-            <p>
-              Levamos a sério a segurança dos dados de rota, presença e cadastro. Essas informações
-              são usadas apenas para garantir que o transporte contratado funcione com segurança e
-              eficiência, seguindo a legislação de proteção de dados em vigor no Brasil.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold text-slate-950">4. Propriedade intelectual</h2>
-            <p>
-              O código-fonte, a marca, o layout e os demais elementos do BeVans pertencem aos seus
-              criadores. Reprodução, engenharia reversa ou distribuição não autorizada desses ativos
-              não é permitida.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold text-slate-950">5. Contato</h2>
-            <p>
-              Dúvidas ou solicitações sobre estes termos podem ser enviadas pelos canais oficiais
-              informados dentro do próprio aplicativo.
-            </p>
-          </section>
-        </div>
-      </div>
+      </article>
     </main>
   );
 }
