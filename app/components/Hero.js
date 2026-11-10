@@ -12,7 +12,7 @@ export default function Hero() {
           <h1>O futuro da rota<br/>está <span>no seu controle.</span></h1>
           <p>Da primeira parada ao último desembarque. Uma experiência de transporte mais conectada, inteligente e preparada para o mundo real.</p>
           <div className="bev-hero-actions">
-            <Link href="/contato" className="bev-button-primary">Conhecer o BeVans <span aria-hidden="true">↗</span></Link>
+            <a href="/contato" className="bev-button-primary">Conhecer o BeVans <span aria-hidden="true">↗</span></a>
             <Link href="/#experiencia" className="bev-button-ghost">Explorar a experiência <span aria-hidden="true">↓</span></Link>
           </div>
           <div className="bev-hero-trust"><span className="bev-small-line"/><span>ROTAS MAIS CLARAS</span><span>·</span><span>MENOS IMPROVISO</span><span>·</span><span>MAIS CONEXÃO</span></div>

@@ -42,11 +42,11 @@ export default function Navbar() {
         </Link>
 
         <div className="nav-links">
-          {navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
+          {navigation.map((item) => item.href === '/excursoes' ? <a key={item.href} href={item.href}>{item.label}</a> : <Link key={item.href} href={item.href}>{item.label}</Link>)}
         </div>
 
         <div className="nav-actions">
-          <Link className="button button-dark nav-cta" href="/contato">Agendar uma conversa <span aria-hidden="true">↗</span></Link>
+          <a className="button button-dark nav-cta" href="/contato">Entrar em contato <span aria-hidden="true">↗</span></a>
           <button type="button" className="menu-toggle" onClick={() => setOpen(!open)}
             aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? 'Fechar menu' : 'Abrir menu'}>
             <span className={open ? 'menu-bars is-open' : 'menu-bars'}><i></i><i></i><i></i></span>
@@ -55,8 +55,8 @@ export default function Navbar() {
       </nav>
 
       <div className="mobile-nav" id="mobile-navigation" hidden={!open}>
-        {navigation.map((item) => <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>{item.label}</Link>)}
-        <Link href="/contato" onClick={() => setOpen(false)} className="button button-yellow">Agendar uma conversa ↗</Link>
+        {navigation.map((item) => item.href === '/excursoes' ? <a key={item.href} href={item.href}>{item.label}</a> : <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>{item.label}</Link>)}
+        <a href="/contato" className="button button-yellow">Entrar em contato ↗</a>
       </div>
     </header>
   );

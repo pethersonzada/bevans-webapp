@@ -1,0 +1,30 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+
+const root = new URL('../', import.meta.url);
+const read = (path) => readFileSync(new URL(path,root),'utf8');
+
+test('menu links lead to existing public pages',()=>{
+  const navbar=read('app/components/Navbar.js');
+  assert.ok(existsSync(new URL('app/excursoes/page.js',root)));
+  assert.ok(existsSync(new URL('app/contato/page.js',root)));
+  assert.match(navbar, /label: 'Excursões', href: '\/excursoes'/);
+  assert.match(navbar, /href="\/contato"/);
+  assert.match(navbar, /href=\{item.href\}/);
+  assert.match(navbar, /<a key=\{item.href\} href=\{item.href\}/);
+});
+
+test('excursion contact CTA routes to contact with prefilled subject',()=>{
+  const excursions=read('app/excursoes/page.js');
+  const form=read('app/components/ContactForm.js');
+  assert.match(excursions,/href="\/contato\?assunto=excursoes"/);
+  assert.match(form,/params\.get\('assunto'\) === 'excursoes'/);
+});
+
+test('direct navigation works without hydration for public actions',()=>{
+  const navbar=read('app/components/Navbar.js');
+  assert.match(navbar,/<a className="button button-dark nav-cta" href="\/contato">/);
+  assert.match(navbar,/<a href="\/contato" className="button button-yellow">/);
+  assert.match(navbar,/item\.href === '\/excursoes' \? <a/);
+});

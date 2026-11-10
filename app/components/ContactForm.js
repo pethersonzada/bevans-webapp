@@ -32,7 +32,7 @@ export default function ContactForm() {
       <p>Prepare uma mensagem para conversar com a equipe BeVans.</p>
       {!commercialEmail && (
         <div role="status" className="contact-warning">
-          O canal comercial ainda não foi configurado. O formulário estará disponível após a publicação de um endereço de atendimento.
+          O contato por e-mail ainda não foi habilitado. A equipe precisa configurar um endereço comercial para ativar este formulário. Nenhuma mensagem será enviada enquanto isso.
         </div>
       )}
       <form className="contact-form" onSubmit={handleSubmit} noValidate={false}>

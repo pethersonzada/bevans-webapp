@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 const plans=[
  {tag:'ESSENCIAL',name:'Autônomo',price:'79',detail:'1 veículo',lead:'Para quem cuida da própria rota.',features:['Organização das rotas','Lista de embarque digital','Informações de trajeto','Suporte por e-mail'],code:'AUTÔNOMO'},
  {tag:'PARA EQUIPES',name:'Frota',price:'249',detail:'Até 8 veículos',lead:'Mais visibilidade para diferentes veículos.',features:['Recursos do plano Autônomo','Visão de múltiplas rotas','Indicadores operacionais','Suporte prioritário'],code:'FROTA',highlight:true},
