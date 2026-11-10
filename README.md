@@ -41,4 +41,10 @@ As telas de rota e os números apresentados são **ilustrativos**. A landing pag
 
 ## Identidade visual
 
-A identidade foi alinhada ao app mobile `pethersonzada/bevans-frontend`: azul primário `#007BFF`, azul escuro `#0056b3`, superfícies brancas e fundo `#F8F9FA`. A logo exibida no site usa a imagem oficial `assets/images/logo-app-sem-fundo-sem-titulo.png` do repositório mobile, referenciada por sua URL pública no GitHub. Essa referência exige disponibilidade de rede e do arquivo remoto; uma futura migração para asset local é recomendada.
+A identidade foi alinhada ao app mobile `pethersonzada/bevans-frontend`: azul primário `#007BFF`, azul escuro `#0056b3`, superfícies brancas e fundo `#F8F9FA`. A logo exibida no site usa a imagem oficial `assets/images/logo-app-sem-fundo-sem-titulo.png` do repositório mobile, referenciada por sua URL pública no GitHub. O componente `next/image` otimiza e armazena em cache a imagem via Next.js, mas a origem ainda depende de um arquivo remoto. Para remover essa dependência, é necessário importar o binário oficial do aplicativo em `public/images`.
+
+## Qualidade e segurança
+
+O pipeline `.github/workflows/quality.yml` executa testes de contato (`node --test`), lint e build em cada push e pull request. Cabeçalhos HTTP básicos são configurados em `next.config.mjs`. O formulário comercial continua sendo um fluxo `mailto:`, sem armazenamento nem envio de dados por API.
+
+A política de privacidade do site (`/privacidade`) é separada dos termos (`/termos`) e não deve ser confundida com a documentação de privacidade do aplicativo React Native.

@@ -2,6 +2,15 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+        pathname: '/pethersonzada/bevans-frontend/**',
+      },
+    ],
+  },
   async headers() {
     return [
       {

@@ -11,7 +11,7 @@ function DashboardPreview() {
       <div className="dashboard-caption"><span className="pulse-dot" /> VISUALIZAÇÃO ILUSTRATIVA DA PLATAFORMA <span className="caption-line" /></div>
       <div className="dashboard-window">
         <div className="dashboard-sidebar">
-          <div className="sidebar-brand"><Image src="https://raw.githubusercontent.com/pethersonzada/bevans-frontend/main/assets/images/logo-app-sem-fundo-sem-titulo.png" alt="" className="sidebar-brand-logo" width="35" height="35" unoptimized /> BeVans</div>
+          <div className="sidebar-brand"><Image src="https://raw.githubusercontent.com/pethersonzada/bevans-frontend/main/assets/images/logo-app-sem-fundo-sem-titulo.png" alt="" className="sidebar-brand-logo" width="35" height="35" /> BeVans</div>
           <div className="sidebar-label">MENU PRINCIPAL</div>
           <div className="sidebar-link selected"><span>▦</span> Visão geral</div>
           <div className="sidebar-link"><span>⌁</span> Minhas rotas</div>
