@@ -18,7 +18,7 @@ export default function Hero() {
           <div className="bev-hero-trust"><span className="bev-small-line"/><span>ROTAS MAIS CLARAS</span><span>·</span><span>MENOS IMPROVISO</span><span>·</span><span>MAIS CONEXÃO</span></div>
         </div>
         <div id="experiencia" className="bev-experience-anchor">
-          <div className="bev-demo-heading"><span>01 — UMA NOVA VISÃO DO CAMINHO</span><span>INSPIRADO NO APP MOBILE</span></div>
+          <div className="bev-demo-heading"><span>01 — A ROTA NA PRÁTICA</span><span>INSPIRADO NO APP MOBILE</span></div>
           <RouteDemo/>
         </div>
       </div>
