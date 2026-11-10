@@ -17,8 +17,8 @@ export default function Pricing(){
     <Link href={'/contato?plano='+encodeURIComponent(plan.name)} className={'new-price-action '+(plan.highlight?'is-highlighted':'')}>{plan.price?'Conversar sobre o plano':'Solicitar proposta'} <span aria-hidden="true">↗</span></Link>
     <div className="new-price-divider"/><span className="new-price-includes">O QUE ESTÁ PREVISTO</span><ul>{plan.features.map(f=><li key={f}><span aria-hidden="true">✓</span>{f}</li>)}</ul>
    </article>)}</div>
-   <div className="new-pricing-note"><span aria-hidden="true">ⓘ</span><p><strong>Painel do gestor e excursões são módulos do produto, não planos independentes.</strong> A disponibilidade desses recursos será definida conforme a evolução do frontend e backend. Preços e condições acima são apenas referências a confirmar.</p></div>
-   <div className="new-pricing-links"><Link href="/gestor">Explorar o futuro painel do gestor <span aria-hidden="true">↗</span></Link><Link href="/excursoes">Conhecer o módulo de excursões <span aria-hidden="true">↗</span></Link></div>
+   <div className="new-pricing-note"><span aria-hidden="true">ⓘ</span><p><strong>Excursões é uma modalidade futura do produto, não um plano independente.</strong> A disponibilidade desses recursos será definida conforme a evolução do frontend e backend. Preços e condições acima são apenas referências a confirmar.</p></div>
+   <div className="new-pricing-links"><Link href="/excursoes">Conhecer o módulo de excursões <span aria-hidden="true">↗</span></Link></div>
   </div>
  </section>;
 }

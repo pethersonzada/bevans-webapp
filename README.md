@@ -30,7 +30,6 @@ A URL canônica usada no sitemap só é criada quando `NEXT_PUBLIC_SITE_URL` est
 
 - `/`: apresentação, funcionalidades, públicos, planos e FAQ.
 - `/contato`: mensagem comercial via aplicativo de e-mail.
-- `/gestor`: aviso transparente de que a autenticação ainda está em desenvolvimento.
 - `/termos`: informações institucionais e termos preliminares. Antes de operar com dados reais, é necessária revisão jurídica e política de privacidade completa.
 
 ## Importante
@@ -49,9 +48,8 @@ O pipeline `.github/workflows/quality.yml` executa testes de contato (`node --te
 
 A política de privacidade do site (`/privacidade`) é separada dos termos (`/termos`) e não deve ser confundida com a documentação de privacidade do aplicativo React Native.
 
-## Design de modalidades e painel (prévia)
+## Design de modalidades (prévia)
 
-- `/gestor`: workspace visual demonstrativo dos módulos de rotas, excursões, turmas e embarques. **Não é um painel autenticado**, não consulta nem altera dados reais e não faz parte da grade de preços.
 - `/excursoes`: apresentação do fluxo planejado pelo MVP (backend #28-32 e frontend mobile #16); sem convites, inscrições ou reserva de vaga ativos.
 - `/login` e `/cadastro`: telas de prévia de interface, sem campos interativos, coleta de senhas, integrações com Firebase ou chamadas de API.
 - `/#precos`: planos comerciais de referência; não pressupõem que os módulos futuros estejam disponíveis.
@@ -60,4 +58,7 @@ Nenhuma variável de ambiente, token ou segredo de Firebase/Mapbox foi adicionad
 
 ## Coerência entre produtos
 
-O site apresenta os recursos presentes no app mobile (motorista: turmas, presença, mapas e navegação; passageiro: turmas, presença e endereços) separadamente das funções ainda planejadas (excursões, inscrições por link, catálogo público de turmas e autenticação web). O painel em `/gestor` permite alternar conceitos de motorista, passageiro e excursões, sem acesso ao backend. O formulário de `/contato?assunto=excursoes` abre a mensagem pré-preenchida, quando um e-mail de contato está configurado.
+
+## Administração
+
+A antiga rota `/gestor` e o componente `ManagerPreview` foram removidos. Não há papel ADMINISTRADOR implementado no aplicativo/backend nem escopo formal de administração da plataforma. Uma futura interface administrativa exige definição de permissões no backend; não deve ser confundida com a gestão de turmas pelo motorista.

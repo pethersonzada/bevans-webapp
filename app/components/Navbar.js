@@ -46,7 +46,6 @@ export default function Navbar() {
         </div>
 
         <div className="nav-actions">
-          <Link className="nav-login" href="/gestor">Explorar plataforma</Link>
           <Link className="button button-dark nav-cta" href="/contato">Agendar uma conversa <span aria-hidden="true">↗</span></Link>
           <button type="button" className="menu-toggle" onClick={() => setOpen(!open)}
             aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? 'Fechar menu' : 'Abrir menu'}>
@@ -57,7 +56,6 @@ export default function Navbar() {
 
       <div className="mobile-nav" id="mobile-navigation" hidden={!open}>
         {navigation.map((item) => <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>{item.label}</Link>)}
-        <Link href="/gestor" onClick={() => setOpen(false)}>Explorar plataforma</Link>
         <Link href="/contato" onClick={() => setOpen(false)} className="button button-yellow">Agendar uma conversa ↗</Link>
       </div>
     </header>

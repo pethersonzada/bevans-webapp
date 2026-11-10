@@ -2,7 +2,7 @@ const faqs=[
  {q:'O que já existe no app BeVans?',a:'O aplicativo mobile possui fluxos de motorista e passageiro, turmas, confirmação de presença, endereços, mapas e navegação. Disponibilidade e estabilidade de cada recurso dependem do ambiente e da integração com o backend.'},
  {q:'Como funcionam as rotas de ida e volta?',a:'O motorista organiza suas turmas e a viagem. O passageiro pode registrar presença para ida e volta, com endereços específicos. O percurso é exibido no mapa do app mobile.'},
  {q:'Já posso criar uma excursão pelo site?',a:'Ainda não. Excursões está em desenvolvimento. O objetivo é permitir criação pelo organizador e inscrição por convite no navegador, com vagas controladas pelo servidor.'},
- {q:'O painel do gestor está conectado?',a:'O painel web é demonstrativo. A operação de motorista e passageiro está concentrada no aplicativo mobile. A autenticação web e as permissões serão integradas em etapa posterior.'},
+ {q:'Existe um painel administrativo no site?',a:'Não há painel administrativo web. A operação de motorista e passageiro está concentrada no aplicativo mobile. O site apresenta o produto e a modalidade futura de excursões.'},
  {q:'Os planos já podem ser contratados?',a:'Os valores exibidos são referências comerciais, não uma contratação automática. Consulte a equipe para confirmar recursos, condições e disponibilidade.'},
  {q:'O site recebe minhas credenciais?',a:'Não. As páginas de login e cadastro são apenas prévias e não solicitam senhas. O formulário de contato, quando habilitado, prepara uma mensagem no aplicativo de e-mail do visitante.'},
 ];

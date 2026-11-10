@@ -1,13 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
-const css = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8');
-const hero = readFileSync(new URL('../app/components/Hero.js', import.meta.url), 'utf8');
-const pricing = readFileSync(new URL('../app/components/Pricing.js', import.meta.url), 'utf8');
-const manager = readFileSync(new URL('../app/components/ManagerPreview.js', import.meta.url), 'utf8');
+const read = (path) => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+const css = read('app/globals.css');
 
 test('hero and interactive route have their layout styles', () => {
+  const hero = read('app/components/Hero.js');
   for (const selector of ['.bev-hero{', '.bev-hero-inner{', '.bev-hero-actions{', '.route-demo{', '.route-demo-layout{', '.route-map-canvas{', '.route-control-panel{']) {
     assert.ok(css.includes(selector), `Missing stylesheet rule: ${selector}`);
   }
@@ -15,24 +14,24 @@ test('hero and interactive route have their layout styles', () => {
   assert.match(hero, /<RouteDemo\s*\/>/);
 });
 
-test('main marketing and manager sections have defined styles', () => {
-  assert.match(pricing, /new-pricing-section/);
-  assert.match(manager, /ops-shell/);
-  for (const selector of ['.new-pricing-section{', '.new-price-card{', '.ops-page{', '.ops-shell{', '.auth-page{', '.excursions-page{']) {
+test('marketing and public pages retain their styles', () => {
+  const pricing = read('app/components/Pricing.js');
+  const excursions = read('app/excursoes/page.js');
+  const access = read('app/components/AuthShell.js');
+  const contact = read('app/contato/page.js');
+  for (const selector of ['.new-pricing-section{', '.new-price-card{', '.access-page{', '.exp-grid{', '.exp-step-grid{', '.reach-layout{', '.reach-form{']) {
     assert.ok(css.includes(selector), `Missing stylesheet rule: ${selector}`);
   }
-});
-
-test('product-aligned pages include their stylesheet rules', () => {
-  const manager = readFileSync(new URL('../app/components/ManagerPreview.js', import.meta.url), 'utf8');
-  const excursions = readFileSync(new URL('../app/excursoes/page.js', import.meta.url), 'utf8');
-  const access = readFileSync(new URL('../app/components/AuthShell.js', import.meta.url), 'utf8');
-  const contact = readFileSync(new URL('../app/contato/page.js', import.meta.url), 'utf8');
-  for (const selector of ['.ops-shell{', '.ops-layout{', '.access-page{', '.exp-grid{', '.exp-step-grid{', '.reach-layout{', '.reach-form{']) {
-    assert.ok(css.includes(selector), `Missing product stylesheet rule: ${selector}`);
-  }
-  assert.match(manager, /ops-shell/);
+  assert.match(pricing, /new-pricing-section/);
   assert.match(excursions, /exp-grid/);
   assert.match(access, /access-page/);
   assert.match(contact, /reach-layout/);
+});
+
+test('removed administrator preview has no live references', () => {
+  assert.equal(existsSync(new URL('../app/gestor/page.js', import.meta.url)), false);
+  assert.equal(existsSync(new URL('../app/components/ManagerPreview.js', import.meta.url)), false);
+  for (const path of ['app/components/Navbar.js', 'app/components/Footer.js', 'app/components/Pricing.js', 'app/components/AuthShell.js', 'app/contato/page.js', 'app/components/Faq.js']) {
+    assert.doesNotMatch(read(path), /\/gestor(?:["'?/]|$)/);
+  }
 });
