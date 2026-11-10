@@ -12,7 +12,7 @@ export default function ContactForm() {
   const [plan, setPlan] = useState(() => normalizePlan(params.get('plano')));
   const [name, setName] = useState('');
   const [sender, setSender] = useState('');
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(() => params.get('assunto') === 'excursoes' ? 'Quero saber mais sobre o módulo de excursões do BeVans.' : '');
   const [error, setError] = useState('');
 
   function handleSubmit(event) {

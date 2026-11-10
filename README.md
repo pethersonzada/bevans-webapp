@@ -57,3 +57,7 @@ A política de privacidade do site (`/privacidade`) é separada dos termos (`/te
 - `/#precos`: planos comerciais de referência; não pressupõem que os módulos futuros estejam disponíveis.
 
 Nenhuma variável de ambiente, token ou segredo de Firebase/Mapbox foi adicionada com esta entrega. A integração será feita separadamente quando os contratos e regras de autorização estiverem definidos.
+
+## Coerência entre produtos
+
+O site apresenta os recursos presentes no app mobile (motorista: turmas, presença, mapas e navegação; passageiro: turmas, presença e endereços) separadamente das funções ainda planejadas (excursões, inscrições por link, catálogo público de turmas e autenticação web). O painel em `/gestor` permite alternar conceitos de motorista, passageiro e excursões, sem acesso ao backend. O formulário de `/contato?assunto=excursoes` abre a mensagem pré-preenchida, quando um e-mail de contato está configurado.
