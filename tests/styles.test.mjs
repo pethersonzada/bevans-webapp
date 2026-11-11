@@ -45,15 +45,15 @@ test('removed administrator preview has no live references', () => {
 });
 
 test('original blue palette is retained with petroleum brand surfaces', () => {
-  assert.match(css, /--brand-petrol:#143B49/);
-  assert.match(css, /\.site-footer,\.button-dark,\.nav-cta,\.experience-card-driver,\.exp-hero,\.exp-ending\{background-color:#143B49\}/);
+  assert.match(css, /--brand-petrol:#14253A/);
+  assert.match(css, /\.site-footer,\.button-dark,\.nav-cta,\.experience-card-driver,\.exp-hero,\.exp-ending\{background-color:#14253A\}/);
   assert.match(css, /#007[Bb][Ff][Ff]/);
   assert.match(css, /#00[Dd]2[Ff][Ff]/);
   assert.doesNotMatch(css,/official BeVans visual identity: Oceano/);
 });
 
 test('blue accents replace mint while petroleum remains the base', () => {
-  assert.match(css, /--identity-petroleum:#143B49/);
+  assert.match(css, /--identity-petroleum:#14253A/);
   assert.match(css, /--identity-blue:#73B9FF/);
   assert.match(css, /--identity-blue-strong:#007BFF/);
   assert.match(css, /\.button-yellow,\.bev-button-primary,\.new-price-action\.is-highlighted[^\n]*\{background:#007BFF;color:#fff/);
