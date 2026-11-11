@@ -52,12 +52,10 @@ test('original blue palette is retained with petroleum brand surfaces', () => {
   assert.doesNotMatch(css,/official BeVans visual identity: Oceano/);
 });
 
-test('design trial uses the official logo palette for primary surfaces and accents', () => {
-  for (const token of ['--identity-ocean:#0B2530','--identity-petroleum:#143B49','--identity-mint:#6FD6BD','--identity-ice:#F6F7F5']) {
-    assert.ok(css.includes(token), 'Missing identity token: ' + token);
-  }
-  assert.match(css, /\.bev-hero \{background:linear-gradient/);
-  assert.match(css, /\.bev-button-primary \{background:var\(--identity-mint\)/);
-  assert.match(css, /\.feature-icon \{background:#e5f5ee/);
-  assert.match(css, /\.experience-card-driver \{background:var\(--identity-petroleum\)/);
+test('blue accents replace mint while petroleum remains the base', () => {
+  assert.match(css, /--identity-petroleum:#143B49/);
+  assert.match(css, /--identity-blue:#73B9FF/);
+  assert.match(css, /--identity-blue-strong:#007BFF/);
+  assert.match(css, /\.bev-button-primary\{background:#007BFF;color:#fff/);
+  assert.doesNotMatch(css, /#6FD6BD|#6fd6bd/i);
 });
