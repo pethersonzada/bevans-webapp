@@ -56,6 +56,6 @@ test('blue accents replace mint while petroleum remains the base', () => {
   assert.match(css, /--identity-petroleum:#143B49/);
   assert.match(css, /--identity-blue:#73B9FF/);
   assert.match(css, /--identity-blue-strong:#007BFF/);
-  assert.match(css, /\.bev-button-primary\{background:#007BFF;color:#fff/);
+  assert.match(css, /\.button-yellow,\.bev-button-primary,\.new-price-action\.is-highlighted[^\n]*\{background:#007BFF;color:#fff/);
   assert.doesNotMatch(css, /#6FD6BD|#6fd6bd/i);
 });
