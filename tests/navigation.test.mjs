@@ -63,7 +63,7 @@ test('all branded surfaces use the original uploaded logo, not recreated SVG', (
   const css=read('app/globals.css');
   assert.ok(existsSync(new URL('public/images/bevans-original-source.png',root)));
   for (const source of [navbar,footer,auth,layout]) {
-    assert.match(source,/\/images\/bevans-original\.png/);
+    assert.match(source,/\/images\/bevans-original-source\.png/);
     assert.doesNotMatch(source,/\/images\/bevans-symbol(?:-footer)?\.svg/);
   }
   assert.match(navbar,/className="brand-name">BeVans<\/span>/);
