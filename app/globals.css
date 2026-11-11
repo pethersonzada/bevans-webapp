@@ -554,3 +554,8 @@ button { cursor:pointer; }
 .experience-outro a{display:inline-flex;gap:15px;align-items:center;color:#0056b3;font-size:13px;font-weight:850;white-space:nowrap}
 @media(max-width:750px){.experience-section{padding:74px 0}.experience-grid{grid-template-columns:1fr;gap:14px}.experience-card h3{margin-top:28px}.experience-outro{display:block}.experience-outro a{margin-top:18px}.bev-hero-bottom{margin-top:68px}}
 @media(max-width:480px){.experience-card{padding:26px 23px}.experience-intro h2{font-size:39px}.experience-steps{margin:25px 0}.experience-intro>p{font-size:14px}}
+
+/* Local BeVans symbol provided by the project. Keep visible brand wordmark. */
+.brand-icon{width:43px;height:43px;background:transparent;border-radius:0;overflow:visible;flex:none}
+.brand-icon img{height:43px;width:43px;object-fit:contain;border-radius:10px}
+.footer-logo-image{border-radius:11px}

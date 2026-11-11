@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-const logo='https://raw.githubusercontent.com/pethersonzada/bevans-frontend/main/assets/images/logo-app-sem-fundo-sem-titulo.png';
+const logo='/images/bevans-symbol.png';
 
 const phases=[
  ['Identidade','Autenticação e recuperação de acesso'],

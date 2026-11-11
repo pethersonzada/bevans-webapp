@@ -37,7 +37,7 @@ export default function Navbar() {
     <header className={'site-header ' + (scrolled || open ? 'site-header--scrolled' : '')}>
       <nav className="site-nav container" aria-label="Navegação principal">
         <Link href="/" className="brand" aria-label="BeVans, ir para o início" onClick={() => setOpen(false)}>
-          <span className="brand-icon"><Image src="https://raw.githubusercontent.com/pethersonzada/bevans-frontend/main/assets/images/logo-app-sem-fundo-sem-titulo.png" alt="" width="48" height="48" priority /></span>
+          <span className="brand-icon"><Image src="/images/bevans-symbol.png" alt="" width="43" height="43" priority /></span>
           <span className="brand-name">BeVans<span className="brand-dot">.</span></span>
         </Link>
 
