@@ -559,3 +559,8 @@ button { cursor:pointer; }
 .brand-icon{width:43px;height:43px;background:transparent;border-radius:0;overflow:visible;flex:none}
 .brand-icon img{height:43px;width:43px;object-fit:contain;border-radius:10px}
 .footer-logo-image{border-radius:11px}
+
+/* Crisp local vector logos. Footer mark uses white on navy with no dark bitmap border. */
+.brand-icon{background:transparent;border:0;box-shadow:none;overflow:visible}
+.brand-icon img{border:0;box-shadow:none;border-radius:0;display:block}
+.footer-logo-image{border:0;box-shadow:none;border-radius:0;display:block}

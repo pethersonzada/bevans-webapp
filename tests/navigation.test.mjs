@@ -55,16 +55,20 @@ test('sitemap and robots always list the public routes', () => {
 });
 
 
-test('header and footer use the provided local symbol alongside the BeVans wordmark', () => {
+test('brand wordmark has no trailing colored dot and logos suit each background', () => {
   const navbar=read('app/components/Navbar.js');
   const footer=read('app/components/Footer.js');
   const auth=read('app/components/AuthShell.js');
   const layout=read('app/layout.js');
-  assert.ok(existsSync(new URL('public/images/bevans-symbol.png',root)));
-  for (const source of [navbar, footer, auth, layout]) {
-    assert.match(source,/\/images\/bevans-symbol\.png/);
-    assert.doesNotMatch(source,/logo-app-sem-fundo-sem-titulo\.png/);
-  }
-  assert.match(navbar, /className="brand-name">BeVans/);
-  assert.match(footer, /BeVans<b>/);
+  assert.ok(existsSync(new URL('public/images/bevans-symbol.svg',root)));
+  assert.ok(existsSync(new URL('public/images/bevans-symbol-footer.svg',root)));
+  assert.match(navbar, /\/images\/bevans-symbol\.svg/);
+  assert.match(footer, /\/images\/bevans-symbol-footer\.svg/);
+  assert.match(auth, /\/images\/bevans-symbol\.svg/);
+  assert.match(layout, /\/images\/bevans-symbol\.svg/);
+  assert.match(navbar, /className="brand-name">BeVans<\/span>/);
+  assert.match(footer, /<span>BeVans<\/span>/);
+  assert.doesNotMatch(navbar, /brand-dot/);
+  assert.doesNotMatch(footer, /BeVans<b>/);
+  assert.doesNotMatch(auth, /BeVans<span>\.<\/span>/);
 });
