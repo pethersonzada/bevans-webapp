@@ -10,7 +10,7 @@ export const metadata = {
   description: 'Conheça o BeVans: aplicativo para motoristas e passageiros com turmas, presença, mapas e navegação. Veja também as próximas modalidades de excursões e gestão de frotas.',
   applicationName: 'BeVans',
   alternates: { canonical: '/' },
-  icons: { icon: '/images/bevans-original.png', apple: '/images/bevans-original.png' },
+  icons: { icon: '/images/bevans-logo-clean.png', apple: '/images/bevans-logo-clean.png' },
   robots: { index: true, follow: true },
   openGraph: { title: 'BeVans | Rotas e transporte mais organizados', description: 'Turmas, confirmação de presença e navegação no app. Conheça o projeto BeVans.', siteName: 'BeVans', locale: 'pt_BR', type: 'website', url: '/' },
   twitter: { card: 'summary', title: 'BeVans | Rotas e transporte mais organizados', description: 'Conheça as funcionalidades atuais e futuras do BeVans.' },
