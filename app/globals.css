@@ -564,3 +564,7 @@ button { cursor:pointer; }
 .brand-icon{background:transparent;border:0;box-shadow:none;overflow:visible}
 .brand-icon img{border:0;box-shadow:none;border-radius:0;display:block}
 .footer-logo-image{border:0;box-shadow:none;border-radius:0;display:block}
+
+/* Original uploaded BeVans artwork, consistent against the footer. */
+.site-footer{background:#0e3442}
+.brand-icon,.brand-icon img,.footer-logo-image{background:transparent;box-shadow:none;border:0}

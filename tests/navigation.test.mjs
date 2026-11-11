@@ -55,20 +55,18 @@ test('sitemap and robots always list the public routes', () => {
 });
 
 
-test('brand wordmark has no trailing colored dot and logos suit each background', () => {
+test('all branded surfaces use the original uploaded logo, not recreated SVG', () => {
   const navbar=read('app/components/Navbar.js');
   const footer=read('app/components/Footer.js');
   const auth=read('app/components/AuthShell.js');
   const layout=read('app/layout.js');
-  assert.ok(existsSync(new URL('public/images/bevans-symbol.svg',root)));
-  assert.ok(existsSync(new URL('public/images/bevans-symbol-footer.svg',root)));
-  assert.match(navbar, /\/images\/bevans-symbol\.svg/);
-  assert.match(footer, /\/images\/bevans-symbol-footer\.svg/);
-  assert.match(auth, /\/images\/bevans-symbol\.svg/);
-  assert.match(layout, /\/images\/bevans-symbol\.svg/);
-  assert.match(navbar, /className="brand-name">BeVans<\/span>/);
-  assert.match(footer, /<span>BeVans<\/span>/);
-  assert.doesNotMatch(navbar, /brand-dot/);
-  assert.doesNotMatch(footer, /BeVans<b>/);
-  assert.doesNotMatch(auth, /BeVans<span>\.<\/span>/);
+  const css=read('app/globals.css');
+  assert.ok(existsSync(new URL('public/images/bevans-original.png',root)));
+  for (const source of [navbar,footer,auth,layout]) {
+    assert.match(source,/\/images\/bevans-original\.png/);
+    assert.doesNotMatch(source,/\/images\/bevans-symbol(?:-footer)?\.svg/);
+  }
+  assert.match(navbar,/className="brand-name">BeVans<\/span>/);
+  assert.match(footer,/<span>BeVans<\/span>/);
+  assert.match(css,/\.site-footer\{background:#0e3442\}/);
 });
