@@ -55,18 +55,20 @@ test('sitemap and robots always list the public routes', () => {
 });
 
 
-test('all branded surfaces use the original uploaded logo, not recreated SVG', () => {
+test('new official theme assets are used without redrawing', () => {
   const navbar=read('app/components/Navbar.js');
   const footer=read('app/components/Footer.js');
   const auth=read('app/components/AuthShell.js');
   const layout=read('app/layout.js');
-  const css=read('app/globals.css');
-  assert.ok(existsSync(new URL('public/images/bevans-original-source.png',root)));
+  assert.ok(existsSync(new URL('public/images/vetor-tema-claro.png',root)));
+  assert.ok(existsSync(new URL('public/images/vetor-tema-escuro.png',root)));
+  assert.match(navbar,/\/images\/vetor-tema-claro\.png/);
+  assert.match(auth,/\/images\/vetor-tema-claro\.png/);
+  assert.match(layout,/\/images\/vetor-tema-claro\.png/);
+  assert.match(footer,/\/images\/vetor-tema-escuro\.png/);
   for (const source of [navbar,footer,auth,layout]) {
-    assert.match(source,/\/images\/bevans-original-source\.png/);
-    assert.doesNotMatch(source,/\/images\/bevans-symbol(?:-footer)?\.svg/);
+    assert.doesNotMatch(source,/bevans-original-source\.png|bevans-symbol(?:-footer)?\.svg/);
   }
   assert.match(navbar,/className="brand-name">BeVans<\/span>/);
   assert.match(footer,/<span>BeVans<\/span>/);
-  assert.match(css,/\.site-footer\{background:#0e3442\}/);
 });
