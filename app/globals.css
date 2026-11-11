@@ -579,3 +579,110 @@ button { cursor:pointer; }
 :root{--brand-petrol:#143B49;--ink:#143B49}
 .site-footer,.button-dark,.nav-cta,.experience-card-driver,.exp-hero,.exp-ending{background-color:#143B49}
 .brand,.footer-logo{color:inherit}
+
+
+/* Visual study: BeVans / petroleum + mint + ice.
+   Contrast and surface hierarchy first; brand assets remain untouched. */
+:root {
+  --identity-ocean:#0B2530;
+  --identity-petroleum:#143B49;
+  --identity-mint:#6FD6BD;
+  --identity-ice:#F6F7F5;
+  --identity-border:#DAE6E2;
+}
+body {background:var(--identity-ice);color:var(--identity-ocean)}
+:focus-visible {outline-color:var(--identity-petroleum)}
+::selection {background:var(--identity-mint);color:var(--identity-ocean)}
+.site-header {background:#F6F7F5f2;border-bottom-color:#dbe6e2}
+.brand,.brand-name {color:var(--identity-petroleum)}
+.nav-links a:hover,.mobile-nav a:not(.button):hover {color:var(--identity-petroleum)}
+.nav-cta,.button-dark {background:var(--identity-petroleum);color:#fff}
+.nav-cta:hover,.button-dark:hover {background:var(--identity-ocean)}
+.button-yellow {background:var(--identity-mint);color:var(--identity-ocean)}
+.button-yellow:hover {background:#93E4D1;color:var(--identity-ocean)}
+
+/* Hero: quiet petroleum base, no electric-blue spotlights. */
+.bev-hero {background:linear-gradient(145deg,var(--identity-ocean) 0%,var(--identity-petroleum) 100%);color:#fff}
+.bev-hero:before {opacity:.13;background-image:linear-gradient(#96c9ba30 1px,transparent 1px),linear-gradient(90deg,#96c9ba30 1px,transparent 1px)}
+.bev-hero-orbit-a {background:#6fd6bd1f}
+.bev-hero-orbit-b {background:#6fd6bd13}
+.bev-eyebrow {color:var(--identity-mint);border-color:#6fd6bd48;background:#6fd6bd12}
+.bev-eyebrow i {background:var(--identity-mint);box-shadow:0 0 0 5px #6fd6bd21}
+.bev-hero h1 span {color:var(--identity-mint)}
+.bev-hero-copy>p {color:#c6d9d2}
+.bev-button-primary {background:var(--identity-mint);color:var(--identity-ocean);border:1px solid var(--identity-mint)}
+.bev-button-primary:hover {background:#93E4D1;border-color:#93E4D1}
+.bev-button-ghost {background:transparent;border-color:#91b4ad;color:#f6f7f5}
+.bev-button-ghost:hover {border-color:var(--identity-mint);background:#6fd6bd18}
+.bev-small-line {background:var(--identity-mint)}
+.bev-hero-trust {color:#b2cdc2}
+.bev-hero-bottom {background:var(--identity-ocean);border-top-color:#527169}
+.bev-hero-bottom .container>span,.bev-hero-bottom .container>div {color:#c9dad4}
+
+/* Experience: warm ice canvas with grounded petroleum driver card. */
+.experience-section {background:var(--identity-ice);color:var(--identity-ocean)}
+.experience-kicker,.experience-intro h2 em {color:var(--identity-petroleum)}
+.experience-intro>p {color:#516965}
+.experience-card {border-color:var(--identity-border);box-shadow:0 18px 42px #143b490d}
+.experience-card-driver {background:var(--identity-petroleum);border-color:#426c65;color:#fff;box-shadow:0 20px 45px #0b25301c}
+.experience-card:not(.experience-card-driver) {background:#fff}
+.experience-role {background:#e5f5ee;color:var(--identity-petroleum)}
+.experience-card-driver .experience-role {background:#6fd6bd24;color:var(--identity-mint)}
+.experience-card-driver .experience-card-description {color:#c5dcd3}
+.experience-card-driver .experience-step {border-color:#52766b}
+.experience-card-driver .experience-step-num {color:var(--identity-mint)}
+.experience-step {border-color:var(--identity-border)}
+.experience-step-num {color:var(--identity-petroleum)}
+.experience-dot {background:var(--identity-petroleum)}
+.experience-card-driver .experience-dot {background:var(--identity-mint)}
+.experience-outro a {color:var(--identity-petroleum)}
+
+/* Feature tiles: restrained icons and subtle green-tinted hover state. */
+.features-section {background:#fff}
+.section-label {color:var(--identity-petroleum)}
+.section-label span {background:var(--identity-mint)}
+.section-intro h2 span,.audience-intro h2 span,.faq-layout h2 span {color:var(--identity-petroleum)}
+.feature-card {background:#fff;border-color:var(--identity-border);box-shadow:0 5px 22px #143b4908}
+.feature-card:hover {border-color:#8dbfb0;box-shadow:0 18px 35px #143b4914}
+.feature-icon {background:#e5f5ee;color:var(--identity-petroleum)}
+.feature-arrow {color:#6aa996}
+.journey-section {background:var(--identity-ocean);color:#fff}
+.journey-copy h2 em {color:var(--identity-mint)}
+.journey-link {color:var(--identity-mint)}
+.audience-section {background:var(--identity-ice)}
+.audience-driver,.audience-parent {background:#e4f1eb;color:var(--identity-ocean)}
+.audience-manager {background:var(--identity-petroleum);color:#fff}
+
+/* Product modes: dark feature card with a single mint action. */
+.new-pricing-section {background:#eef3f0;color:var(--identity-ocean)}
+.new-pricing-head h2 em {color:var(--identity-petroleum)}
+.new-price-card {border-color:var(--identity-border)}
+.new-price-featured {background:linear-gradient(160deg,var(--identity-petroleum),var(--identity-ocean));border-color:#577f73;box-shadow:0 19px 48px #0b253021}
+.new-price-featured .new-price-top,.new-price-featured .new-price-availability {color:var(--identity-mint)}
+.new-price-featured li>span,.new-price-featured .new-price-availability>span {background:#6fd6bd20;color:var(--identity-mint)}
+.new-price-action.is-highlighted {background:var(--identity-mint);color:var(--identity-ocean);border-color:var(--identity-mint)}
+.new-price-action.is-highlighted:hover {background:#93E4D1}
+.new-price-action:not(.is-highlighted) {background:#e5f5ee;color:var(--identity-petroleum);border-color:#c9e5d8}
+.new-price-action:not(.is-highlighted):hover {background:#d5efe2}
+.new-price-availability:not(.new-price-featured .new-price-availability) {color:var(--identity-petroleum)}
+.new-price-availability>span {background:#e5f5ee;color:var(--identity-petroleum)}
+.new-pricing-note {border-color:var(--identity-border)}
+.new-pricing-note>span {color:var(--identity-petroleum)}
+
+/* Supporting pages keep the same visual language. */
+.faq-section,.reach-page,.exp-page {background:var(--identity-ice)}
+.exp-hero,.exp-ending,.reach-form-head {background:var(--identity-petroleum)}
+.exp-copy h1 em,.exp-eyebrow,.exp-ending>div>div>span {color:var(--identity-mint)}
+.exp-actions a:first-child,.exp-ending a {background:var(--identity-mint);color:var(--identity-ocean)}
+.exp-section-heading h2 em,.exp-details h2 em,.reach-copy h1 em,.reach-kicker {color:var(--identity-petroleum)}
+.reach-form {border-color:var(--identity-border)}
+.access-story {background:linear-gradient(145deg,var(--identity-ocean),var(--identity-petroleum))}
+.access-story h1 em,.access-story .access-kicker {color:var(--identity-mint)}
+.access-notice {background:#e5f5ee;border-color:#c5e5d7}
+.access-notice strong {color:var(--identity-petroleum)}
+.access-actions a:first-child {background:var(--identity-petroleum)}
+.site-footer {background:var(--identity-petroleum)}
+.footer-cta h2 em,.footer-cta .section-label {color:var(--identity-mint)}
+.art-loop {border-color:var(--identity-mint)}
+.art-dot {background:var(--identity-mint);box-shadow:0 0 0 9px #6fd6bd24}
+.art-arrow {color:var(--identity-mint)}
