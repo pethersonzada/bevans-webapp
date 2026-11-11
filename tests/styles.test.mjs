@@ -43,3 +43,12 @@ test('removed administrator preview has no live references', () => {
     assert.doesNotMatch(read(path), /\/gestor(?:["'?/]|$)/);
   }
 });
+
+test('colors match the official BeVans visual identity', () => {
+  for (const hex of ['#0B2530','#143B49','#6FD6BD','#F6F7F5']) {
+    assert.ok(css.includes(hex), 'Missing official color: ' + hex);
+  }
+  assert.doesNotMatch(css, /#(?:007bff|0056b3|00d2ff)(?![\da-f])/i);
+  const excursions=read('app/excursoes/page.js');
+  assert.doesNotMatch(excursions, /#00D2FF/i);
+});
