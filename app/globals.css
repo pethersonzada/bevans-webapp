@@ -586,7 +586,8 @@ button { cursor:pointer; }
 :root {
   --identity-ocean:#0B2530;
   --identity-petroleum:#143B49;
-  --identity-blue:#73B9FF;--identity-blue-strong:#007BFF
+  --identity-blue:#73B9FF;
+  --identity-blue-strong:#007BFF;
   --identity-ice:#F6F7F5;
   --identity-border:#DCE6F1;
 }
