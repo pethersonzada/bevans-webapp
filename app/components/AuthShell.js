@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-const logo='/images/bevans-logo-clean.png';
+const logo='/images/bevans-original-source.png';
 
 const phases=[
  ['Identidade','Autenticação e recuperação de acesso'],
