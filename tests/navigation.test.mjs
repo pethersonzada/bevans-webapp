@@ -65,6 +65,9 @@ test('new official theme assets are used without redrawing', () => {
   assert.match(navbar,/\/images\/vetor-tema-claro\.png/);
   assert.match(auth,/\/images\/vetor-tema-claro\.png/);
   assert.match(layout,/\/images\/vetor-tema-claro\.png/);
+  assert.match(layout,/\/images\/vetor-tema-escuro\.png/);
+  assert.match(layout,/media: '\(prefers-color-scheme: light\)'/);
+  assert.match(layout,/media: '\(prefers-color-scheme: dark\)'/);
   assert.match(footer,/\/images\/vetor-tema-escuro\.png/);
   for (const source of [navbar,footer,auth,layout]) {
     assert.doesNotMatch(source,/bevans-original-source\.png|bevans-symbol(?:-footer)?\.svg/);
