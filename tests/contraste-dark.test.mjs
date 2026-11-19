@@ -22,7 +22,7 @@ test('novas cores têm contraste WCAG AA com seus fundos',()=>{
   ]) assert.ok(contrast(ink,bg)>=4.5,`${ink} não atende AA sobre ${bg}`);
 });
 test('dark corrige títulos destacados, rótulos, FAQ e modalidades',()=>{
-  for(const selector of ['.new-pricing-head h2 em','.faq-layout h2 span','.audience-intro h2 span','.section-label','.experience-intro h2 em','.new-price-card .new-price-lead','.faq-item p','.new-price-status-dot']) {
+  for(const selector of ['.new-pricing-head h2 em','.faq-layout h2 span','.audience-intro h2 span','.section-label','.experience-intro h2 em','.new-price-card .new-price-lead','.faq-item p','.new-price-card .new-price-action']) {
     assert.ok(css.includes(selector),`Seletor ausente: ${selector}`);
   }
   assert.match(css,/html\[data-theme="dark"\] \.faq-item\[open\]/);
@@ -41,9 +41,12 @@ test('logo oficial com arquivos corretos para claro e escuro',()=>{
   assert.match(css,/html\[data-theme="dark"\] \.be-brand-dark/);
   assert.doesNotMatch(css,/filter:brightness\(0\) invert\(1\)/);
 });
-test('rótulos de modalidade sem ícone decorativo gigante',()=>{
+test('modalidades apresentam o estágio uma única vez, sem faixa decorativa',()=>{
   const pricing=read('app/components/Pricing.js');
-  assert.match(pricing,/new-price-status-dot/);
-  assert.doesNotMatch(pricing,/aria-hidden="true">◎/);
+  assert.match(pricing,/new-price-top/);
+  assert.match(pricing,/DISPONÍVEL NO APP/);
+  assert.match(pricing,/FLUXO OPERACIONAL DISPONÍVEL/);
+  assert.match(pricing,/EVOLUÇÃO FUTURA/);
+  assert.doesNotMatch(pricing,/new-price-status-dot|new-price-availability/);
   assert.match(pricing,/Modalidades do BeVans/);
 });
