@@ -18,7 +18,23 @@ function Panel({title,children}){return <section className="be-card"><h2>{title}
 function useAsync(load, deps=[]){
  const [state,setState]=useState({data:null,error:'',loading:true});
  const [version,setVersion]=useState(0);
- useEffect(()=>{let live=true;const controller=new AbortController();setState(s=>({...s,error:'',loading:true}));Promise.resolve().then(()=>load(controller.signal)).then(data=>{if(live)setState({data,error:'',loading:false});}).catch(e=>{if(live)setState({data:null,error:e.message,loading:false});});return()=>{live=false;controller.abort();};},[...deps,version]);
+ const latestLoad=useRef(load);
+ const dependencyKey=JSON.stringify(deps);
+ useEffect(()=>{latestLoad.current=load;});
+ useEffect(()=>{
+  let live=true;
+  const controller=new AbortController();
+  Promise.resolve().then(()=>{
+   if(!live)return;
+   setState(s=>({...s,error:'',loading:true}));
+   return latestLoad.current(controller.signal);
+  }).then(data=>{
+   if(live)setState({data,error:'',loading:false});
+  }).catch(error=>{
+   if(live)setState({data:null,error:error instanceof Error?error.message:String(error),loading:false});
+  });
+  return()=>{live=false;controller.abort();};
+ },[dependencyKey,version]);
  return {...state,reload:()=>setVersion(v=>v+1)};
 }
 

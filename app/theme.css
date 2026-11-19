@@ -182,3 +182,6 @@ html[data-theme="dark"] :focus-visible{outline-color:#88c6ff}
 @media(max-width:540px){
  :is(.section-intro,.audience-intro,.faq-layout,.new-pricing-head,.experience-intro) h2{font-size:clamp(28px,8vw,36px)}
 }
+
+/* Os estados já aparecem no topo dos cartões. Sem faixas repetidas; espaço uniforme para os links. */
+.new-price-card .new-price-action{margin-top:28px}

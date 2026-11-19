@@ -22,3 +22,11 @@ test('cadastro público não é anunciado no rodapé e FAQ distingue canais',()=
  assert.doesNotMatch(read('app/components/Footer.js'),/href="\/cadastro"/);
  assert.match(read('app/components/Faq.js'),/cadastro público permanece fechado/);
 });
+
+test('modalidades usam rótulos sem faixas de status duplicadas',()=>{
+ const pricing=read('app/components/Pricing.js');
+ assert.match(pricing,/DISPONÍVEL NO APP/);
+ assert.match(pricing,/FLUXO OPERACIONAL DISPONÍVEL/);
+ assert.match(pricing,/EVOLUÇÃO FUTURA/);
+ assert.doesNotMatch(pricing,/new-price-availability|new-price-status-dot/);
+});

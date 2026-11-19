@@ -1,23 +1,33 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useSyncExternalStore} from 'react';
+
+const THEME_EVENT='bevans-theme-change';
+const getTheme=()=>document.documentElement.dataset.theme==='dark'?'dark':'light';
+const getServerTheme=()=> 'light';
+
+function subscribeTheme(notify){
+ const onStorage=e=>{
+  if(e.key!=='bevans-theme')return;
+  const next=e.newValue==='dark'?'dark':'light';
+  document.documentElement.dataset.theme=next;
+  document.documentElement.style.colorScheme=next;
+  notify();
+ };
+ window.addEventListener('storage',onStorage);
+ window.addEventListener(THEME_EVENT,notify);
+ return()=>{window.removeEventListener('storage',onStorage);window.removeEventListener(THEME_EVENT,notify);};
+}
 
 export default function ThemeToggle(){
- const [theme,setTheme]=useState(null);
- useEffect(()=>{
-  const current=document.documentElement.dataset.theme==='dark'?'dark':'light';
-  setTheme(current);
-  const sync=e=>{if(e.key!=='bevans-theme')return;const next=e.newValue==='dark'?'dark':'light';document.documentElement.dataset.theme=next;document.documentElement.style.colorScheme=next;setTheme(next);};
-  window.addEventListener('storage',sync);
-  return()=>window.removeEventListener('storage',sync);
- },[]);
+ const theme=useSyncExternalStore(subscribeTheme,getTheme,getServerTheme);
+ const dark=theme==='dark';
  const change=()=>{
-  const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  const next=dark?'light':'dark';
   document.documentElement.dataset.theme=next;
   document.documentElement.style.colorScheme=next;
   try{localStorage.setItem('bevans-theme',next);}catch{}
-  setTheme(next);
+  window.dispatchEvent(new Event(THEME_EVENT));
  };
- const dark=theme==='dark';
  return <button type="button" className="bev-theme-toggle" onClick={change}
    aria-label={dark?'Ativar modo claro':'Ativar modo escuro'} title={dark?'Modo claro':'Modo escuro'}
    aria-pressed={dark}>

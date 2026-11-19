@@ -20,3 +20,10 @@ test('tema escuro cobre página pública, login e painel',()=>{
  assert.match(css,/html\[data-theme="dark"\] :is\(\.site-header/);
  assert.match(css,/:focus-visible/);
 });
+
+test('tema se sincroniza sem estado React atualizado diretamente no efeito',()=>{
+ const component=read('app/components/ThemeToggle.jsx');
+ assert.match(component,/useSyncExternalStore/);
+ assert.match(component,/bevans-theme-change/);
+ assert.equal(component.includes('setTheme('),false);
+});
