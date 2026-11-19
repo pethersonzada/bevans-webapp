@@ -3,6 +3,7 @@ import './globals.css';
 import './globals-access.css';
 import './theme.css';
 import ThemeToggle from './components/ThemeToggle';
+import WidgetSuporteBeVans from "./components/WidgetSuporteBeVans";
 
 const geist = Geist({ variable: '--font-geist', subsets: ['latin'], display: 'swap' });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bevans-webapp.vercel.app';
@@ -28,6 +29,6 @@ export const metadata = {
 export default function RootLayout({children}) {
   return <html lang="pt-BR" className={geist.variable} suppressHydrationWarning>
     <head><script dangerouslySetInnerHTML={{__html:`try{var t=localStorage.getItem('bevans-theme');if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t}catch(e){document.documentElement.dataset.theme='light'}`}} /></head>
-    <body><a className="skip-link" href="#conteudo">Pular para o conteúdo</a>{children}<ThemeToggle/></body>
+    <body><a className="skip-link" href="#conteudo">Pular para o conteúdo</a>{children} <ThemeToggle/><WidgetSuporteBeVans/></body>
   </html>;
 }
