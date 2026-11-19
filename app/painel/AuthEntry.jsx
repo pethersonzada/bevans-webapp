@@ -41,36 +41,43 @@ export default function AuthEntry(){
  }catch(err){setError(err.message);}finally{setBusy(false);}}
  async function resetPassword(){if(busy)return;setBusy(true);setError('');setNotice('');try{await firebasePasswordReset(email);setNotice('Se este e-mail estiver cadastrado e o serviço permitir, você receberá instruções para redefinir a senha. Confira também a pasta de spam.');}catch(e){setError(e.message);}finally{setBusy(false);}}
  if(!profile||!session)return <main id="conteudo" className="be-auth-screen">
-  <section className="be-auth-story" aria-label="Apresentação BeVans">
-   <div className="be-story-top"><Link href="/" className="be-story-brand"><Image src="/images/bevans-logo-oficial-branco.png" alt="BeVans" width={195} height={82} className="be-official-wordmark" priority /></Link><span className="be-story-label">PLATAFORMA DE TRANSPORTE</span></div>
-   <div className="be-story-main"><span className="be-eyebrow"><span className="be-status-dot"/> ÁREA EXCLUSIVA</span><h1>Seu caminho.<br/><em>Sua operação.</em><br/>Tudo conectado.</h1><p>Turmas, rotas e viagens em um só lugar. Entre para acompanhar sua rotina de transporte com informações oficiais.</p>
-    <div className="be-story-features"><div><span>01</span><strong>Rotas e turmas</strong><small>Organização do seu dia</small></div><div><span>02</span><strong>Solicitações</strong><small>Pedidos em um só lugar</small></div><div><span>03</span><strong>Viagens</strong><small>Acompanhamento operacional</small></div></div>
-   </div><div className="be-story-bottom"><span>BEVANS / CONEXÕES QUE MOVEM</span><span>© {new Date().getFullYear()}</span></div>
+  <section className="be-auth-story" aria-label="BeVans">
+   <Link href="/" className="be-story-brand" aria-label="BeVans, página inicial"><Image src="/images/bevans-logo-oficial-branco.png" alt="BeVans" width={180} height={75} priority className="be-official-wordmark" /></Link>
+   <div className="be-story-main"><p className="be-story-kicker">BEVANS</p><h1>O transporte do dia a dia, em um só lugar.</h1><p>Turmas, rotas e viagens com as informações que você precisa.</p>
+
+   </div>
+   <span className="be-story-bottom">BeVans · Plataforma de transporte</span>
   </section>
-  <section className="be-auth-area"><div className="be-auth-top"><Link href="/" className="be-auth-back">← Voltar ao site</Link><span>Acesso seguro</span></div>
-   <div className="be-auth-content"><div className="be-mobile-wordmark"><Image src="/images/bevans-simbolo-oficial.png" alt="" width={44} height={42}/><span>BeVans</span></div><span className="be-overline">ACESSAR MINHA CONTA</span><h2>Bem-vindo de volta.</h2><p className="be-auth-description">Use o mesmo e-mail e senha do aplicativo BeVans.</p>
+  <section className="be-auth-area">
+   <div className="be-auth-top"><Link href="/" className="be-auth-back">← Voltar para o site</Link></div>
+   <div className="be-auth-content">
+    <div className="be-mobile-wordmark"><Image src="/images/vetor-com-nome-tema-claro.png" alt="BeVans" width={164} height={55} className="be-brand-light"/><Image src="/images/bevans-logo-oficial-branco.png" alt="" width={164} height={55} className="be-brand-dark"/></div>
+    <h2>Acessar minha conta</h2><p className="be-auth-description">Entre com seu e-mail e senha do BeVans.</p>
     <Alert error={error}/>{notice&&<p role="status" aria-live="polite" className="be-auth-feedback">{notice}</p>}
     <form className="be-form be-login-form" onSubmit={onSubmit}>
-     <label htmlFor="bev-email">E-mail<input id="bev-email" type="email" placeholder="seuemail@exemplo.com" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}/></label>
+     <label htmlFor="bev-email">E-mail<input id="bev-email" type="email" placeholder="nome@exemplo.com" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}/></label>
      <label htmlFor="bev-password">Senha</label><div className="be-password-wrap"><input id="bev-password" type={showPassword?'text':'password'} placeholder="Digite sua senha" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} disabled={busy}/><button type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?'Ocultar senha':'Mostrar senha'} aria-pressed={showPassword} disabled={busy}>{showPassword?'Ocultar':'Mostrar'}</button></div>
      <div className="be-auth-support"><button type="button" className="be-link-button" disabled={busy||recovering} onClick={()=>{setRecovering(true);setError('');setNotice('');}}>Esqueci minha senha</button></div>
-     {recovering&&<div className="be-recovery"><p>Informe o e-mail acima para receber orientações de recuperação.</p><div className="be-actions"><Button onClick={resetPassword} disabled={busy||!email.trim()} primary>{busy?'Enviando…':'Enviar recuperação'}</Button><Button onClick={()=>setRecovering(false)} disabled={busy}>Cancelar</Button></div></div>}
-     <button type="submit" className="be-btn primary be-login-submit" disabled={busy}>{busy?'Autenticando…':'Entrar na plataforma'} <span aria-hidden="true">→</span></button>
-    </form><div className="be-auth-rule"/><p className="be-auth-help">Acesso exclusivo para contas existentes. O cadastro público está fechado.</p>
-   </div><div className="be-auth-bottom"><span>Ambiente operacional BeVans</span><Link href="/privacidade">Privacidade e segurança</Link></div>
+     {recovering&&<div className="be-recovery"><p>Enviaremos instruções para o e-mail informado acima, se ele estiver cadastrado.</p><div className="be-actions"><Button onClick={resetPassword} disabled={busy||!email.trim()} primary>{busy?'Enviando…':'Enviar instruções'}</Button><Button onClick={()=>setRecovering(false)} disabled={busy}>Cancelar</Button></div></div>}
+     <button type="submit" className="be-btn primary be-login-submit" disabled={busy}>{busy?'Verificando acesso…':'Entrar'}</button>
+    </form><p className="be-auth-help"><Link href="/contato">Precisa de ajuda para acessar?</Link></p>
+   </div><div className="be-auth-bottom"><Link href="/privacidade">Política de privacidade</Link><span>© {new Date().getFullYear()} BeVans</span></div>
   </section>
  </main>;
  const driver=profile.tipo==='MOTORISTA';
- const tabs=[['inicio','Visão geral','▦'],['turmas','Minhas turmas','▤'],['rotas',driver?'Rotas públicas':'Catálogo de rotas','⌁'],['solicitacoes','Solicitações','◷'],['excursoes','Excursões','◇'],['notificacoes','Notificações','♧'],['operacao','Operações','◉']];
+ const tabs=[['inicio','Início'],['turmas','Turmas'],['rotas',driver?'Rotas públicas':'Explorar rotas'],['solicitacoes','Solicitações'],['excursoes','Excursões'],['notificacoes','Notificações'],['operacao','Operações']];
  const selected=tabs.find(item=>item[0]===tab);
+ const firstName=(profile.nome||'').trim().split(/\s+/)[0]||'Usuário';
  return <main className="be-app" id="conteudo">
-  <aside className="be-sidebar" aria-label="Navegação da plataforma"><div className="be-sidebar-head"><Link href="/" className="be-sidebar-brand"><Image src="/images/bevans-simbolo-oficial.png" alt="" width={44} height={42} className="be-official-mark"/><span>BeVans<small>PLATAFORMA</small></span></Link></div>
-   <div className="be-sidebar-group"><p className="be-nav-label">ESPAÇO DE TRABALHO</p><nav className="be-sidebar-nav" aria-label="Áreas do painel">{tabs.map(([key,label,symbol])=><button type="button" key={key} onClick={()=>setTab(key)} aria-current={tab===key?'page':undefined}><span aria-hidden="true" className="be-nav-icon">{symbol}</span><span>{label}</span>{key==='notificacoes'&&<span className="be-nav-indicator" aria-label="Ver notificações"/>}</button>)}</nav></div>
-   <div className="be-sidebar-footer"><div className="be-account"><span className="be-avatar" aria-hidden="true">{(profile.nome||'U').trim()[0]?.toUpperCase()}</span><div><strong>{profile.nome||profile.email||'Minha conta'}</strong><small>{driver?'Motorista':'Passageiro'}</small></div></div><Button onClick={signOut}>Sair da conta</Button><Link href="/" className="be-site-link">Voltar ao site </Link></div>
+  <aside className="be-sidebar" aria-label="Navegação da plataforma">
+   <Link href="/" className="be-sidebar-brand" aria-label="BeVans, voltar ao site"><Image src="/images/vetor-com-nome-tema-claro.png" alt="BeVans" width={154} height={56} className="be-official-mark be-brand-light"/><Image src="/images/bevans-logo-oficial-branco.png" alt="" width={154} height={56} className="be-official-mark be-brand-dark"/></Link>
+   <div className="be-sidebar-group"><p className="be-nav-label">Navegação</p><nav className="be-sidebar-nav" aria-label="Áreas do painel">{tabs.map(([key,label])=><button type="button" key={key} onClick={()=>setTab(key)} aria-current={tab===key?'page':undefined}>{label}</button>)}</nav></div>
+   <div className="be-sidebar-footer"><div className="be-account"><span className="be-avatar" aria-hidden="true">{firstName[0].toUpperCase()}</span><div><strong>{profile.nome||'Minha conta'}</strong><small>{driver?'Motorista':'Passageiro'}</small></div></div><button type="button" className="be-signout" onClick={signOut}>Sair da conta</button><Link href="/" className="be-site-link">Voltar ao site</Link></div>
   </aside>
-  <div className="be-main-column"><header className="be-app-top"><div className="be-breadcrumb"><span>Área do {driver?'motorista':'passageiro'}</span><span aria-hidden="true">/</span><strong>{selected?.[1]||'Painel'}</strong></div><div className="be-app-user"><span className="be-status-dot"/> Conectado <span className="be-top-avatar" aria-hidden="true">{(profile.nome||'U').trim()[0]?.toUpperCase()}</span></div></header>
-   <div className="be-mobile-tabs" role="navigation" aria-label="Navegação rápida">{tabs.map(([key,label])=><button type="button" key={key} onClick={()=>setTab(key)} aria-current={tab===key?'page':undefined}>{label}</button>)}</div>
-   <div className="be-main-content"><header className="be-page-heading"><div><span className="be-overline">{driver?'CENTRAL DO MOTORISTA':'CENTRAL DO PASSAGEIRO'}</span><h1>{tab==='inicio'?`Olá, ${(profile.nome||'visitante').split(' ')[0]}.`:selected?.[1]}</h1><p>{tab==='inicio'?'Acompanhe suas atividades e escolha o próximo passo.':'Consulte os dados oficiais e gerencie as ações disponíveis para sua conta.'}</p></div><div className="be-heading-date">{new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}</div></header>
+  <div className="be-main-column">
+   <header className="be-app-top"><div className="be-app-top-left"><Image src="/images/bevans-simbolo-oficial.png" alt="" width={30} height={30} className="be-top-mark be-brand-light"/><Image src="/images/vetor-tema-escuro.png" alt="" width={30} height={30} className="be-top-mark be-brand-dark"/><span>{driver?'Área do motorista':'Área do passageiro'}</span></div><div className="be-app-user"><span className="be-user-name">{profile.nome||'Minha conta'}</span><span className="be-top-avatar" aria-hidden="true">{firstName[0].toUpperCase()}</span><button type="button" className="be-mobile-signout" onClick={signOut}>Sair</button></div></header>
+   <nav className="be-mobile-tabs" aria-label="Navegação do painel">{tabs.map(([key,label])=><button type="button" key={key} onClick={()=>setTab(key)} aria-current={tab===key?'page':undefined}>{label}</button>)}</nav>
+   <div className="be-main-content"><header className="be-page-heading"><div><p className="be-page-location">{driver?'Motorista':'Passageiro'} / {selected?.[1]||'Início'}</p><h1>{tab==='inicio'?`Olá, ${firstName}.`:selected?.[1]}</h1><p>{tab==='inicio'?'Aqui estão as informações da sua conta.':'Dados e ações disponíveis para o seu perfil.'}</p></div>{tab==='inicio'&&<div className="be-heading-date">{new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div>}</header>
     {tab==='inicio'&&<Overview api={api} profile={profile} driver={driver} onGo={setTab}/>}
     {tab==='turmas'&&<Turmas api={api} profile={profile} driver={driver}/>}
     {tab==='rotas'&&<Rotas api={api} profile={profile} driver={driver}/>}
@@ -84,24 +91,32 @@ export default function AuthEntry(){
 }
 function Overview({api,profile,driver,onGo}){
  const state=useAsync(async signal=>{
-  const turmas=await api(driver?ep.turmasMotorista(profile.id):ep.turmasPassageiro(profile.id),{signal});
-  const [notificacoes,naoLidas]=await Promise.all([api(ep.notificacoes,{signal}),api(ep.notificacoesNaoLidas,{signal})]);
-  return {turmas:array(turmas),notificacoes:notificacoes?.content||notificacoes?.itens||[],naoLidas};
+  const [turmas,notificacoes,naoLidas]=await Promise.allSettled([
+   api(driver?ep.turmasMotorista(profile.id):ep.turmasPassageiro(profile.id),{signal}),
+   api(ep.notificacoes,{signal}),api(ep.notificacoesNaoLidas,{signal})
+  ]);
+  return {
+   turmas:turmas.status==='fulfilled'?array(turmas.value):null,
+   turmasError:turmas.status==='rejected'?turmas.reason.message:'',
+   notices:notificacoes.status==='fulfilled'?(notificacoes.value?.content||notificacoes.value?.itens||[]):null,
+   unread:naoLidas.status==='fulfilled'?naoLidas.value:null,
+  };
  },[profile.id,driver]);
- return <section className="be-overview">
-  <div className="be-overview-stats" aria-label="Resumo da conta">
-   <div className="be-stat"><span className="be-stat-icon">▤</span><span>Turmas vinculadas</span><strong>{state.loading?'…':state.data?.turmas.length??'—'}</strong><small>Dados da sua conta</small></div>
-   <div className="be-stat"><span className="be-stat-icon">◷</span><span>Notificações não lidas</span><strong>{state.loading?'…':state.data?.naoLidas??'—'}</strong><small>Histórico oficial</small></div>
-   <div className="be-stat"><span className="be-stat-icon">◇</span><span>Avisos recentes</span><strong>{state.loading?'…':state.data?.notificacoes.length??'—'}</strong><small>Na central de avisos</small></div>
-  </div>
-  {state.error&&<Alert error={state.error}/>}
-  <div className="be-overview-columns"><section className="be-welcome-card"><span className="be-overline">ACESSO RÁPIDO</span><h2>O que vamos fazer hoje?</h2><p>Escolha uma área para consultar as informações da sua rotina.</p><div className="be-quick-grid">
-    <button type="button" onClick={()=>onGo('solicitacoes')}><span className="be-quick-icon">◷</span><strong>Solicitações</strong><small>Vínculos e embarques</small><span className="be-quick-arrow"></span></button>
-    <button type="button" onClick={()=>onGo('rotas')}><span className="be-quick-icon">⌁</span><strong>{driver?'Rotas públicas':'Explorar rotas'}</strong><small>Itinerários e horários</small><span className="be-quick-arrow"></span></button>
-    <button type="button" onClick={()=>onGo('operacao')}><span className="be-quick-icon">◉</span><strong>Operações</strong><small>Viagens em andamento</small><span className="be-quick-arrow"></span></button>
-    <button type="button" onClick={()=>onGo('turmas')}><span className="be-quick-icon">▤</span><strong>Minhas turmas</strong><small>Grupos e participantes</small><span className="be-quick-arrow"></span></button>
-   </div></section><section className="be-activity-card"><span className="be-overline">SUA CONTA</span><h2>Visão operacional</h2><p>{state.loading?'Carregando dados oficiais…':state.error?'Não foi possível consultar o resumo. Confira sua conexão.':'Dados atualizados conforme as respostas do servidor.'}</p><div className="be-activity-detail"><span className="be-activity-indicator"/> <span>{driver?'Perfil de motorista':'Perfil de passageiro'} ativo</span></div><div className="be-activity-actions"><Button onClick={state.reload}>Atualizar informações ↻</Button><Button onClick={()=>onGo('notificacoes')}>Ver notificações</Button></div></section></div>
- </section>;
+ const latest=state.data?.turmas?.slice(0,4);
+ return <div className="be-overview">
+   <div className="be-overview-primary">
+    <section className="be-overview-section"><div className="be-section-title"><div><h2>Suas turmas</h2><p>{driver?'Grupos que você administra.':'Turmas vinculadas à sua conta.'}</p></div><button type="button" className="be-text-action" onClick={()=>onGo('turmas')}>Ver todas →</button></div>
+     {state.loading?<Empty>Carregando turmas…</Empty>:state.data?.turmasError?<Alert error={state.data.turmasError}/>:!latest?.length?<div className="be-empty-line"><p>Nenhuma turma encontrada.</p><button type="button" className="be-text-action" onClick={()=>onGo('turmas')}>Abrir turmas →</button></div>:<div className="be-overview-list">{latest.map(t=><div className="be-overview-row" key={t.id}><div className="be-list-monogram" aria-hidden="true">{(t.nome||'T').trim()[0].toUpperCase()}</div><div><strong>{t.nome||`Turma ${t.id}`}</strong><small>{[t.turno,t.destinoNome].filter(Boolean).join(' · ')||'Informações da turma'}</small></div><span className="be-row-id">#{t.id}</span></div>)}</div>}
+    </section>
+    <section className="be-overview-section"><div className="be-section-title"><div><h2>Acessar</h2><p>Escolha o que deseja consultar.</p></div></div><div className="be-shortcuts">
+     {[["solicitacoes","Solicitações","Pedidos de vínculo e embarque"],["rotas",driver?'Rotas públicas':'Explorar rotas',"Itinerários e horários"],["excursoes","Excursões","Viagens e participantes"],["operacao","Operações","Estado das viagens"]].map(([key,title,desc])=><button key={key} type="button" onClick={()=>onGo(key)}><span><strong>{title}</strong><small>{desc}</small></span><span aria-hidden="true">→</span></button>)}
+    </div></section>
+   </div>
+   <aside className="be-overview-aside"><div className="be-section-title"><div><h2>Notificações</h2><p>Atualizações da sua conta</p></div></div>
+    {state.loading?<Empty>Consultando…</Empty>:state.data?.notices===null?<p className="be-muted">Não foi possível consultar o histórico agora.</p>:<><div className="be-notice-total"><strong>{state.data?.unread??'—'}</strong><span>não lidas</span></div>{state.data?.notices?.length?<div className="be-notice-preview">{state.data.notices.slice(0,3).map(n=><div key={n.id}><strong>{n.titulo}</strong><small>{n.mensagem}</small></div>)}</div>:<p className="be-muted">Nenhum aviso registrado no histórico.</p>}</>}
+    <button type="button" className="be-text-action" onClick={()=>onGo('notificacoes')}>Abrir central de notificações →</button><hr className="be-divider"/><button type="button" className="be-text-action" onClick={state.reload}>Atualizar informações</button>
+   </aside>
+  </div>;
 }
 function Turmas({api,profile,driver}){
  const data=useAsync(s=>api(driver?ep.turmasMotorista(profile.id):ep.turmasPassageiro(profile.id),{signal:s}).then(array),[driver,profile.id]);

@@ -16,7 +16,7 @@ export default function Navbar(){
  useEffect(()=>{const onScroll=()=>setScrolled(window.scrollY>24);onScroll();window.addEventListener('scroll',onScroll,{passive:true});return()=>window.removeEventListener('scroll',onScroll);},[]);
  return <header className={'site-header '+(scrolled||open?'site-header--scrolled':'')}>
   <nav className="site-nav container" aria-label="Navegação principal">
-   <Link href="/" className="brand" aria-label="BeVans, ir para o início" onClick={()=>setOpen(false)}><span className="brand-icon"><Image src="/images/vetor-tema-claro.png" alt="" width="43" height="43" priority/></span><span className="brand-name">BeVans</span></Link>
+   <Link href="/" className="brand" aria-label="BeVans, ir para o início" onClick={()=>setOpen(false)}><span className="brand-icon"><Image src="/images/vetor-tema-claro.png" alt="" width="43" height="43" priority className="be-brand-light"/><Image src="/images/vetor-tema-escuro.png" alt="" width="43" height="43" className="be-brand-dark"/></span><span className="brand-name">BeVans</span></Link>
    <div className="nav-links">{navigation.map(item=>item.href==='/excursoes'?<a key={item.href} href={item.href}>{item.label}</a>:<Link key={item.href} href={item.href}>{item.label}</Link>)}</div>
    <div className="nav-actions"><Link href="/login" className="button button-dark nav-login-cta" aria-label="Entrar na minha conta BeVans">Entrar <span aria-hidden="true"></span></Link>
     <a className="button button-dark nav-cta" href="/contato">Entrar em contato <span aria-hidden="true"></span></a>

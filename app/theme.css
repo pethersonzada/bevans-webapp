@@ -1,0 +1,184 @@
+/* Tema BeVans: preferência única para páginas públicas, login e painel. */
+.bev-theme-toggle{position:fixed;right:20px;bottom:20px;z-index:1000;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 14px;border:1px solid #d5e0ec;border-radius:11px;background:#fff;color:#193556;box-shadow:0 5px 22px #14253a1a;font-size:12px;font-weight:700;line-height:1;transition:background .18s,color .18s,border-color .18s}
+.bev-theme-toggle:hover{background:#f2f7fd}.bev-theme-toggle:focus-visible{outline:3px solid #42a5ff;outline-offset:3px}.bev-theme-toggle svg{flex:none}
+@media(max-width:650px){.bev-theme-toggle{right:12px;bottom:12px;height:40px;padding:0 11px}.bev-theme-toggle span{display:none}}
+/* Login: nada de propaganda no formulário; lateral discreta, densidade de aplicação. */
+.be-auth-screen{grid-template-columns:minmax(315px,42%) minmax(400px,58%)}
+.be-auth-story{background:#11263b;padding:clamp(34px,4vw,64px);gap:20px}
+.be-story-main{max-width:410px}.be-story-kicker{font-size:11px;letter-spacing:1px;margin-bottom:16px;color:#90b9db}
+.be-story-main h1{font-size:clamp(30px,3.4vw,46px);line-height:1.2;letter-spacing:-1.5px;margin-bottom:18px;font-weight:740}
+.be-story-main>p:not(.be-story-kicker){font-size:14px;line-height:1.75;color:#b4c4d3}
+.be-auth-area{background:#fff;padding-top:30px;padding-bottom:30px}.be-auth-content{max-width:370px;padding:24px 0}
+.be-auth-content h2{font-size:clamp(26px,2.4vw,31px);letter-spacing:-.9px;margin:0 0 10px;font-weight:760}
+.be-auth-description{font-size:13px;margin:0 0 29px;color:#6a7b90;line-height:1.6}
+.be-login-form{gap:12px}.be-login-form label{font-size:12px;gap:7px}.be-login-form input{min-height:46px;border-radius:7px;font-size:13px}
+.be-login-form .be-password-wrap button{border-radius:7px}.be-auth-support{margin:0 0 2px}.be-link-button{font-size:12px}
+.be-login-submit{min-height:47px!important;justify-content:center!important;border-radius:7px!important;font-size:13px!important}
+.be-auth-help{border-top:0;margin-top:20px;padding-top:0;font-size:12px}
+.be-auth-bottom{padding-right:70px}
+@media(max-width:800px){.be-auth-content{padding:26px 0}.be-mobile-wordmark{margin-bottom:30px}}
+
+html[data-theme="dark"]{color-scheme:dark;--ink:#e8f2ff;--muted:#b2c3d8;--bg:#0e1725;--line:#2a3c52;--brand-accent:#58aaff;--brand-accent-dark:#2f86e9;--be-navy:#e8f2ff;--be-text:#e1ebf8;--be-sub:#a8bbd2;--be-border:#2c4057;--be-surface:#162437}
+html[data-theme="dark"] body{background:#0e1725;color:#e8f2ff}
+html[data-theme="dark"] .bev-theme-toggle{background:#1b2d43;border-color:#3a506b;color:#dcecff;box-shadow:0 6px 24px #0005}
+html[data-theme="dark"] .bev-theme-toggle:hover{background:#294261}
+/* Páginas institucionais: superfícies. Preserva heros/rodapé já escuros. */
+html[data-theme="dark"] :is(.site-header,.mobile-nav,.features-section,.pricing-section,.faq-section,.audience-section,.new-pricing-section,.contact-page,.contact-card,.exp-page,.exp-how,.exp-details,.auth-page,.benefits-section,.experience-section,.section-light,.not-found-page){background:#101e2e!important;color:#e9f2ff!important}
+html[data-theme="dark"] :is(.feature-card,.pricing-card,.new-price-card:not(.new-price-featured),.new-pricing-note,.experience-card,.contact-card,.faq-item,.exp-step-grid article,.auth-form-panel,.new-pricing-note,.audience-driver,.audience-parent){background:#17283c!important;border-color:#2e4660!important;color:#e5effb!important;box-shadow:none}
+html[data-theme="dark"] :is(.new-price-action:not(.is-highlighted),.button-outline,.feature-icon,.new-price-availability,.contact-warning){background:#243b54!important;border-color:#3c5875!important;color:#a9d6ff!important}
+html[data-theme="dark"] :is(.section-intro h2,.audience-intro h2,.faq-layout h2,.experience-intro h2,.new-pricing-head h2,.contact-page h1,.new-price-card h3,.feature-card h3,.faq-item summary,.site-header .brand,.brand-name,.nav-links a,.nav-login,.footer-columns a,.exp-page h2,.exp-page h3){color:#eef5ff}
+html[data-theme="dark"] :is(.feature-card p,.new-price-lead,.new-pricing-head>p,.experience-card-description,.experience-step p,.audience-intro p,.section-intro>p,.faq-item p,.nav-links a,.contact-card p,.exp-page p){color:#acc0d7}
+html[data-theme="dark"] :is(.site-header,.site-header--scrolled){border-bottom-color:#2b4057!important;box-shadow:none}
+html[data-theme="dark"] :is(.mobile-nav,.faq-item,.contact-card,.feature-card,.new-price-card,.new-pricing-note){border-color:#2c435c!important}
+html[data-theme="dark"] .menu-bars i{background:#f0f5fc}
+html[data-theme="dark"] :is(input,textarea,select){background:#16283d;color:#f0f6ff;border-color:#36516d}
+html[data-theme="dark"] :is(input,textarea)::placeholder{color:#849ab4}
+html[data-theme="dark"] :is(.new-price-card:not(.new-price-featured) ul li,.audience-driver ul li,.audience-parent ul li){color:#e1ecf9}
+html[data-theme="dark"] .button-dark{background:#263f5a;border-color:#3a5876;color:#f0f6fd}
+html[data-theme="dark"] .button-dark:hover{background:#345676}
+/* O fundo dos destaques azuis continua azul, inclusive em dark. */
+html[data-theme="dark"] :is(.new-price-featured,.bev-hero,.journey-section,.site-footer,.exp-hero,.exp-ending){color:#f2f7ff}
+/* Login e painel: sobrescreve cores estáticas do layout original. */
+html[data-theme="dark"] :is(.be-auth-screen,.be-auth-area,.be-app){background:#0e1725;color:#e4eefb;--be-navy:#eef5ff;--be-text:#e3edfa;--be-sub:#afc2d6;--be-border:#2c4057;--be-surface:#17273b}
+html[data-theme="dark"] .be-auth-story{background:#0b2035}
+html[data-theme="dark"] :is(.be-auth-content h2,.be-page-heading h1,.be-overview-section h2,.be-overview-aside h2,.be-app .be-section h2,.be-app .be-card h2,.be-app .be-card h3){color:#ecf4ff!important}
+html[data-theme="dark"] :is(.be-auth-description,.be-auth-help,.be-auth-top,.be-auth-bottom,.be-auth-back,.be-page-location,.be-page-heading>div>p:last-child,.be-heading-date,.be-nav-label,.be-muted,.be-section-title p,.be-overview-row small,.be-shortcuts small,.be-account small,.be-app-top-left,.be-app-user,.be-footnote){color:#a7bbd1!important}
+html[data-theme="dark"] :is(.be-sidebar,.be-app-top,.be-mobile-tabs,.be-overview-section,.be-overview-aside,.be-app .be-card,.be-item,.be-app .be-item,.be-shortcuts button,.be-top,.be-btn:not(.primary):not(.danger)){background:#17283c!important;color:#e1eefa!important;border-color:#2f4761!important}
+html[data-theme="dark"] :is(.be-sidebar,.be-app-top,.be-mobile-tabs,.be-overview-section,.be-overview-aside,.be-sidebar-brand,.be-sidebar-footer,.be-overview-row,.be-overview-list,.be-shortcuts button,.be-divider,.be-auth-help,.be-item){border-color:#2e435c!important}
+html[data-theme="dark"] :is(.be-login-form label,.be-overview-row strong,.be-shortcuts strong,.be-notice-preview strong,.be-account strong,.be-table-row,.be-app .be-card p){color:#dfecfa!important}
+html[data-theme="dark"] :is(.be-form input,.be-form select,.be-form textarea,.be-control,.be-fieldset input,.be-fieldset select,.be-login-form input){background:#101e30!important;border-color:#36516c!important;color:#f0f6ff!important}
+html[data-theme="dark"] .be-login-form input::placeholder{color:#8c9eb5}
+html[data-theme="dark"] .be-login-form .be-password-wrap button{background:#253b53;color:#cde4fb;border-color:#36516c}
+html[data-theme="dark"] :is(.be-sidebar-nav button,.be-mobile-tabs button,.be-signout,.be-site-link){color:#afc5dc}
+html[data-theme="dark"] :is(.be-sidebar-nav button:hover,.be-sidebar-nav button[aria-current="page"],.be-mobile-tabs button[aria-current="page"]){background:#203956;color:#83c3ff;border-color:#54adff}
+html[data-theme="dark"] :is(.be-avatar,.be-top-avatar,.be-list-monogram,.be-chip,.be-kpi){background:#243e5c;color:#92c9ff;border-color:#37516e}
+html[data-theme="dark"] :is(.be-shortcuts button:hover,.be-btn:not(.primary):not(.danger):hover){background:#223a54!important}
+html[data-theme="dark"] :is(.be-text-action,.be-link-button,.be-auth-help a,.be-auth-back:hover,.be-mobile-signout){color:#7fc0ff}
+html[data-theme="dark"] .be-recovery{background:#152d45;color:#d1e3f7;border-left-color:#59a9ff}
+html[data-theme="dark"] .be-auth-feedback{background:#10332d;color:#b8ebd9;border-color:#28a679}
+html[data-theme="dark"] .be-error{background:#3c1f2c;color:#ffc9d0;border-color:#875265}
+html[data-theme="dark"] .be-alert{background:#3e311f;color:#ffdfa4;border-color:#80603a}
+html[data-theme="dark"] .be-btn.danger{background:#351e2a;color:#ffb8c2;border-color:#894859}
+html[data-theme="dark"] .be-login-submit{background:#007bff!important;color:#fff!important;border-color:#007bff!important}
+/* Marcas PNG com tipografia escura recebem versão com letras claras. */
+/* A identidade não é invertida por filtro: alternamos os arquivos oficiais. */
+.be-brand-dark{display:none!important}
+html[data-theme="dark"] .be-brand-dark{display:block!important}
+html[data-theme="dark"] .be-brand-light{display:none!important}
+@media(min-width:801px){html[data-theme="dark"] .be-top-mark.be-brand-dark{display:none!important}}
+
+@media(prefers-reduced-motion:reduce){.bev-theme-toggle{transition:none}}
+/* Contato e documentos institucionais. */
+html[data-theme="dark"] .reach-page{background:#0e1725;color:#e8f2ff}
+html[data-theme="dark"] .reach-form{background:#17283c;border-color:#304960;box-shadow:none;color:#eaf2ff}
+html[data-theme="dark"] .reach-copy h1,html[data-theme="dark"] .reach-topics strong{color:#edf5ff}
+html[data-theme="dark"] .reach-copy>p,html[data-theme="dark"] .reach-topics small,html[data-theme="dark"] .reach-help{color:#aec1d7}
+html[data-theme="dark"] .reach-topics article{border-color:#2e4760}
+html[data-theme="dark"] main.bg-\[\#F8F9FA\]{background:#0e1725!important;color:#e5f0ff!important}
+html[data-theme="dark"] article.bg-white{background:#17283c!important;color:#e9f3ff!important;border-color:#2e4661!important}
+html[data-theme="dark"] article.bg-white :is(.text-slate-900,.text-slate-700,.text-\[\#212529\]){color:#e4edf9!important}
+html[data-theme="dark"] article.bg-white .text-slate-500{color:#a6b9d0!important}
+html[data-theme="dark"] :is(.be-shell,.be-auth){background:#0e1725;color:#e6f1ff}
+html[data-theme="dark"] .be-shell .be-card{background:#17283c;color:#e4edfa;border-color:#35516e}
+
+/* Acessibilidade e coerência no tema escuro. Cores explícitas sobre superfícies reais. */
+:root{--dark-foreground:#edf4fd;--dark-secondary:#c3d1e3;--dark-accent:#82c2ff}
+/* Títulos do site: tipografia editorial em vez de frases gigantes em duas cores. */
+:is(.section-intro,.audience-intro,.faq-layout,.new-pricing-head,.experience-intro) h2{
+  font-size:clamp(31px,4.2vw,53px);line-height:1.16;letter-spacing:-.042em;font-weight:760;
+  text-wrap:balance;
+}
+.new-price-card h3{font-size:clamp(23px,2.1vw,29px);font-weight:760;letter-spacing:-.7px;line-height:1.25}
+.new-price-top,.new-price-code{letter-spacing:.07em;line-height:1.5}
+/* Estado de uma modalidade apresentado como informação, sem ícone decorativo. */
+.new-price-availability,
+html[data-theme="dark"] .new-price-availability{
+  background:transparent!important;border:0!important;min-height:unset;margin:21px 0 24px;
+  display:flex;align-items:center;gap:10px;font-size:12px;font-weight:650;
+}
+.new-price-status-dot,
+html[data-theme="dark"] .new-price-availability>.new-price-status-dot{
+  width:7px;height:7px;min-width:7px;min-height:7px;flex:none;
+  border-radius:50%;background:#168be8!important;box-shadow:none!important;padding:0;border:0;
+}
+.new-price-featured .new-price-status-dot{background:#85c2ff!important}
+.new-price-card:not(.new-price-featured) .new-price-availability{color:#526b83}
+.new-price-featured .new-price-availability{color:#c3dcf3}
+/* Separação visual, sem cartões brilhantes ou faixas de alto contraste. */
+html[data-theme="dark"] :is(.new-price-card,.new-price-featured){
+  background:#16283b!important;border:1px solid #314862!important;box-shadow:none!important;
+}
+html[data-theme="dark"] .new-price-card:hover{border-color:#638aad!important;box-shadow:0 5px 24px #020b153b!important}
+html[data-theme="dark"] .new-price-featured{border-left:3px solid #66b5ff!important}
+html[data-theme="dark"] .new-price-card :is(h3,.new-price-includes,.new-pricing-note strong){color:#eef5fc!important}
+html[data-theme="dark"] .new-price-card .new-price-top{color:#a7d6ff!important}
+html[data-theme="dark"] .new-price-code{color:#aec1d5!important}
+html[data-theme="dark"] .new-price-card .new-price-lead{color:#c0d1e2!important}
+html[data-theme="dark"] .new-price-card .new-price-availability{color:#c5d7eb!important}
+html[data-theme="dark"] .new-price-card li{color:#d3e0ef!important}
+html[data-theme="dark"] .new-price-card li>span{background:#29445f;color:#9ed0ff}
+html[data-theme="dark"] .new-price-card .new-price-divider{background:#3b526a!important}
+html[data-theme="dark"] .new-pricing-note strong{color:#f0f6ff!important}
+html[data-theme="dark"] .new-pricing-note p{color:#c3d2e3!important}
+html[data-theme="dark"] .new-pricing-head>p{color:#c5d5e6!important}
+html[data-theme="dark"] :is(.new-price-action:not(.is-highlighted),.button-outline){
+  background:#273f57!important;color:#e6f1ff!important;border-color:#486984!important;
+}
+html[data-theme="dark"] .new-price-action:not(.is-highlighted):hover{background:#365674!important}
+/* Links, rótulos e variações de títulos que antes herdavam azul-petróleo sobre azul-petróleo. */
+html[data-theme="dark"] :is(.section-label,.experience-kicker,.faq-count,.feature-number,
+  .exp-section-heading>span,.exp-details-grid>div:first-child>span,.reach-kicker,
+  .reach-topics article>span,.new-price-top,.new-price-includes,.audience-index,
+  .experience-card-index,.exp-step-grid article>span){color:#a7d5ff!important}
+html[data-theme="dark"] :is(.section-intro h2 span,.audience-intro h2 span,
+  .faq-layout h2 span,.experience-intro h2 em,.new-pricing-head h2 em,
+  .exp-section-heading h2 em,.exp-details h2 em,.reach-copy h1 em){color:#86c6ff!important}
+html[data-theme="dark"] :is(.section-intro h2,.audience-intro h2,.faq-layout h2,
+  .new-pricing-head h2,.experience-intro h2,.experience-card:not(.experience-card-driver) h3,
+  .reach-copy h1,.exp-section-heading h2,.exp-details h2){color:#f0f6fd!important}
+html[data-theme="dark"] :is(.faq-layout>div:first-child>p,.audience-intro>p,.experience-intro>p,
+  .section-intro>p,.new-pricing-head>p,.experience-outro p,.new-pricing-note p){color:#c4d4e6!important}
+html[data-theme="dark"] :is(.faq-item summary,.faq-item summary span:not(.faq-count),
+  .faq-item summary .faq-plus,.faq-item p){color:#ebf3ff!important}
+html[data-theme="dark"] .faq-item p{color:#c3d3e5!important}
+html[data-theme="dark"] .faq-item{background:#17283c!important;border-bottom:1px solid #364e69!important}
+html[data-theme="dark"] .faq-list{border-color:#364e69}
+html[data-theme="dark"] .faq-item summary{padding-inline:18px}
+html[data-theme="dark"] .faq-item[open]{background:#1d334a!important}
+html[data-theme="dark"] .faq-item summary:focus-visible{outline-offset:-4px}
+html[data-theme="dark"] :is(.audience-card.audience-manager,.experience-card-driver){
+  background:#18314a!important;border:1px solid #385f83!important;color:#f0f6fd!important;
+}
+html[data-theme="dark"] :is(.audience-card h3,.audience-content p,.audience-card li,.experience-card h3,
+  .experience-step strong,.experience-card-description,.experience-step p){color:#d8e6f6!important}
+html[data-theme="dark"] :is(.audience-role,.experience-role){background:#2b4866;color:#d1e8ff}
+html[data-theme="dark"] :is(.experience-step,.experience-card-foot){border-color:#38526d}
+html[data-theme="dark"] :is(.experience-step-num,.experience-outro a,.journey-link){color:#95ceff!important}
+html[data-theme="dark"] .audience-content>p{opacity:1}
+/* Barra e logos oficiais: assets claros no fundo escuro, sem efeitos que apaguem o desenho. */
+html[data-theme="dark"] :is(.brand-name,.brand,.nav-links a,.nav-login,
+  .site-header .brand-name,.footer-logo){color:#edf5ff!important}
+html[data-theme="dark"] .brand-icon{background:transparent!important}
+html[data-theme="dark"] .brand-icon .be-brand-dark{border-radius:8px!important}
+html[data-theme="dark"] :is(.be-sidebar-brand,.be-mobile-wordmark,.be-story-brand){filter:none!important}
+html[data-theme="dark"] :is(.be-sidebar-brand .be-brand-dark,.be-mobile-wordmark .be-brand-dark){
+  filter:none!important;object-fit:contain;
+}
+/* Outras superfícies claras tinham sido esquecidas na primeira versão dark. */
+html[data-theme="dark"] :is(.reach-page,.reach-form,.reach-form .contact-card,.exp-how,.exp-details,
+  .exp-step-grid article,.new-pricing-section){background:#101e2e!important;color:#eaf3ff!important}
+html[data-theme="dark"] :is(.reach-form,.exp-step-grid article){border-color:#324b64!important}
+html[data-theme="dark"] :is(.reach-topics strong,.exp-detail-list h3,.reach-form .contact-card h2,
+  .exp-step-grid h3){color:#edf5ff!important}
+html[data-theme="dark"] :is(.reach-copy>p,.reach-topics small,.exp-section-heading p,
+  .exp-details-grid>div:first-child>p,.exp-detail-list p,.exp-step-grid p){color:#c1d2e4!important}
+html[data-theme="dark"] :is(.reach-topics article,.exp-detail-list article){border-color:#38546d!important}
+html[data-theme="dark"] :focus-visible{outline-color:#88c6ff}
+/* Melhoria também no tema claro: evita faixas ornamentais sobre status simples. */
+.new-price-availability>strong{font-weight:650}
+@media(max-width:800px){
+ :is(.section-intro,.audience-intro,.faq-layout,.new-pricing-head,.experience-intro) h2{font-size:clamp(30px,6vw,44px)}
+}
+@media(max-width:540px){
+ :is(.section-intro,.audience-intro,.faq-layout,.new-pricing-head,.experience-intro) h2{font-size:clamp(28px,8vw,36px)}
+}

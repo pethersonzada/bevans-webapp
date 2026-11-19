@@ -25,14 +25,14 @@ export default function Pricing() {
   return <section id="precos" className="new-pricing-section" aria-labelledby="pricing-heading">
     <div className="container">
       <div className="new-pricing-head">
-        <div><span className="section-label"><span/> MODALIDADES DO BEVANS</span><h2 id="pricing-heading">Uma plataforma.<br/><em>Três caminhos.</em></h2></div>
+        <div><span className="section-label"><span/> MODALIDADES DO BEVANS</span><h2 id="pricing-heading">Modalidades do BeVans</h2></div>
         <p>Rotas e excursões já contam com fluxos operacionais no BeVans. A gestão de frotas é a próxima linha de evolução. O acesso depende de conta autorizada.</p>
       </div>
       <div className="new-pricing-grid">
         {plans.map(plan=><article className={'new-price-card '+(plan.highlight?'new-price-featured':'')} key={plan.name}>
           <div className="new-price-top"><span>{plan.tag}</span><span className="new-price-code">{plan.code}</span></div>
           <h3>{plan.name}</h3><p className="new-price-lead">{plan.lead}</p>
-          <div className="new-price-availability"><span aria-hidden="true">◎</span><strong>{plan.status}</strong></div>
+          <div className="new-price-availability"><span aria-hidden="true" className="new-price-status-dot"/><strong>{plan.status}</strong></div>
           <Link href={plan.href || '/contato?assunto='+encodeURIComponent(plan.name)} className={'new-price-action '+(plan.highlight?'is-highlighted':'')}>{plan.action}<span aria-hidden="true"></span></Link>
           <div className="new-price-divider"/><span className="new-price-includes">O QUE ESTA MODALIDADE ENVOLVE</span>
           <ul>{plan.features.map(f=><li key={f}><span aria-hidden="true">✓</span>{f}</li>)}</ul>

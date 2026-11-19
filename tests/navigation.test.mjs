@@ -15,10 +15,10 @@ test('menu links lead to existing public pages',()=>{
   assert.match(navbar, /<a key=\{item.href\} href=\{item.href\}/);
 });
 
-test('excursion contact CTA routes to contact with prefilled subject',()=>{
+test('excursion CTA routes to existing account login',()=>{
   const excursions=read('app/excursoes/page.js');
   const form=read('app/components/ContactForm.js');
-  assert.match(excursions,/href="\/contato\?assunto=excursoes"/);
+  assert.match(excursions,/href="\/login"/);
   assert.match(form,/subject === 'excursoes'/);
 });
 
@@ -26,7 +26,7 @@ test('direct navigation works without hydration for public actions',()=>{
   const navbar=read('app/components/Navbar.js');
   assert.match(navbar,/<a className="button button-dark nav-cta" href="\/contato">/);
   assert.match(navbar,/<a href="\/contato" className="button button-yellow">/);
-  assert.match(navbar,/item\.href === '\/excursoes' \? <a/);
+  assert.match(navbar,/item\.href==='\/excursoes'\?<a/);
 });
 
 

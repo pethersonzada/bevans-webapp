@@ -1,6 +1,8 @@
 import { Geist } from 'next/font/google';
 import './globals.css';
 import './globals-access.css';
+import './theme.css';
+import ThemeToggle from './components/ThemeToggle';
 
 const geist = Geist({ variable: '--font-geist', subsets: ['latin'], display: 'swap' });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bevans-webapp.vercel.app';
@@ -8,7 +10,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bevans-webapp.verce
 export const metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: 'BeVans | Rotas e transporte mais organizados', template: '%s | BeVans' },
-  description: 'Conheça o BeVans: aplicativo para motoristas e passageiros com turmas, presença, mapas e navegação. Veja também as próximas modalidades de excursões e gestão de frotas.',
+  description: 'BeVans conecta motoristas e passageiros, com rotas, excursões e gestão de turmas. Conheça a plataforma.',
   applicationName: 'BeVans',
   alternates: { canonical: '/' },
   icons: {
@@ -24,5 +26,8 @@ export const metadata = {
 };
 
 export default function RootLayout({children}) {
-  return <html lang="pt-BR" className={geist.variable}><body><a className="skip-link" href="#conteudo">Pular para o conteúdo</a>{children}</body></html>;
+  return <html lang="pt-BR" className={geist.variable} suppressHydrationWarning>
+    <head><script dangerouslySetInnerHTML={{__html:`try{var t=localStorage.getItem('bevans-theme');if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t}catch(e){document.documentElement.dataset.theme='light'}`}} /></head>
+    <body><a className="skip-link" href="#conteudo">Pular para o conteúdo</a>{children}<ThemeToggle/></body>
+  </html>;
 }

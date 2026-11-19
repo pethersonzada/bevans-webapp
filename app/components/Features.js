@@ -19,7 +19,7 @@ export default function Features(){
  return <>
   <section id="funcionalidades" className="features-section section-pad">
     <div className="container">
-      <div className="section-intro"><div><span className="section-label"><span/> CONECTADO AO QUE IMPORTA</span><h2>Mais do que um mapa.<br/><span>Uma rota inteligente.</span></h2></div><p>Recursos baseados na experiência do aplicativo mobile BeVans: presença, trajetos, navegação e acompanhamento da van.</p></div>
+      <div className="section-intro"><div><span className="section-label"><span/> CONECTADO AO QUE IMPORTA</span><h2>Recursos para suas viagens</h2></div><p>Recursos baseados na experiência do aplicativo mobile BeVans: presença, trajetos, navegação e acompanhamento da van.</p></div>
       <div className="feature-grid">
         {capabilities.map(item=><article key={item.number} className="feature-card">
           <div className="feature-card-top"><span className="feature-icon" aria-hidden="true">{item.icon}</span><span className="feature-number">{item.number} / 06</span></div>
@@ -49,7 +49,7 @@ export default function Features(){
   </section>
   <section id="beneficios" className="audience-section section-pad">
     <div className="container">
-      <div className="audience-intro"><span className="section-label"><span/> A ROTA TEM MUITOS LADOS</span><h2>Uma experiência.<br/><span>Várias formas de chegar.</span></h2><p>O BeVans considera diferentes pessoas na mesma jornada.</p></div>
+      <div className="audience-intro"><span className="section-label"><span/> A ROTA TEM MUITOS LADOS</span><h2>Para motoristas e passageiros</h2><p>O BeVans considera diferentes pessoas na mesma jornada.</p></div>
       <div className="audience-grid">{people.map(person=><article key={person.tag} className={'audience-card audience-'+person.tone}>
         <div className="audience-top"><span>{person.tag}</span><span className="audience-index">BEVANS</span></div>
         <div className="audience-decoration" aria-hidden="true">{person.symbol}</div>
