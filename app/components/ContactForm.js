@@ -63,7 +63,7 @@ export default function ContactForm() {
         </label>
         {error && <p className="contact-warning" role="alert">{error}</p>}
         <button className="button button-yellow" type="submit" disabled={!commercialEmail}>
-          Abrir mensagem no meu e-mail <span aria-hidden="true">↗</span>
+          Abrir mensagem no meu e-mail <span aria-hidden="true"></span>
         </button>
         <p className="form-hint">
           O botão abre seu aplicativo de e-mail. Você precisará confirmar o envio nele. Nenhuma mensagem é enviada diretamente pelo site.

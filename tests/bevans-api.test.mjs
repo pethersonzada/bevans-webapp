@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {idSeguro,diaLocal,rotaPermitida,ep,apiRequest,ApiError} from '../app/lib/bevans-api.mjs';
+import {firebaseApiKey} from '../app/lib/bevans-auth.mjs';
+test('IDs inválidos são rejeitados antes da URL',()=>{for(const v of ['-1','0','1/../x','x',1.2])assert.throws(()=>idSeguro(v));assert.equal(idSeguro('9'),9);});
+test('URLs bloqueiam caminhos externos',()=>{assert.throws(()=>rotaPermitida('//evil.com'));assert.throws(()=>rotaPermitida('https://evil.com'));assert.throws(()=>rotaPermitida('/x\r\na'));assert.equal(rotaPermitida('/turmas'),'\/turmas');});
+test('operações preservam sentido e contexto',()=>{assert.equal(ep.operacao('VIAGEM',3,false),'/operacoes/VIAGEM/3/minha');assert.equal(ep.operacao('EXCURSAO',2,true),'/operacoes/EXCURSAO/2');assert.match(ep.embarquesRota(3,'2026-11-18','IDA'),/sentido=IDA/);});
+test('calendário usa data local',()=>assert.equal(diaLocal(new Date(2026,10,18,0,20)),'2026-11-18'));
+test('requisições sem sessão são recusadas antes da rede',async()=>await assert.rejects(apiRequest(null,'/turmas'),e=>e instanceof ApiError&&e.status===401));
+test('credenciais não têm fallback estático',()=>assert.equal(typeof firebaseApiKey(),'string'));

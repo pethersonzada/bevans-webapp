@@ -1,0 +1,17 @@
+
+/* Entrada da plataforma visível desde o primeiro contato, também no celular. */
+.nav-login-cta{background:#007bff;color:#fff;min-height:44px;padding:11px 19px;white-space:nowrap}
+.nav-login-cta:hover{background:#0056b3;color:#fff}
+.bev-hero-access-note{font-size:12px;line-height:1.6;opacity:.82;margin:12px 0 0}
+.footer-cta-actions{display:flex;gap:12px;flex-wrap:wrap}
+.footer-cta-actions .button-outline{color:#fff;background:transparent;border-color:#ffffff70}
+.be-auth-support{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:5px}
+.be-link-button{background:none;border:0;color:#0056b3;text-decoration:underline;text-underline-offset:3px;font-size:13px;padding:7px 0}
+.be-link-button:disabled{opacity:.5}
+.be-password-wrap{display:flex;gap:6px;align-items:stretch}
+.be-password-wrap input{flex:1;min-width:0}
+.be-password-wrap button{border:1px solid #cbd8e8;background:#f6f9fc;color:#194e91;border-radius:9px;padding:0 13px;min-width:74px}
+.be-auth-feedback{background:#edf8f1;border:1px solid #bde2c9;color:#145d31;padding:12px;border-radius:9px;font-size:13px}
+.be-auth .be-btn.primary{min-height:46px}
+@media(max-width:950px){.nav-login-cta{min-height:42px;padding:10px 14px}.nav-cta{display:none}}
+@media(max-width:550px){.site-nav{height:68px;gap:9px}.nav-actions{gap:9px}.brand-name{font-size:22px}.nav-login-cta{font-size:13px;padding:9px 13px}.nav-login-cta span{display:none}.brand-icon{width:36px;height:36px}.brand-icon img{max-width:36px;height:auto}.bev-hero-actions{flex-wrap:wrap}.footer-cta-actions{flex-direction:column;align-items:stretch}}

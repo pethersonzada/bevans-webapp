@@ -10,7 +10,7 @@ const capabilities = [
 ];
 
 const people=[
-  {tag:'01 / MOTORISTA',title:'Tudo em uma rota.',description:'Menos decisões no improviso. Mais visibilidade do trajeto, das paradas e dos passageiros.',symbol:'↗',tone:'driver',items:['Navegação orientada no mapa','Turmas e passageiros organizados','Ações rápidas para iniciar a viagem']},
+  {tag:'01 / MOTORISTA',title:'Tudo em uma rota.',description:'Menos decisões no improviso. Mais visibilidade do trajeto, das paradas e dos passageiros.',symbol:'',tone:'driver',items:['Navegação orientada no mapa','Turmas e passageiros organizados','Ações rápidas para iniciar a viagem']},
   {tag:'02 / PASSAGEIRO',title:'A rota mais perto.',description:'Presença informada, endereço escolhido e acompanhamento do caminho em um só aplicativo.',symbol:'⌖',tone:'manager',items:['Confirmação de presença','Acompanhamento da van','Informações de ida e volta']},
   {tag:'03 / OPERAÇÃO',title:'Informação faz a diferença.',description:'Uma experiência feita para conectar quem dirige e quem precisa chegar ao destino.',symbol:'◎',tone:'parent',items:['Mais clareza sobre o percurso','Rotas planejadas','Menos informação desencontrada']},
 ];
@@ -23,7 +23,7 @@ export default function Features(){
       <div className="feature-grid">
         {capabilities.map(item=><article key={item.number} className="feature-card">
           <div className="feature-card-top"><span className="feature-icon" aria-hidden="true">{item.icon}</span><span className="feature-number">{item.number} / 06</span></div>
-          <h3>{item.name}</h3><p>{item.detail}</p><span className="feature-arrow" aria-hidden="true">↗</span>
+          <h3>{item.name}</h3><p>{item.detail}</p><span className="feature-arrow" aria-hidden="true"></span>
         </article>)}
       </div>
     </div>
@@ -43,7 +43,7 @@ export default function Features(){
         <span className="section-label"><span/> A EXPERIÊNCIA BEVANS</span>
         <h2 id="journey-heading">Do primeiro ponto ao destino.<br/><em>Sem perder o rumo.</em></h2>
         <p>O aplicativo conecta etapas que normalmente ficam espalhadas entre mapas, listas e mensagens. Veja como motorista e passageiro utilizam o BeVans na seção de experiência.</p>
-        <Link href="/#experiencia" className="journey-link">Explorar a demonstração <span aria-hidden="true">↗</span></Link>
+        <Link href="/#experiencia" className="journey-link">Explorar a demonstração <span aria-hidden="true"></span></Link>
       </div>
     </div>
   </section>

@@ -1,5 +1,6 @@
 import { Geist } from 'next/font/google';
 import './globals.css';
+import './globals-access.css';
 
 const geist = Geist({ variable: '--font-geist', subsets: ['latin'], display: 'swap' });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bevans-webapp.vercel.app';

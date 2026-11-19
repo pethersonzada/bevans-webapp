@@ -1,3 +1,3 @@
-import AuthShell from '../components/AuthShell';
-export const metadata={title:'Criar conta · Prévia',robots:{index:false,follow:false}};
-export default function CadastroPage(){return <AuthShell mode="signup"/>;}
+import Link from 'next/link';
+export const metadata={title:'Cadastro indisponível',robots:{index:false,follow:false}};
+export default function CadastroPage(){return <main id="conteudo" className="be-shell" style={{display:'grid',placeItems:'center',padding:24}}><section className="be-card be-auth"><Link href="/" className="be-brand">BeVans</Link><h1>Novos cadastros indisponíveis</h1><p className="be-muted">O acesso web está disponível apenas para contas já autorizadas. A criação de novas contas ainda não foi liberada.</p><Link href="/login" className="be-btn primary">Entrar com minha conta</Link><p><Link href="/contato">Falar com a equipe</Link></p></section></main>;}

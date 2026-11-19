@@ -1,0 +1,20 @@
+BEVANS WEBAPP - ATUALIZAÇÃO DE MARCA E INFORMAÇÕES
+
+Este pacote é incremental. Aplique depois dos ZIPs de implementação, acesso e redesign já instalados.
+
+Corrigido:
+- A letra B desenhada no login/sidebar foi substituída pelos recursos oficiais da marca incluídos no próprio pacote.
+- Excursões deixam de ser apresentadas como módulo ainda não desenvolvido.
+- Página de excursões descreve criação, convite, inscrição e operação atualmente disponíveis por canal.
+- FAQ, experiência, cartões de modalidades e rodapé receberam textos consistentes.
+- Cadastro público segue fechado. Login existente e solicitações de API preservados.
+
+IMPORTANTE:
+O produto Android e o backend dispõem dos fluxos de excursões. O editor completo de excursões ainda não foi portado ao painel WEB. Gestão de frotas continua em planejamento. A página institucional não disponibiliza convites reais nem cria contas novas.
+
+Instale sobre C:\dev\bevans-webapp com Expand-Archive -Force, depois rode:
+  npm test
+  npm run lint
+  npm run build
+
+Não faça push antes de validar no navegador.
