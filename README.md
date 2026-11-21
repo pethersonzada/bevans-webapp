@@ -160,7 +160,7 @@ O repositório usa a hospedagem de referência `https://bevans-webapp.vercel.app
 
 - Cadastro público fechado.
 - **PR #19 já integrado à main:** mapas Mapbox, GPS autorizado, presença, endereços, rotas e excursões.
-- **PR #23 (ainda sujeito a revisão):** coleta privada com paradas e seleção pelo passageiro, entrada em turma com convite, coleta e paradas das excursões, publicação/disponibilidade/pontos excepcionais de rotas, preferências de notificações e contato comercial, recuperação voluntária por credencial individual de inscrição, guia manual de manobras Mapbox.
+- **PR #23 integrado à main:** coleta privada com paradas e seleção pelo passageiro, entrada em turma com convite, coleta e paradas das excursões, publicação/disponibilidade/pontos excepcionais de rotas, preferências de notificações e contato comercial, recuperação voluntária por credencial individual de inscrição, guia manual de manobras Mapbox.
 - Cobertura web ainda parcial em relação aos recursos do aplicativo Android, especialmente navegação automática assistida por GPS, notificações push para navegador, gestão de responsáveis, perfil completo, testes reais de homologação e recursos específicos de segundo plano.
 - GPS no navegador depende de HTTPS, permissão explícita, aba visível e autorização do backend. O envio limita a frequência a pelo menos cinco segundos e é interrompido quando a aba fica oculta. Não há localização em segundo plano.
 - A rota rodoviária usa a API Directions do Mapbox quando solicitada, limitada a 25 coordenadas e sem omitir paradas.
