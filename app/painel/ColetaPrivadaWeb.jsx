@@ -68,12 +68,13 @@ export default function ColetaPrivadaWeb({api,profile,driver}){
   await mutate(()=>api('/turmas/'+id(turmaId)+'/coleta/'+sentido+'/minha-parada',{method:'DELETE'}),'Escolha removida.');
  }
  async function plan(){
-  if(!driver)return;
-  await mutate(async()=>{
+  if(!driver||busy)return;
+  setBusy(true);setError('');setMessage('');
+  try{
    const p=await api('/turmas/'+id(turmaId)+'/coleta/'+sentido+'/planejamento?otimizar='+optimize,{method:'POST'});
    if(!Array.isArray(p)||p.some(x=>!coordenadaValida(x)))throw Error('O planejamento não retornou pontos válidos.');
-   setPreview(normalizarPontos(p));
-  },'Planejamento consultado.');
+   setPreview(normalizarPontos(p));setMessage('Planejamento consultado. A prévia não altera a ordem gravada.');
+  }catch(e){setPreview([]);setError(note(e));}finally{setBusy(false);}
  }
  const mapPoints=normalizarPontos([...paradas,...(coordenadaValida(novo)?[{...novo,nome:novo.nome||'Novo ponto'}]:[])]);
  return <section className="be-section">
