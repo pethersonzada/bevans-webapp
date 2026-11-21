@@ -25,9 +25,9 @@ function montarRotaGeojson(coordinates){
 }
 export default function MapaWeb({pontos=[],posicao=null,rota=null,onSelecionar=null,altura=420}){
  const host=useRef(null),map=useRef(null),markers=useRef([]),onPick=useRef(onSelecionar);
+ const token=process.env.NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN || '';
  const [error,setError]=useState(token?'':'Configure NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN para carregar o mapa.');
  const [ready,setReady]=useState(false);
- const token=process.env.NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN || '';
  useEffect(()=>{onPick.current=onSelecionar;},[onSelecionar]);
  useEffect(()=>{
   let cancelled=false;
