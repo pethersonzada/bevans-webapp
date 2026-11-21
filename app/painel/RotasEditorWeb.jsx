@@ -12,7 +12,7 @@ export default function RotasEditorWeb({api,profile}){
   if(!Array.isArray(a)||!Array.isArray(b))throw Error('Listagem inválida.');
   setTurmas(a);setRotas(b);
  }catch(e){setErro(e.message);}},[api,profile.id]);
- useEffect(()=>{refresh();},[refresh]);
+ useEffect(()=>{Promise.resolve().then(()=>refresh());},[refresh]);
  function open(r){setSelected(String(r.id));setEditing(true);setForm({...cfg,...r,turmaId:String(r.turmaId),dias:r.dias||cfg.dias});setPontos(Array.isArray(r.paradas)?r.paradas:[]);setPreview([]);setPointIndex(null);}
  function reset(){setSelected('');setForm(cfg);setPontos([]);setPreview([]);setEditing(true);setPicking('ORIGEM');setPointIndex(null);}
  async function write(task,notice){
