@@ -12,3 +12,6 @@
 .be-map-selectable{cursor:crosshair}
 .be-map-route{padding:8px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .be-map-route small{opacity:.85;font-size:.78rem}
+
+.be-map-consent{padding:14px 16px;background:var(--be-surface,#fff)}
+.be-map-consent p{margin:0 0 10px;font-size:.9rem}
