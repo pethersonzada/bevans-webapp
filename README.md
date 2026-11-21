@@ -1,68 +1,162 @@
 # BeVans WebApp
 
-Landing page institucional do BeVans, desenvolvida com Next.js 16 (App Router), React 19 e Tailwind CSS 4.
+Site institucional e painel web do **BeVans**, plataforma para organização de transporte por van, com áreas para motoristas e passageiros.
 
-## Executar localmente
+> **Estado do produto (novembro de 2026):** o site apresenta as modalidades do BeVans e o painel já utiliza autenticação Firebase e endpoints do backend. O **cadastro público permanece fechado**. O aplicativo mobile oferece fluxos operacionais que ainda não têm equivalência completa no painel web. Imagens de rotas, indicadores e representações visuais da landing page são ilustrativos.
 
-Requer Node.js 20.9 ou superior e npm.
+## Ecossistema
+
+| Repositório | Responsabilidade |
+| --- | --- |
+| [bevans-frontend](https://github.com/pethersonzada/bevans-frontend) | Aplicativo mobile React Native/Expo para motoristas e passageiros |
+| [bevans-backend](https://github.com/pethersonzada/bevans-backend) | API REST Java/Spring Boot, persistência, autorização e operações |
+| **[bevans-webapp](https://github.com/pethersonzada/bevans-webapp)** | Site institucional, login e painel web |
+| [bevans-agente](https://github.com/pethersonzada/bevans-agente) | Agente de suporte com busca em FAQ (RAG), projeto separado |
+
+## Stack
+
+- **Next.js 16.3.3** com App Router e **React 19.2.8**.
+- **Tailwind CSS 4**, CSS do site e do painel, design responsivo e temas claro/escuro.
+- Autenticação via **Firebase Identity Toolkit REST**.
+- Integração com **API BeVans** usando token Firebase no cabeçalho `Authorization: Bearer <token>`.
+- Testes via **Node.js test runner**, ESLint e build de produção Next.js.
+
+## Requisitos e execução local
+
+- Node.js **20.9+** e npm.
+- Acesso ao projeto Firebase correto e à API BeVans para testar login e operações reais.
+- Para acessar apenas a landing page, não é necessário configurar a API.
 
 ```bash
+git clone https://github.com/pethersonzada/bevans-webapp.git
+cd bevans-webapp
 npm ci
 npm run dev
 ```
 
-Acesse http://localhost:3000. Execute `npm test`, `npm run lint` e `npm run build` antes de publicar. O workflow do GitHub Actions executa as três verificações em cada alteração.
+Acesse [http://localhost:3000](http://localhost:3000).
 
-## Configuração
+### Configuração
 
-Crie um arquivo `.env.local` com estas variáveis opcionais:
+Crie um arquivo `.env.local` **sem versionar credenciais**:
 
-```env
-NEXT_PUBLIC_CONTACT_EMAIL=contato@seu-dominio.com
+```dotenv
+# Site institucional
 NEXT_PUBLIC_SITE_URL=https://seu-dominio.com
+NEXT_PUBLIC_CONTACT_EMAIL=contato@seu-dominio.com
+
+# Login/painel web (necessários para funcionalidades autenticadas)
+NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY=sua_chave_web_publica_firebase
+NEXT_PUBLIC_BEVANS_API_URL=https://sua-api-bevans.exemplo.com
 ```
 
-**Não existe um e-mail comercial fixo no código.** Sem `NEXT_PUBLIC_CONTACT_EMAIL`, o formulário de contato exibe um aviso e impede o envio. Com a variável definida, o formulário prepara um e-mail no aplicativo do visitante; ele **não** envia uma solicitação por API nem salva dados em um banco.
+| Variável | Utilização |
+| --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | Base de URLs para metadados e sitemap; usa `https://bevans-webapp.vercel.app` como padrão |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | Destinatário do formulário comercial via `mailto:`; sem ela, o formulário não prepara o e-mail |
+| `NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY` | Chave pública web do Firebase usada pelo fluxo de login e recuperação de senha |
+| `NEXT_PUBLIC_BEVANS_API_URL` | URL de origem da API BeVans; o cliente exige HTTPS, com HTTP permitido apenas para `localhost`/`127.0.0.1` no desenvolvimento |
 
-O sitemap e os metadados usam como base padrão `https://bevans-webapp.vercel.app`. Configure `NEXT_PUBLIC_SITE_URL` caso utilize um domínio próprio.
+> Variáveis `NEXT_PUBLIC_*` ficam visíveis no JavaScript entregue ao navegador. **Nunca** armazene nelas chaves privadas, contas de serviço, tokens secretos ou senhas. A chave web pública do Firebase não substitui as regras de segurança e autorização do backend.
 
-## Rotas
+### Comandos
 
-- `/`: apresentação, funcionalidades, públicos, planos e FAQ.
-- `/contato`: mensagem comercial via aplicativo de e-mail.
-- `/termos`: informações institucionais e termos preliminares. Antes de operar com dados reais, é necessária revisão jurídica e política de privacidade completa.
+```bash
+npm run dev     # servidor local
+npm test        # testes do repositório
+npm run lint    # ESLint
+npm run build   # build de produção
+npm start       # servidor de produção após build
+```
 
-## Importante
+O workflow em `.github/workflows/quality.yml` também executa verificações automatizadas. Antes de publicar, confira especialmente login, requisições autenticadas, páginas institucionais e os dois temas em um navegador real.
 
-As telas de rota e os números apresentados são **ilustrativos**. A landing page não implementa rastreamento, cadastro, autenticação nem serviços de backend. Os preços devem ser confirmados antes de comercializar o serviço. A equipe deve validar os textos sobre recursos e condições antes da publicação.
+## Rotas e funcionalidades
 
-© 2026 Autores do projeto BeVans. Todos os direitos reservados.
+| Rota | Situação / finalidade |
+| --- | --- |
+| `/` | Landing page: recursos do aplicativo, modalidades, demonstrações e FAQ |
+| `/login` | **Login funcional** usando Firebase, seguido de consulta de perfil à API |
+| `/painel` | Painel autenticado com áreas operacionais por perfil |
+| `/cadastro` | Página informativa: **novos cadastros públicos indisponíveis** |
+| `/excursoes` | Apresentação das excursões e distinção entre app mobile e painel web |
+| `/contato` | Contato comercial preparado no cliente por `mailto:` |
+| `/termos` | Termos institucionais |
+| `/privacidade` | Política de privacidade do site |
 
-## Identidade visual
+### Autenticação e autorização
 
-A identidade foi alinhada ao app mobile `pethersonzada/bevans-frontend`: azul primário `#007BFF`, azul escuro `#0056b3`, superfícies brancas e fundo `#F8F9FA`. A logo exibida no site usa a imagem oficial `assets/images/logo-app-sem-fundo-sem-titulo.png` do repositório mobile, referenciada por sua URL pública no GitHub. O componente `next/image` otimiza e armazena em cache a imagem via Next.js, mas a origem ainda depende de um arquivo remoto. Para remover essa dependência, é necessário importar o binário oficial do aplicativo em `public/images`.
+1. A pessoa informa e-mail e senha na interface de `app/painel/AuthEntry.jsx`.
+2. `app/lib/bevans-auth.mjs` chama o Firebase Identity Toolkit para autenticar.
+3. O cliente solicita o perfil em `/usuarios/por-uid/{uid}`, com Bearer token.
+4. O painel apresenta opções segundo o perfil recuperado (`MOTORISTA`, `PASSAGEIRO` ou `ALUNO`).
+5. As chamadas do painel passam por `app/lib/bevans-api.mjs`; a **autorização definitiva** de acesso a dados e operações pertence ao backend.
 
-## Qualidade e segurança
+A sessão é mantida **em memória da aba**, incluindo o token de atualização. Ao recarregar a página pode ser necessário entrar novamente; nenhuma persistência de sessão em cookies está implementada nesse cliente. O login contempla recuperação de senha pelo fluxo Firebase, conforme a configuração do projeto.
 
-O pipeline `.github/workflows/quality.yml` executa testes de contato (`node --test`), lint e build em cada push e pull request. Cabeçalhos HTTP básicos são configurados em `next.config.mjs`. O formulário comercial continua sendo um fluxo `mailto:`, sem armazenamento nem envio de dados por API.
+### Painel operacional
 
-A política de privacidade do site (`/privacidade`) é separada dos termos (`/termos`) e não deve ser confundida com a documentação de privacidade do aplicativo React Native.
+`app/painel/AuthEntry.jsx` expõe áreas de **início, turmas, rotas públicas, solicitações, excursões, notificações e operações**. O painel consome a API para buscar dados e oferecer ações conforme o perfil. A cobertura das ações varia por módulo e por papel. Não confunda a existência de uma seção web com paridade funcional completa com o aplicativo Android.
 
-## Design de modalidades (prévia)
+### Excursões e modalidades
 
-- `/excursoes`: apresentação do fluxo planejado pelo MVP (backend #28-32 e frontend mobile #16); sem convites, inscrições ou reserva de vaga ativos.
-- `/login` e `/cadastro`: telas de prévia de interface, sem campos interativos, coleta de senhas, integrações com Firebase ou chamadas de API.
-- `/#precos`: planos comerciais de referência; não pressupõem que os módulos futuros estejam disponíveis.
+- **Turmas e rotas**: fluxos de operação disponíveis no ecossistema BeVans.
+- **Excursões**: criação e execução completas concentradas no aplicativo mobile, com inscrições via convite no navegador; o painel web amplia sua cobertura gradualmente.
+- **Gestão de frotas**: evolução futura, sem promessa de disponibilidade no produto atual.
+- Não há venda automatizada de planos nem cadastro público aberto no webapp.
 
-Nenhuma variável de ambiente, token ou segredo de Firebase/Mapbox foi adicionada com esta entrega. A integração será feita separadamente quando os contratos e regras de autorização estiverem definidos.
+## Estrutura principal
 
-## Coerência entre produtos
+```text
+app/
+├── components/            # navegação, apresentação e seções da landing page
+├── painel/
+│   ├── AuthEntry.jsx      # login e áreas operacionais autenticadas
+│   └── painel.css         # estilos do painel
+├── lib/
+│   ├── bevans-auth.mjs    # autenticação e recuperação pelo Firebase
+│   └── bevans-api.mjs     # cliente HTTP, tratamento de erros e contratos
+├── login/                 # entrada autenticada
+├── cadastro/              # aviso de cadastro público fechado
+├── excursoes/             # apresentação das excursões
+├── contato/               # contato comercial
+├── termos/                # termos institucionais
+├── privacidade/           # privacidade do site
+├── layout.js              # metadados, fontes, tema
+└── page.js                # página inicial
+tests/                     # testes Node
+public/images/             # assets oficiais e institucionais
+next.config.mjs            # imagens remotas e cabeçalhos HTTP
+```
 
+## Contato, privacidade e segurança
 
-## Administração
+O formulário de contato **não possui backend de envio**: prepara um e-mail no aplicativo do visitante, caso `NEXT_PUBLIC_CONTACT_EMAIL` esteja configurado. Não armazena as mensagens no webapp.
 
-A antiga rota `/gestor` e o componente `ManagerPreview` foram removidos. Não há papel ADMINISTRADOR implementado no aplicativo/backend nem escopo formal de administração da plataforma. Uma futura interface administrativa exige definição de permissões no backend; não deve ser confundida com a gestão de turmas pelo motorista.
+O cliente exige HTTPS para o endereço da API fora do desenvolvimento local, envia token no cabeçalho e emprega timeout. O `next.config.mjs` define cabeçalhos como `X-Content-Type-Options`, `X-Frame-Options` e `Referrer-Policy`. A verificação de permissões e de propriedade dos recursos **deve ocorrer no servidor**.
 
-## Estado comercial
+Este repositório não deve conter arquivos `.env.local` com valores reais, segredos Firebase Admin nem tokens de acesso. A política em `/privacidade` e os termos em `/termos` exigem revisão jurídica e operacional antes de serviços comerciais envolvendo dados reais.
 
-A seção de modalidades separa funcionalidades do aplicativo mobile de projetos futuros (excursões e gestão de frotas). Preços antigos não confirmados foram retirados da interface para evitar confusão com serviços já contratáveis.
+## Deploy e verificações
+
+1. Configure as quatro variáveis de ambiente aplicáveis ao ambiente de hospedagem; as duas últimas são indispensáveis ao painel autenticado.
+2. Disponibilize a API BeVans publicamente por HTTPS e configure no backend as origens permitidas para requisições do navegador.
+3. Execute `npm test && npm run lint && npm run build`.
+4. Valide o acesso com uma conta autorizada e as permissões correspondentes no backend.
+5. Verifique experiência mobile, tema escuro, contatos e páginas institucionais.
+
+O repositório usa a hospedagem de referência `https://bevans-webapp.vercel.app` como URL padrão para metadados. Atualize `NEXT_PUBLIC_SITE_URL` ao configurar domínio próprio.
+
+## Limitações e próximos passos
+
+- Cadastro público fechado.
+- Cobertura web ainda parcial em relação aos recursos do aplicativo Android.
+- Conteúdo ilustrativo da landing page não representa dados de viagens reais.
+- O contato comercial depende de um aplicativo de e-mail instalado/configurado no dispositivo.
+- Validações automatizadas não substituem testes de integração com Firebase/API e revisão visual.
+
+## Licença e autoria
+
+Consulte o arquivo `LICENSE` deste repositório para conhecer as condições vigentes de uso e distribuição do código.
+
+Projeto **BeVans**. Documentação atualizada a partir da estrutura existente no repositório em novembro de 2026.
