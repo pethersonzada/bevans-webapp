@@ -48,12 +48,13 @@ export function pontosRoteiroOperacional(roteiro) {
 }
 
 /** Mapa de referência; linhas ligam pontos diretamente, sem sugerir caminhos pelas ruas. */
-export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da rota',onPick=null}) {
+export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da rota',onPick=null,autorizarRoteamento=false}) {
   const containerRef=useRef(null),mapRef=useRef(null),layerRef=useRef(null),leafletRef=useRef(null);
-  const latestRef=useRef({pontos,posicao});
+  const latestRef=useRef({pontos,posicao,caminho:null});
   const onPickRef=useRef(onPick);
   const [erro,setErro]=useState('');
-  latestRef.current={pontos,posicao};
+  const [caminho,setCaminho]=useState(null),[passos,setPassos]=useState([]),[roteando,setRoteando]=useState(false),[erroRota,setErroRota]=useState('');
+  latestRef.current={pontos,posicao,caminho};
   onPickRef.current=onPick;
 
   const redrawRef=useRef(null);
@@ -82,7 +83,9 @@ export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da 
           tooltip.textContent=p.nome || 'Ponto de parada';
           marker.bindTooltip(tooltip).addTo(layerRef.current);
         }
-        if(coords.length>1) L.polyline(coords,{color:'#007bff',opacity:0.7,weight:3,dashArray:'7 7'}).addTo(layerRef.current);
+        const trajeto=Array.isArray(input.caminho)?input.caminho.filter(p=>Array.isArray(p)&&p.length===2&&pontoValido(p[0],p[1])):[];
+        if(trajeto.length>1){L.polyline(trajeto,{color:'#138161',weight:5,opacity:0.85}).addTo(layerRef.current);coords.push(...trajeto);} 
+        else if(coords.length>1) L.polyline(coords,{color:'#007bff',opacity:0.7,weight:3,dashArray:'7 7'}).addTo(layerRef.current);
         const v=input.posicao;
         if(v && v.estado==='ATUALIZADA' && pontoValido(v.latitude,v.longitude)){
           const ll=[v.latitude,v.longitude];
@@ -103,13 +106,37 @@ export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da 
     return ()=>{cancelled=true;redrawRef.current=null;mapRef.current?.remove();mapRef.current=null;layerRef.current=null;};
   },[]);
 
-  useEffect(()=>{redrawRef.current?.();},[pontos,posicao]);
+  useEffect(()=>{redrawRef.current?.();},[pontos,posicao,caminho]);
+
+  async function tracarRota(){
+    if(roteando)return;
+    setErroRota('');setPassos([]);setCaminho(null);
+    const token=process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+    if(!token){setErroRota('Configure NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN para consultar trajetos por vias.');return;}
+    const pins=pontos.filter(p=>pontoValido(p.latitude,p.longitude));
+    if(pins.length<2||pins.length>25){setErroRota('O roteiro precisa ter entre 2 e 25 pontos válidos para o Mapbox Directions.');return;}
+    if(!window.confirm('Consultar a rota viária no Mapbox? Os pontos deste roteiro serão enviados ao provedor de mapas para traçar o percurso.'))return;
+    setRoteando(true);
+    try{
+      const coords=pins.map(p=>encodeURIComponent(p.longitude+','+p.latitude)).join(';');
+      const url='https://api.mapbox.com/directions/v5/mapbox/driving/'+coords+'?geometries=geojson&overview=full&steps=true&language=pt&access_token='+encodeURIComponent(token);
+      const response=await fetch(url,{cache:'no-store'});
+      if(!response.ok)throw Error('Consulta de roteamento indisponível (HTTP '+response.status+').');
+      const payload=await response.json();const route=payload.routes?.[0];
+      if(!route||!Array.isArray(route.geometry?.coordinates))throw Error('Nenhum percurso encontrado para os pontos selecionados.');
+      setCaminho(route.geometry.coordinates.map(p=>[p[1],p[0]]));
+      setPassos((route.legs||[]).flatMap(leg=>(leg.steps||[]).map(s=>s.maneuver?.instruction).filter(Boolean)));
+    }catch(e){setErroRota(e.message);}finally{setRoteando(false);}
+  }
 
   return <section className="be-map-shell" aria-label={titulo}>
-    <div className="be-map-heading"><strong>{titulo}</strong><small>Mapa de referência. As linhas pontilhadas não representam vias ou navegação.</small></div>
+    <div className="be-map-heading"><strong>{titulo}</strong><small>{caminho?'Percurso viário calculado pelo Mapbox.':'Linhas pontilhadas não representam vias ou navegação.'}</small></div>
     {erro?<p role="alert" className="be-map-error">{erro}</p>:null}
+    {autorizarRoteamento&&<div className="be-map-route"><button type="button" className="be-btn" disabled={roteando} onClick={tracarRota}>{roteando?'Calculando percurso…':'Traçar percurso pelas ruas (Mapbox)'}</button><small>Consulta opcional. Compartilha os pontos selecionados com o Mapbox.</small></div>}
+    {erroRota&&<p role="alert" className="be-map-error">{erroRota}</p>}
     {onPick&&<p className="be-map-pick">Clique ou toque no mapa para escolher o ponto exato.</p>}
     <div ref={containerRef} className={'be-map-canvas '+(onPick?'be-map-selectable':'')} aria-label={titulo}/>
+    {passos.length>0&&<details className="be-map-list"><summary>Instruções do percurso ({passos.length})</summary><ol>{passos.map((passo,i)=><li key={i}>{passo}</li>)}</ol></details>}
     {pontos.length>0&&<details className="be-map-list"><summary>Pontos no mapa ({pontos.length})</summary><ol>{pontos.map((p,i)=><li key={i}>{p.nome || 'Ponto'}</li>)}</ol></details>}
     <p className="be-map-credit">Mapa: OpenStreetMap. Geolocalização disponível apenas para usuários autorizados durante uma viagem ativa.</p>
   </section>;
