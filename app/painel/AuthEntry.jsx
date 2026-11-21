@@ -9,6 +9,7 @@ import ViagensWeb from './ViagensWeb';
 import EnderecosWeb from './EnderecosWeb';
 import GestaoExcursaoWeb from './GestaoExcursaoWeb';
 import RotasEditorWeb from './RotasEditorWeb';
+import ColetaPrivadaWeb from './ColetaPrivadaWeb';
 
 const statuses={PENDENTE:'Pendente',APROVADO:'Aprovado',REJEITADO:'Recusado',EMBARCADO:'Embarcado',AGUARDANDO:'Aguardando',DESEMBARCADO:'Desembarcado',NAO_EMBARCOU:'Não embarcou'};
 const display=v=>v==null?'Não informado':statuses[v]||String(v);
@@ -85,7 +86,7 @@ export default function AuthEntry(){
   </section>
  </main>;
  const driver=profile.tipo==='MOTORISTA';
- const tabs=[['inicio','Início'],['turmas','Turmas'],['rotas',driver?'Rotas públicas':'Explorar rotas'],['solicitacoes','Solicitações'],['excursoes','Excursões'],['notificacoes','Notificações'],['operacao','Operações'],['viagens','Mapa e viagens'],['enderecos','Endereços e pontos'],...(driver?[['gestao-excursoes','Gestão de excursões'],['editor-rotas','Editor de rotas']]:[])];
+ const tabs=[['inicio','Início'],['turmas','Turmas'],['rotas',driver?'Rotas públicas':'Explorar rotas'],['solicitacoes','Solicitações'],['excursoes','Excursões'],['notificacoes','Notificações'],['operacao','Operações'],['viagens','Mapa e viagens'],['enderecos','Endereços e pontos'],['coleta','Coleta privada'],...(driver?[['gestao-excursoes','Gestão de excursões'],['editor-rotas','Editor de rotas']]:[])];
  const selected=tabs.find(item=>item[0]===tab);
  const firstName=(profile.nome||'').trim().split(/\s+/)[0]||'Usuário';
  return <main className="be-app" id="conteudo">
@@ -109,6 +110,7 @@ export default function AuthEntry(){
     {tab==='enderecos'&&<EnderecosWeb api={api} profile={profile} driver={driver}/>}
     {tab==='gestao-excursoes'&&driver&&<GestaoExcursaoWeb api={api}/>}
     {tab==='editor-rotas'&&driver&&<RotasEditorWeb api={api} profile={profile}/>}
+    {tab==='coleta'&&<ColetaPrivadaWeb api={api} profile={profile} driver={driver}/>}
    </div>
   </div>
  </main>;
