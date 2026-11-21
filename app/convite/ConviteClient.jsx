@@ -56,7 +56,7 @@ export default function ConviteClient(){
  }
  async function consultarInscricao(){
   const value=(credencialDigitada||credencial).trim();
-  if(!value||value.length>500||/\\s/.test(value))return setErro('Informe uma credencial individual válida.');
+  if(!value||value.length>500||/\s/.test(value))return setErro('Informe uma credencial individual válida.');
   setBusy(true);setErro('');
   try{
    const r=await publico('/publico/excursoes/inscricao',{'X-Inscricao':value});
@@ -72,7 +72,7 @@ export default function ConviteClient(){
  async function mostrarContato(){
   if(!credencial||inscricao?.estado!=='CONFIRMADA')return;
   setBusy(true);setErro('');
-  try{const r=await publico('/publico/excursoes/inscricao/contato-motorista',{'X-Inscricao':credencial});if(!r?.waMe||!/^https:\\/\\/wa\\.me\\/[0-9]+$/.test(r.waMe))throw Error('Contato não autorizado.');setContatoMotorista(r);}catch(e){setErro(text(e));}finally{setBusy(false);}
+  try{const r=await publico('/publico/excursoes/inscricao/contato-motorista',{'X-Inscricao':credencial});if(!r?.waMe||!/^https:\/\/wa\.me\/[0-9]+$/.test(r.waMe))throw Error('Contato não autorizado.');setContatoMotorista(r);}catch(e){setErro(text(e));}finally{setBusy(false);}
  }
  async function cancelar(){
   if(!credencial||!window.confirm('Cancelar esta inscrição? A vaga será liberada.'))return;
