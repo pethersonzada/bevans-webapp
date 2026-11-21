@@ -5,6 +5,10 @@ import Image from 'next/image';
 import {firebaseSignIn,firebaseRefresh,firebasePasswordReset} from '../lib/bevans-auth.mjs';
 import {apiRequest,array,pagina,ep,diaLocal,idSeguro} from '../lib/bevans-api.mjs';
 import './painel.css';
+import ViagensWeb from './ViagensWeb';
+import EnderecosWeb from './EnderecosWeb';
+import GestaoExcursaoWeb from './GestaoExcursaoWeb';
+import RotasEditorWeb from './RotasEditorWeb';
 
 const statuses={PENDENTE:'Pendente',APROVADO:'Aprovado',REJEITADO:'Recusado',EMBARCADO:'Embarcado',AGUARDANDO:'Aguardando',DESEMBARCADO:'Desembarcado',NAO_EMBARCOU:'Não embarcou'};
 const display=v=>v==null?'Não informado':statuses[v]||String(v);
@@ -81,7 +85,7 @@ export default function AuthEntry(){
   </section>
  </main>;
  const driver=profile.tipo==='MOTORISTA';
- const tabs=[['inicio','Início'],['turmas','Turmas'],['rotas',driver?'Rotas públicas':'Explorar rotas'],['solicitacoes','Solicitações'],['excursoes','Excursões'],['notificacoes','Notificações'],['operacao','Operações']];
+ const tabs=[['inicio','Início'],['turmas','Turmas'],['rotas',driver?'Rotas públicas':'Explorar rotas'],['solicitacoes','Solicitações'],['excursoes','Excursões'],['notificacoes','Notificações'],['operacao','Operações'],['viagens','Mapa e viagens'],['enderecos','Endereços e pontos'],...(driver?[['gestao-excursoes','Gestão de excursões'],['editor-rotas','Editor de rotas']]:[])];
  const selected=tabs.find(item=>item[0]===tab);
  const firstName=(profile.nome||'').trim().split(/\s+/)[0]||'Usuário';
  return <main className="be-app" id="conteudo">
@@ -101,6 +105,10 @@ export default function AuthEntry(){
     {tab==='excursoes'&&<Excursoes api={api} driver={driver}/>}
     {tab==='notificacoes'&&<Notificacoes api={api} onGo={setTab}/>}
     {tab==='operacao'&&<Operacoes api={api} profile={profile} driver={driver}/>}
+    {tab==='viagens'&&<ViagensWeb api={api} profile={profile} driver={driver}/>}
+    {tab==='enderecos'&&<EnderecosWeb api={api} profile={profile} driver={driver}/>}
+    {tab==='gestao-excursoes'&&driver&&<GestaoExcursaoWeb api={api}/>}
+    {tab==='editor-rotas'&&driver&&<RotasEditorWeb api={api} profile={profile}/>}
    </div>
   </div>
  </main>;

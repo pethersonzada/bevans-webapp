@@ -48,6 +48,7 @@ NEXT_PUBLIC_CONTACT_EMAIL=contato@seu-dominio.com
 # Login/painel web (necessários para funcionalidades autenticadas)
 NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY=sua_chave_web_publica_firebase
 NEXT_PUBLIC_BEVANS_API_URL=https://sua-api-bevans.exemplo.com
+NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN=pk.seu_token_publico_mapbox
 ```
 
 | Variável | Utilização |
@@ -56,6 +57,7 @@ NEXT_PUBLIC_BEVANS_API_URL=https://sua-api-bevans.exemplo.com
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Destinatário do formulário comercial via `mailto:`; sem ela, o formulário não prepara o e-mail |
 | `NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY` | Chave pública web do Firebase usada pelo fluxo de login e recuperação de senha |
 | `NEXT_PUBLIC_BEVANS_API_URL` | URL de origem da API BeVans; o cliente exige HTTPS, com HTTP permitido apenas para `localhost`/`127.0.0.1` no desenvolvimento |
+| `NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN` | Token **público** Mapbox restrito a domínios autorizados para exibir mapas e calcular direções no painel |
 
 > Variáveis `NEXT_PUBLIC_*` ficam visíveis no JavaScript entregue ao navegador. **Nunca** armazene nelas chaves privadas, contas de serviço, tokens secretos ou senhas. A chave web pública do Firebase não substitui as regras de segurança e autorização do backend.
 
@@ -80,6 +82,7 @@ O workflow em `.github/workflows/quality.yml` também executa verificações aut
 | `/painel` | Painel autenticado com áreas operacionais por perfil |
 | `/cadastro` | Página informativa: **novos cadastros públicos indisponíveis** |
 | `/excursoes` | Apresentação das excursões e distinção entre app mobile e painel web |
+| `/convite#<token>` | Inscrição pública por convite de excursão, sem Firebase. O segredo é lido do fragmento e enviado exclusivamente via headers. |
 | `/contato` | Contato comercial preparado no cliente por `mailto:` |
 | `/termos` | Termos institucionais |
 | `/privacidade` | Política de privacidade do site |
@@ -139,7 +142,7 @@ Este repositório não deve conter arquivos `.env.local` com valores reais, segr
 
 ## Deploy e verificações
 
-1. Configure as quatro variáveis de ambiente aplicáveis ao ambiente de hospedagem; as duas últimas são indispensáveis ao painel autenticado.
+1. Configure as variáveis de ambiente aplicáveis ao ambiente de hospedagem; as duas últimas são indispensáveis ao painel autenticado.
 2. Disponibilize a API BeVans publicamente por HTTPS e configure no backend as origens permitidas para requisições do navegador.
 3. Execute `npm test && npm run lint && npm run build`.
 4. Valide o acesso com uma conta autorizada e as permissões correspondentes no backend.
@@ -150,7 +153,11 @@ O repositório usa a hospedagem de referência `https://bevans-webapp.vercel.app
 ## Limitações e próximos passos
 
 - Cadastro público fechado.
-- Cobertura web ainda parcial em relação aos recursos do aplicativo Android.
+- O painel oferece módulos web incrementais de mapa, GPS, presença, endereços, edição de rotas públicas e gestão de excursões no PR #19. **A branch da funcionalidade deve ser testada antes de mesclar; enquanto não for mesclada, essas funções não estão na main.**
+- Cobertura web ainda parcial em relação aos recursos do aplicativo Android, especialmente navegação turn-by-turn, notificações push, coleta configurável e recursos específicos de segundo plano.
+- GPS no navegador depende de HTTPS, permissão explícita, aba visível e autorização do backend. O envio limita a frequência a pelo menos cinco segundos e é interrompido quando a aba fica oculta. Não há localização em segundo plano.
+- A rota rodoviária usa a API Directions do Mapbox quando solicitada, limitada a 25 coordenadas e sem omitir paradas.
+- O fluxo público de convites exige revisão de consentimentos e privacidade, especialmente para menores, antes de produção.
 - Conteúdo ilustrativo da landing page não representa dados de viagens reais.
 - O contato comercial depende de um aplicativo de e-mail instalado/configurado no dispositivo.
 - Validações automatizadas não substituem testes de integração com Firebase/API e revisão visual.
