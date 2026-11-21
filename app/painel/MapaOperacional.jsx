@@ -48,11 +48,13 @@ export function pontosRoteiroOperacional(roteiro) {
 }
 
 /** Mapa de referência; linhas ligam pontos diretamente, sem sugerir caminhos pelas ruas. */
-export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da rota'}) {
+export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da rota',onPick=null}) {
   const containerRef=useRef(null),mapRef=useRef(null),layerRef=useRef(null),leafletRef=useRef(null);
   const latestRef=useRef({pontos,posicao});
+  const onPickRef=useRef(onPick);
   const [erro,setErro]=useState('');
   latestRef.current={pontos,posicao};
+  onPickRef.current=onPick;
 
   const redrawRef=useRef(null);
   useEffect(()=>{
@@ -62,6 +64,7 @@ export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da 
       leafletRef.current=L;
       const map=L.map(containerRef.current,{scrollWheelZoom:false});
       mapRef.current=map;
+      map.on('click',e=>{onPickRef.current?.({latitude:e.latlng.lat,longitude:e.latlng.lng});});
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
         maxZoom:19,attribution:'&copy; OpenStreetMap contributors',
       }).addTo(map);
@@ -105,7 +108,8 @@ export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da 
   return <section className="be-map-shell" aria-label={titulo}>
     <div className="be-map-heading"><strong>{titulo}</strong><small>Mapa de referência. As linhas pontilhadas não representam vias ou navegação.</small></div>
     {erro?<p role="alert" className="be-map-error">{erro}</p>:null}
-    <div ref={containerRef} className="be-map-canvas" aria-label={titulo}/>
+    {onPick&&<p className="be-map-pick">Clique ou toque no mapa para escolher o ponto exato.</p>}
+    <div ref={containerRef} className={'be-map-canvas '+(onPick?'be-map-selectable':'')} aria-label={titulo}/>
     {pontos.length>0&&<details className="be-map-list"><summary>Pontos no mapa ({pontos.length})</summary><ol>{pontos.map((p,i)=><li key={i}>{p.nome || 'Ponto'}</li>)}</ol></details>}
     <p className="be-map-credit">Mapa: OpenStreetMap. Geolocalização disponível apenas para usuários autorizados durante uma viagem ativa.</p>
   </section>;
