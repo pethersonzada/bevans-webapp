@@ -11,6 +11,7 @@ import EnderecosWeb from './EnderecosWeb';
 import PresencaWeb from './PresencaWeb';
 import EditorRotaWeb from './EditorRotaWeb';
 import GestaoTurmaWeb from './GestaoTurmaWeb';
+import GestaoExcursaoWeb from './GestaoExcursaoWeb';
 
 const statuses={PENDENTE:'Pendente',APROVADO:'Aprovado',REJEITADO:'Recusado',EMBARCADO:'Embarcado',AGUARDANDO:'Aguardando',DESEMBARCADO:'Desembarcado',NAO_EMBARCOU:'Não embarcou'};
 const display=v=>v==null?'Não informado':statuses[v]||String(v);
@@ -188,10 +189,11 @@ function Solicitacoes({api,profile,driver}){
 }
 function Excursoes({api,driver}){
  const state=useAsync(s=>driver?api(ep.excursoes,{signal:s}).then(pagina):Promise.resolve([]),[driver]);
- const [id,setId]=useState(null),[exec,setExec]=useState(null),[error,setError]=useState('');
+ const [id,setId]=useState(null),[exec,setExec]=useState(null),[error,setError]=useState(''),[editing,setEditing]=useState(undefined);
  async function load(id){setId(id);setExec(null);setError('');try{const x=array(await api(ep.execucoes(id)));setExec(x);}catch(e){setError(e.message);}}
  if(!driver)return <Panel title="Excursões"><p>Inscrições de passageiros são feitas com convites individuais. O webapp não acessa recursos privados do motorista em nome do passageiro.</p><Empty>O fluxo de inscrição com convite será integrado separadamente.</Empty></Panel>;
- return <section className="be-section"><div className="be-row"><h2>Excursões</h2><Button onClick={state.reload}>Atualizar</Button></div><Alert error={state.error||error}/>{state.loading?<Empty>Carregando…</Empty>:!state.data?.length?<Empty>Nenhuma excursão encontrada.</Empty>:<div className="be-grid">{state.data.map(e=><Panel key={e.id} title={e.titulo}><p>{e.origemNome||'Origem'} → {e.destinoNome}</p><p>Partida: {stamp(e.partidaEm)}</p><p>Volta: {stamp(e.retornoEm)}</p><p className="be-muted">{display(e.estado)} · {e.capacidade} assentos</p><Button onClick={()=>load(e.id)}>Consultar execuções</Button></Panel>)}</div>}
+ return <section className="be-section"><div className="be-row"><h2>Excursões</h2><div className="be-actions"><Button onClick={state.reload}>Atualizar</Button><Button primary onClick={()=>setEditing(null)}>Nova excursão</Button></div></div><Alert error={state.error||error}/>{editing!==undefined&&<GestaoExcursaoWeb key={editing?.id||'nova'} api={api} excursao={editing} onClose={()=>setEditing(undefined)} onSaved={()=>{state.reload();}}/>}
+  {state.loading?<Empty>Carregando…</Empty>:!state.data?.length?<Empty>Nenhuma excursão encontrada.</Empty>:<div className="be-grid">{state.data.map(e=><Panel key={e.id} title={e.titulo}><p>{e.origemNome||'Origem'} → {e.destinoNome}</p><p>Partida: {stamp(e.partidaEm)}</p><p>Volta: {stamp(e.retornoEm)}</p><p className="be-muted">{display(e.estado)} · {e.capacidade} assentos</p><div className="be-actions"><Button onClick={()=>load(e.id)}>Consultar execuções</Button><Button onClick={()=>setEditing(e)}>Gerenciar excursão</Button></div></Panel>)}</div>}
  {id&&<section className="be-section"><Panel title={`Execuções da excursão #${id}`}><Button onClick={()=>load(id)}>Atualizar execuções</Button>{!exec?<Empty>Carregando execuções…</Empty>:!exec.length?<Empty>Não existe execução registrada. O início exige prévia, versão salva e validação dos participantes no aplicativo.</Empty>:<div className="be-list">{exec.map(v=><div className="be-item" key={v.id}><strong>Execução #{v.id} · {dir(v.sentido)} · {display(v.estado)}</strong><p>{v.pontos?.length||0} pontos no roteiro oficial</p></div>)}</div>}</Panel></section>}</section>;
 }
 function Notificacoes({api,onGo}){
