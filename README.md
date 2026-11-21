@@ -48,6 +48,9 @@ NEXT_PUBLIC_CONTACT_EMAIL=contato@seu-dominio.com
 # Login/painel web (necessários para funcionalidades autenticadas)
 NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY=sua_chave_web_publica_firebase
 NEXT_PUBLIC_BEVANS_API_URL=https://sua-api-bevans.exemplo.com
+
+# Opcional: percursos viários e instruções em mapas autorizados
+NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.seu_token_publico_mapbox
 ```
 
 | Variável | Utilização |
@@ -56,6 +59,7 @@ NEXT_PUBLIC_BEVANS_API_URL=https://sua-api-bevans.exemplo.com
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Destinatário do formulário comercial via `mailto:`; sem ela, o formulário não prepara o e-mail |
 | `NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY` | Chave pública web do Firebase usada pelo fluxo de login e recuperação de senha |
 | `NEXT_PUBLIC_BEVANS_API_URL` | URL de origem da API BeVans; o cliente exige HTTPS, com HTTP permitido apenas para `localhost`/`127.0.0.1` no desenvolvimento |
+| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Chave pública opcional para traçar percursos e exibir instruções viárias via Mapbox Directions, somente por ação explícita |
 
 > Variáveis `NEXT_PUBLIC_*` ficam visíveis no JavaScript entregue ao navegador. **Nunca** armazene nelas chaves privadas, contas de serviço, tokens secretos ou senhas. A chave web pública do Firebase não substitui as regras de segurança e autorização do backend.
 
@@ -98,10 +102,30 @@ A sessão é mantida **em memória da aba**, incluindo o token de atualização.
 
 `app/painel/AuthEntry.jsx` expõe áreas de **início, turmas, rotas públicas, solicitações, excursões, notificações e operações**. O painel consome a API para buscar dados e oferecer ações conforme o perfil. A cobertura das ações varia por módulo e por papel. Não confunda a existência de uma seção web com paridade funcional completa com o aplicativo Android.
 
+### Mapas, presença e GPS no painel web (implementação em validação)
+
+O painel possui módulos web de **endereços, presença diária, turmas, coleta privada, rotas públicas, GPS, operações e excursões**. Estas integrações estão em validação no pull request [#18](https://github.com/pethersonzada/bevans-webapp/pull/18), antes de entrar na branch de produção.
+
+- **Endereços:** cadastrar, editar e excluir endereços próprios com pin explicitamente selecionado no mapa. A precisão do pin deve ser conferida pelo usuário.
+- **Presença:** confirmar ida, volta, ambos, ausência ou limpar a confirmação para a turma selecionada, usando `/rota/confirmar` e `/rota/minha-confirmacao`.
+- **Turmas:** criar, editar cadastro e extremos, consultar passageiros, remover vínculo, regenerar código e pedir ingresso por código como passageiro.
+- **Coleta privada:** motorista define pontos por sentido ou porta a porta; passageiro escolhe a própria parada e a presença respeita a configuração oficial.
+- **Rotas públicas:** criar, editar, ordenar paradas, publicar, obter prévia de ordem e iniciar viagem pública com autenticação de motorista.
+- **Viagens privadas:** início e encerramento do ciclo, com consulta de estado oficial e bloqueio antes do encerramento se houver passageiros embarcados.
+- **Mapa operacional:** motorista autenticado consulta `/operacoes/VIAGEM/{id}/roteiro` e passageiros autorizados consultam somente a posição GPS da van. Posição obsoleta/expirada não é exibida como atual.
+- **GPS do navegador:** motorista pode autorizar o envio de sua localização para `PUT /viagens/{id}/localizacao` durante viagem ativa, com frequência controlada. HTTPS e permissão de localização são obrigatórios; **o envio para ao ocultar a aba**. Não é substituto do rastreamento nativo contínuo em segundo plano.
+- **Mapa externo:** Leaflet 1.9.4 com tiles OpenStreetMap. Em mapas privados e de endereços o carregamento depende de ação explícita, pois o provedor externo recebe solicitações de tiles. Linhas pontilhadas mostram apenas a sequência dos pontos, não vias.
+- **Rotas pelas ruas:** opcionalmente, um motorista pode autorizar uma chamada ao Mapbox Directions (máximo 25 pontos válidos) para receber percurso por vias e instruções. O token público deve estar configurado. Essa consulta envia as coordenadas do roteiro ao Mapbox; uma confirmação antecede o envio.
+
+- **Excursões no painel:** organizador pode criar/editar rascunho, configurar coleta, publicar/cancelar, emitir/revogar convites, consultar e confirmar inscrições, iniciar/finalizar execuções, registrar embarque/desembarque e transmitir GPS durante execução autorizada.
+- **Inscrição por convite:** página `/convite` usa fragmento local `#token=...` e os cabeçalhos `X-Convite`/`X-Inscricao` nos contratos públicos. A credencial individual permanece em memória na aba; o usuário deve copiá-la e guardá-la antes de prosseguir. O fluxo de convite não concede acesso a localização privada nem perfis de terceiros.
+
+**Limites atuais:** o navegador não oferece equivalência a GPS em segundo plano, navegação guiada/turn-by-turn nativa ou push do Expo. A operação web tem cobertura nova, sem equivalência funcional comprovada por testes ponta a ponta. **Dados de menores, consentimento verificável, política de retenção e revisão de CORS/privacidade exigem homologação antes de uso público.**
+
 ### Excursões e modalidades
 
 - **Turmas e rotas**: fluxos de operação disponíveis no ecossistema BeVans.
-- **Excursões**: criação e execução completas concentradas no aplicativo mobile, com inscrições via convite no navegador; o painel web amplia sua cobertura gradualmente.
+- **Excursões**: funções de gestão e convite estão implementadas nesta branch web e no aplicativo, mas dependem de testes integrados antes de lançamento público.
 - **Gestão de frotas**: evolução futura, sem promessa de disponibilidade no produto atual.
 - Não há venda automatizada de planos nem cadastro público aberto no webapp.
 
@@ -112,10 +136,16 @@ app/
 ├── components/            # navegação, apresentação e seções da landing page
 ├── painel/
 │   ├── AuthEntry.jsx      # login e áreas operacionais autenticadas
+│   ├── MapaOperacional.jsx # mapa e roteamento opcional
+│   ├── GestaoTurmaWeb.jsx # gestão de turmas e participantes
+│   ├── ColetaPrivadaWeb.jsx # coleta e escolha de paradas
+│   ├── EditorRotaWeb.jsx # editor de rotas públicas
+│   ├── GestaoExcursaoWeb.jsx # excursões e convites
 │   └── painel.css         # estilos do painel
 ├── lib/
 │   ├── bevans-auth.mjs    # autenticação e recuperação pelo Firebase
 │   └── bevans-api.mjs     # cliente HTTP, tratamento de erros e contratos
+├── convite/               # inscrição individual por convite
 ├── login/                 # entrada autenticada
 ├── cadastro/              # aviso de cadastro público fechado
 ├── excursoes/             # apresentação das excursões
@@ -136,6 +166,8 @@ O formulário de contato **não possui backend de envio**: prepara um e-mail no 
 O cliente exige HTTPS para o endereço da API fora do desenvolvimento local, envia token no cabeçalho e emprega timeout. O `next.config.mjs` define cabeçalhos como `X-Content-Type-Options`, `X-Frame-Options` e `Referrer-Policy`. A verificação de permissões e de propriedade dos recursos **deve ocorrer no servidor**.
 
 Este repositório não deve conter arquivos `.env.local` com valores reais, segredos Firebase Admin nem tokens de acesso. A política em `/privacidade` e os termos em `/termos` exigem revisão jurídica e operacional antes de serviços comerciais envolvendo dados reais.
+
+A página `/convite` não envia tokens na URL da API. Como as credenciais individuais dão acesso à inscrição, **não** as compartilhe com outras pessoas nem registre cabeçalhos ou corpos dessas chamadas em ferramentas de observabilidade. Configurar CORS apenas para as origens necessárias e revisar a política de privacidade para os dados efetivamente tratados.
 
 ## Deploy e verificações
 
