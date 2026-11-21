@@ -9,7 +9,7 @@ const vazia={nome:'',contato:'',paradaId:'',nomePonto:'',latitude:null,longitude
 
 export default function InscricaoConvite(){
   const [convite,setConvite]=useState(''),[detalhes,setDetalhes]=useState(null);
-  const [inscricaoToken,setInscricaoToken]=useState(''),[inscricao,setInscricao]=useState(null);
+  const [inscricaoToken,setInscricaoToken]=useState(''),[inscricao,setInscricao]=useState(null),[credencialGuardada,setCredencialGuardada]=useState('');
   const [form,setForm]=useState(vazia),[carregando,setCarregando]=useState(false),[busy,setBusy]=useState(false),[erro,setErro]=useState(''),[aviso,setAviso]=useState('');
   useEffect(()=>{
     // Retira o fragmento local imediatamente, antes de consultar o serviço.
@@ -59,6 +59,16 @@ export default function InscricaoConvite(){
     }catch(e){setErro(e.message);}finally{setBusy(false);}
   }
 
+  async function recuperar(){
+    if(busy||!credencialValida(credencialGuardada)){setErro('Informe uma credencial individual válida.');return;}
+    setBusy(true);setErro('');setAviso('');
+    try{const r=await conviteRequest('/publico/excursoes/inscricao',{inscricao:credencialGuardada});
+      if(!r?.id)throw Error('A inscrição não foi encontrada.');
+      setInscricaoToken(credencialGuardada);setInscricao(r);setCredencialGuardada('');
+      setAviso('Inscrição recuperada com sua credencial individual.');
+    }catch(e){setErro(e.message);}finally{setBusy(false);}
+  }
+
   async function consultar(){
     if(busy||!inscricaoToken)return;setBusy(true);setErro('');setAviso('');
     try{
@@ -89,6 +99,7 @@ export default function InscricaoConvite(){
     <section className="be-card"><h1>Inscrição em excursão</h1><p className="be-muted">O acesso depende de um convite individual válido. A inscrição não equivale à confirmação da vaga.</p>
       {erro&&<p role="alert" className="be-error">{erro}</p>}
       {aviso&&<p role="status">{aviso}</p>}
+      <div className="be-section"><h2>Já possui uma credencial individual?</h2><p className="be-muted">Cole sua credencial privada para consultar ou cancelar sua própria inscrição, mesmo que tenha perdido o link do convite.</p><div className="be-fieldset"><label>Minha credencial<input type="password" autoComplete="off" value={credencialGuardada} onChange={e=>setCredencialGuardada(e.target.value.trim())} placeholder="Credencial individual"/></label><button type="button" className="be-btn" disabled={busy||!credencialValida(credencialGuardada)} onClick={recuperar}>Consultar minha inscrição</button></div></div>
       {carregando?<p>Consultando convite…</p>:detalhes?<><h2>{detalhes.titulo}</h2>
         <p><strong>Destino:</strong> {detalhes.destinoNome}</p>
         <p><strong>Partida:</strong> {new Date(detalhes.partidaEm).toLocaleString('pt-BR')}</p>
@@ -115,7 +126,7 @@ export default function InscricaoConvite(){
           <p className="be-muted">A confirmação da vaga depende do organizador. Sua credencial é necessária para futuras consultas.</p>
           <div className="be-actions"><button type="button" className="be-btn" onClick={consultar} disabled={busy}>Atualizar estado</button>
           {['SOLICITADA','CONFIRMADA'].includes(inscricao.estado)&&<button type="button" className="be-btn danger" disabled={busy} onClick={cancelar}>Cancelar minha inscrição</button>}</div>
-        </div>}</>:<p>Use o link enviado pelo organizador da excursão.</p>}
+        </div>}</>:inscricao?<div className="be-section"><h3>Inscrição #{inscricao.id}</h3><p>Estado: <strong>{inscricao.estado}</strong></p><div className="be-actions"><button type="button" className="be-btn" disabled={busy} onClick={consultar}>Atualizar situação</button>{['SOLICITADA','CONFIRMADA'].includes(inscricao.estado)&&<button type="button" className="be-btn danger" disabled={busy} onClick={cancelar}>Cancelar minha inscrição</button>}</div></div>:<p>Use o link enviado pelo organizador da excursão.</p>}
     </section>
   </main>;
 }
