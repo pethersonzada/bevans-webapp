@@ -1,6 +1,7 @@
 'use client';
 import {useCallback,useEffect,useState} from 'react';
 import MapaWeb,{coordenadaValida,normalizarPontos} from './MapaWeb';
+import ColetaExcursaoWeb from './ColetaExcursaoWeb';
 const json=(method,body)=>({method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const positive=x=>{if(!/^[1-9][0-9]*$/.test(String(x))||!Number.isSafeInteger(Number(x)))throw Error('Identificador inválido.');return Number(x);};
 const message=e=>e instanceof Error?e.message:'Ocorreu uma falha.';
@@ -94,6 +95,7 @@ export default function GestaoExcursaoWeb({api}){
      {detail.estado==='RASCUNHO'&&<button className="be-btn primary" disabled={busy} onClick={()=>{if(window.confirm('Publicar a excursão?'))perform(()=>api('/excursoes/'+positive(selected)+'/publicacao',json('PUT',{versao:detail.versao})),'Excursão publicada.');}}>Publicar</button>}
      {['RASCUNHO','PUBLICADA'].includes(detail.estado)&&<button className="be-btn danger" disabled={busy} onClick={()=>{if(window.confirm('Cancelar a excursão? Inscrições e execuções podem ser afetadas.'))perform(()=>api('/excursoes/'+positive(selected)+'/cancelamento',json('PUT',{versao:detail.versao})),'Excursão cancelada.');}}>Cancelar excursão</button>}
     </div>
+    {['RASCUNHO','PUBLICADA'].includes(detail.estado)&&<ColetaExcursaoWeb key={detail.id+':'+detail.versao} api={api} excursao={detail} onSaved={()=>open(selected)}/>}
     <h3>Planejamento e execução</h3>
     <div className="be-fieldset"><label>Sentido<select value={sentido} onChange={e=>setSentido(e.target.value)}><option value="IDA">Ida</option><option value="VOLTA">Volta</option></select></label><button type="button" className="be-btn" disabled={busy} onClick={plan}>Prévia do roteiro oficial</button>
     {detail.estado==='PUBLICADA'&&<button className="be-btn primary" disabled={busy} onClick={()=>{if(window.confirm('Iniciar execução '+sentido+'?'))perform(()=>api('/excursoes/'+positive(selected)+'/execucoes?sentido='+sentido+'&otimizar=false',{method:'POST'}),'Execução iniciada.');}}>Iniciar execução</button>}</div>
