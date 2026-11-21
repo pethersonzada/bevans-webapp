@@ -2,6 +2,7 @@
 
 import {useState} from 'react';
 import MapaOperacional,{pontoValido} from './MapaOperacional';
+import ColetaPrivadaWeb from './ColetaPrivadaWeb';
 
 export default function GestaoTurmaWeb({api,turma,onAtualizar}){
   const [aberto,setAberto]=useState(false),[carregando,setCarregando]=useState(false),[busy,setBusy]=useState(false),[erro,setErro]=useState(''),[aviso,setAviso]=useState('');
@@ -18,7 +19,7 @@ export default function GestaoTurmaWeb({api,turma,onAtualizar}){
     catch(e){setErro(e.message);}finally{setCarregando(false);}
   }
   function editar(campo,valor){setForm(f=>({...f,[campo]:valor}));}
-  function pin(p){editar(alvo+'Latitude',p.latitude);setForm(f=>({...f,[alvo+'Latitude']:p.latitude,[alvo+'Longitude']:p.longitude}));}
+  function pin(p){setForm(f=>({...f,[alvo+'Latitude']:p.latitude,[alvo+'Longitude']:p.longitude}));}
   async function salvar(e){
     e.preventDefault();if(busy)return;setErro('');setAviso('');
     if(!form.nome.trim()||!form.turno.trim()||!Number.isSafeInteger(Number(form.capacidade))||Number(form.capacidade)<=0){setErro('Informe nome, turno e capacidade válida.');return;}
@@ -71,6 +72,7 @@ export default function GestaoTurmaWeb({api,turma,onAtualizar}){
         <MapaOperacional titulo="Confirmar origem e destino da turma" pontos={points} onPick={pin} privado/>
         <div className="be-actions"><button className="be-btn primary" disabled={busy}>Salvar turma</button><button type="button" className="be-btn" onClick={regen} disabled={busy}>Regenerar código de convite</button></div>
       </form>
+      <ColetaPrivadaWeb api={api} turmaId={id} driver/>
       <div className="be-actions"><button type="button" className="be-btn" onClick={carregar} disabled={carregando||busy}>{carregando?'Carregando…':'Consultar passageiros'}</button></div>
       {passageiros!==null&&(passageiros.length?<div className="be-list">{passageiros.map(p=><div className="be-item" key={p.id}><strong>{p.nome||`Passageiro #${p.id}`}</strong><div className="be-actions"><button type="button" className="be-btn danger" disabled={busy} onClick={()=>remover(p)}>Remover vínculo</button></div></div>)}</div>:<p>Nenhum passageiro aprovado.</p>)}
       <div className="be-actions"><button type="button" className="be-btn danger" onClick={excluir} disabled={busy}>Excluir turma</button></div>
