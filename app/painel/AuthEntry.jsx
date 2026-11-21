@@ -9,6 +9,8 @@ import ViagensWeb from './ViagensWeb';
 import EnderecosWeb from './EnderecosWeb';
 import GestaoExcursaoWeb from './GestaoExcursaoWeb';
 import RotasEditorWeb from './RotasEditorWeb';
+import ColetaPrivadaWeb from './ColetaPrivadaWeb';
+import ConfiguracoesWeb from './ConfiguracoesWeb';
 
 const statuses={PENDENTE:'Pendente',APROVADO:'Aprovado',REJEITADO:'Recusado',EMBARCADO:'Embarcado',AGUARDANDO:'Aguardando',DESEMBARCADO:'Desembarcado',NAO_EMBARCOU:'Não embarcou'};
 const display=v=>v==null?'Não informado':statuses[v]||String(v);
@@ -85,7 +87,7 @@ export default function AuthEntry(){
   </section>
  </main>;
  const driver=profile.tipo==='MOTORISTA';
- const tabs=[['inicio','Início'],['turmas','Turmas'],['rotas',driver?'Rotas públicas':'Explorar rotas'],['solicitacoes','Solicitações'],['excursoes','Excursões'],['notificacoes','Notificações'],['operacao','Operações'],['viagens','Mapa e viagens'],['enderecos','Endereços e pontos'],...(driver?[['gestao-excursoes','Gestão de excursões'],['editor-rotas','Editor de rotas']]:[])];
+ const tabs=[['inicio','Início'],['turmas','Turmas'],['rotas',driver?'Rotas públicas':'Explorar rotas'],['solicitacoes','Solicitações'],['excursoes','Excursões'],['notificacoes','Notificações'],['operacao','Operações'],['viagens','Mapa e viagens'],['enderecos','Endereços e pontos'],['coleta','Coleta privada'],['configuracoes','Configurações'],...(driver?[['gestao-excursoes','Gestão de excursões'],['editor-rotas','Editor de rotas']]:[])];
  const selected=tabs.find(item=>item[0]===tab);
  const firstName=(profile.nome||'').trim().split(/\s+/)[0]||'Usuário';
  return <main className="be-app" id="conteudo">
@@ -109,6 +111,8 @@ export default function AuthEntry(){
     {tab==='enderecos'&&<EnderecosWeb api={api} profile={profile} driver={driver}/>}
     {tab==='gestao-excursoes'&&driver&&<GestaoExcursaoWeb api={api}/>}
     {tab==='editor-rotas'&&driver&&<RotasEditorWeb api={api} profile={profile}/>}
+    {tab==='coleta'&&<ColetaPrivadaWeb api={api} profile={profile} driver={driver}/>}
+    {tab==='configuracoes'&&<ConfiguracoesWeb api={api} profile={profile} driver={driver}/>}
    </div>
   </div>
  </main>;
@@ -144,10 +148,12 @@ function Overview({api,profile,driver,onGo}){
 }
 function Turmas({api,profile,driver}){
  const data=useAsync(s=>api(driver?ep.turmasMotorista(profile.id):ep.turmasPassageiro(profile.id),{signal:s}).then(array),[driver,profile.id]);
- const [creating,setCreating]=useState(false),[nome,setNome]=useState(''),[turno,setTurno]=useState(''),[capacidade,setCapacidade]=useState(10),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false);
+ const [codigo,setCodigo]=useState(''),[joining,setJoining]=useState(false),[creating,setCreating]=useState(false),[nome,setNome]=useState(''),[turno,setTurno]=useState(''),[capacidade,setCapacidade]=useState(10),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false);
+ async function join(e){e.preventDefault();if(busy)return;const invite=codigo.trim();if(!invite||invite.length>128||/\s/.test(invite))return setFeedback('Informe um código de turma válido.');setBusy(true);setFeedback('');try{await api('/turmas/entrar/'+idSeguro(profile.id)+'?codigo='+encodeURIComponent(invite),{method:'POST'});setJoining(false);setCodigo('');setFeedback('Solicitação enviada. Aguarde a aprovação do motorista.');data.reload();}catch(error){setFeedback(error.message);}finally{setBusy(false);}}
  async function create(e){e.preventDefault();if(busy)return;setBusy(true);setFeedback('');try{if(!nome.trim()||!turno.trim()||!Number.isSafeInteger(Number(capacidade))||Number(capacidade)<=0)throw Error('Informe nome, turno e capacidade válida.');const r=await api('/turmas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:nome.trim(),turno:turno.trim(),motorista:{id:idSeguro(profile.id)},capacidade:Number(capacidade)})});if(!r?.id)throw Error('Criação não confirmada. Confira a lista antes de repetir.');setCreating(false);setNome('');setTurno('');data.reload();}catch(error){setFeedback(error.message)}finally{setBusy(false);}}
- return <section className="be-section"><div className="be-row"><h2>Turmas {driver?'gerenciadas':'vinculadas'}</h2><div className="be-actions"><Button onClick={data.reload}>Atualizar</Button>{driver&&<Button primary onClick={()=>setCreating(v=>!v)}>Nova turma</Button>}</div></div><Alert error={data.error||feedback}/>
- {creating&&driver&&<Panel title="Cadastrar turma"><p className="be-muted">Cadastro básico. Planejamento de pontos privados e presença seguem no aplicativo Android até a validação do módulo web.</p><form className="be-form" onSubmit={create}><label>Nome<input required value={nome} onChange={e=>setNome(e.target.value)}/></label><label>Turno<input required value={turno} onChange={e=>setTurno(e.target.value)}/></label><label>Assentos<input type="number" min="1" required value={capacidade} onChange={e=>setCapacidade(e.target.value)}/></label><button className="be-btn primary" disabled={busy}>Criar turma</button></form></Panel>}
+ return <section className="be-section"><div className="be-row"><h2>Turmas {driver?'gerenciadas':'vinculadas'}</h2><div className="be-actions"><Button onClick={data.reload}>Atualizar</Button>{driver?<Button primary onClick={()=>setCreating(v=>!v)}>Nova turma</Button>:<Button primary onClick={()=>setJoining(v=>!v)}>Entrar com convite</Button>}</div></div><Alert error={data.error||feedback}/>
+ {joining&&!driver&&<Panel title="Solicitar entrada em turma"><p className="be-muted">Peça o código ao motorista. Sua entrada dependerá da aprovação dele.</p><form onSubmit={join} className="be-form"><label>Código da turma<input required autoComplete="off" maxLength={128} value={codigo} onChange={e=>setCodigo(e.target.value)}/></label><button className="be-btn primary" disabled={busy}>Enviar solicitação</button></form></Panel>}
+ {creating&&driver&&<Panel title="Cadastrar turma"><p className="be-muted">Cadastro de turma. Para configurar paradas e pontos de coleta, use as áreas Coleta privada e Endereços e pontos.</p><form className="be-form" onSubmit={create}><label>Nome<input required value={nome} onChange={e=>setNome(e.target.value)}/></label><label>Turno<input required value={turno} onChange={e=>setTurno(e.target.value)}/></label><label>Assentos<input type="number" min="1" required value={capacidade} onChange={e=>setCapacidade(e.target.value)}/></label><button className="be-btn primary" disabled={busy}>Criar turma</button></form></Panel>}
  {data.loading?<Empty>Carregando…</Empty>:!data.data?.length?<Empty>Nenhuma turma disponível para esta conta.</Empty>:<div className="be-grid">{data.data.map(t=><Panel key={t.id} title={t.nome||`Turma ${t.id}`}><p>{t.turno}</p><p className="be-muted">Turma #{t.id} · Capacidade: {t.capacidade??'não configurada'}</p><p className="be-muted">Origem: {t.origemNome||'Não cadastrada'}</p><p className="be-muted">Destino: {t.destinoNome||'Não cadastrado'}</p>{driver&&t.codigoConvite&&<p>Código de convite: <strong>{t.codigoConvite}</strong></p>}</Panel>)}</div>}</section>;
 }
 function Rotas({api,driver}){
