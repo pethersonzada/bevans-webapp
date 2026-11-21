@@ -1,6 +1,7 @@
 'use client';
 import {useCallback,useEffect,useState} from 'react';
 import MapaWeb,{coordenadaValida,normalizarPontos} from './MapaWeb';
+import {normalizarColeta,validarEscolha} from '../lib/coleta-web.mjs';
 
 const basePoint=()=>({id:null,nome:'',latitude:null,longitude:null,horario:'',pontoConfirmado:true});
 const id=value=>{if(!/^[1-9]\d*$/.test(String(value))||!Number.isSafeInteger(Number(value)))throw Error('Identificador inválido.');return Number(value);};
@@ -53,7 +54,8 @@ export default function ColetaPrivadaWeb({api,profile,driver}){
  async function save(){
   if(!driver||!config)return;
   if(modo==='PARADAS_DEFINIDAS'&&(!paradas.length||paradas.length>50||paradas.some(p=>!coordenadaValida(p)||!p.nome.trim())))return setError('É necessário cadastrar de 1 a 50 paradas confirmadas.');
-  const payload={modo,versao:config.versao,paradas:modo==='PORTA_A_PORTA'?[]:coletarParadas(paradas)};
+  let payload;
+  try{payload=normalizarColeta(modo,config.versao,paradas);}catch(e){return setError(note(e));}
   if(!window.confirm('Salvar nova configuração da coleta? Presenças e escolhas ativas podem bloquear alterações.'))return;
   await mutate(async()=>{
    const result=await api('/turmas/'+id(turmaId)+'/coleta/'+sentido,opts('PUT',payload));
@@ -62,7 +64,8 @@ export default function ColetaPrivadaWeb({api,profile,driver}){
  }
  async function choose(){
   if(!config||!paradaId)return;
-  await mutate(()=>api('/turmas/'+id(turmaId)+'/coleta/'+sentido+'/minha-parada',opts('PUT',{paradaId:id(paradaId),versao:config.versao})),'Parada escolhida.');
+  let payload;try{payload=validarEscolha(config,id(paradaId));}catch(e){return setError(note(e));}
+  await mutate(()=>api('/turmas/'+id(turmaId)+'/coleta/'+sentido+'/minha-parada',opts('PUT',payload)),'Parada escolhida.');
  }
  async function clear(){if(!window.confirm('Remover sua escolha de parada?'))return;
   await mutate(()=>api('/turmas/'+id(turmaId)+'/coleta/'+sentido+'/minha-parada',{method:'DELETE'}),'Escolha removida.');
