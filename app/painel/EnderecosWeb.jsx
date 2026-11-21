@@ -60,7 +60,7 @@ export default function EnderecosWeb({api,usuarioId}) {
       </div>
       <div className="be-actions"><button type="button" className="be-btn" onClick={usarMinhaPosicao}>Usar minha localização agora</button>
         <span className="be-muted">{ponto.length?`${form.latitude.toFixed(6)}, ${form.longitude.toFixed(6)}`:'Ponto ainda não confirmado'}</span></div>
-      <MapaOperacional titulo="Selecione o local de embarque no mapa" pontos={ponto} onPick={pick}/>
+      <MapaOperacional titulo="Selecione o local de embarque no mapa" pontos={ponto} onPick={pick} privado/>
       <p className="be-footnote">O pin precisa corresponder ao endereço real. A geolocalização do aparelho pode ser imprecisa; revise o ponto antes de salvar.</p>
       <div className="be-actions"><button className="be-btn primary" disabled={salvando||!ponto.length}>{salvando?'Salvando…':editando?'Salvar alterações':'Adicionar endereço'}</button>
         {editando&&<button type="button" className="be-btn" onClick={novo}>Cancelar edição</button>}</div>
