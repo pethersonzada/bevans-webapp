@@ -1,0 +1,24 @@
+name: Staging security smoke (read only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      BEVANS_STAGING_WEB_URL: ${{ vars.BEVANS_STAGING_WEB_URL }}
+      BEVANS_STAGING_API_URL: ${{ vars.BEVANS_STAGING_API_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify staging URLs, CORS and anonymous access without mutations
+        run: node scripts/staging-readonly-smoke.mjs
