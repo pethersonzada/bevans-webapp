@@ -54,8 +54,8 @@ test('mapa do motorista não quebra sem token Mapbox e operações permanecem pr
  await mockedLogin(page);
  const nav=page.getByRole('navigation',{name:'Áreas do painel'});
  await nav.getByRole('button',{name:'Mapa e viagens'}).click();
- await expect(page.getByRole('heading',{name:'Mapa da operação'})).toBeVisible();
  await page.getByRole('combobox',{name:'Turma'}).selectOption('41');
+ await expect(page.getByRole('heading',{name:'Mapa da operação'})).toBeVisible();
  await expect(page.getByRole('alert').filter({hasText:'Configure NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN'})).toBeVisible();
  await expect(page.getByText('Sem viagem ativa')).toBeVisible();
  expect(failures).toEqual([]);
