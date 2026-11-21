@@ -14,6 +14,7 @@ export default function GestaoExcursaoWeb({api,excursao,onSaved,onClose}) {
   const [modo,setModo]=useState(excursao?.modoColeta||'PORTA_A_PORTA'),[paradas,setParadas]=useState(excursao?.paradas?.map(p=>({...p}))||[]);
   const [alvo,setAlvo]=useState('destino'),[nomeParada,setNomeParada]=useState(''),[erro,setErro]=useState(''),[aviso,setAviso]=useState(''),[busy,setBusy]=useState(false);
   const [inscricoes,setInscricoes]=useState(null),[execucoes,setExecucoes]=useState(null),[vagas,setVagas]=useState(null);
+  const [convites,setConvites]=useState(null),[linkNovo,setLinkNovo]=useState(''),[expiraEm,setExpiraEm]=useState('');
   function campo(k,v){setForm(s=>({...s,[k]:v}));}
   function pin(p){
     if(!pontoValido(p.latitude,p.longitude))return;
@@ -91,6 +92,28 @@ export default function GestaoExcursaoWeb({api,excursao,onSaved,onClose}) {
       setInscricoes(list.itens);
     },'Inscrição processada.');
   }
+  async function listarConvites(){if(!item)return;await executar(async()=>{const r=await api(`/excursoes/${item.id}/convites`);if(!Array.isArray(r))throw Error('A API não retornou convites.');setConvites(r);},'Convites consultados.');}
+  async function criarConvite(){
+    if(!item||busy||!expiraEm||!window.confirm('Criar um novo convite para inscrição em excursão? O link poderá ser visualizado apenas agora.'))return;
+    const data=new Date(expiraEm);
+    if(!Number.isFinite(data.getTime())||data.getTime()<=Date.now()||data.getTime()>Date.now()+30*86400000){setErro('Informe validade futura de até 30 dias.');return;}
+    await executar(async()=>{
+      const r=await api(`/excursoes/${item.id}/convites`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({expiraEm:data.toISOString()})});
+      if(!r?.convite?.id||typeof r.token!=='string'||!r.token){throw Error('Não foi possível confirmar o convite. Verifique a lista antes de repetir.');}
+      setLinkNovo(window.location.origin+'/convite#token='+encodeURIComponent(r.token));
+      const list=await api(`/excursoes/${item.id}/convites`);
+      if(Array.isArray(list))setConvites(list);
+    },'Convite emitido. Copie o link antes de fechar este painel; o token não é recuperável.');
+  }
+  async function revogarConvite(conviteId){
+    if(!item||busy||!window.confirm('Revogar o convite? Ele deixará de permitir novos acessos.'))return;
+    await executar(async()=>{await api(`/excursoes/${item.id}/convites/${conviteId}`,{method:'DELETE'});setLinkNovo('');const list=await api(`/excursoes/${item.id}/convites`);if(Array.isArray(list))setConvites(list);},'Convite revogado.');
+  }
+  async function copiarLink(){
+    if(!linkNovo)return;
+    try{await navigator.clipboard.writeText(linkNovo);setAviso('Link copiado. Compartilhe apenas com participantes autorizados.');}
+    catch{setErro('Não foi possível copiar o link. Use um navegador com HTTPS.');}
+  }
   async function iniciar(sentido){
     if(!item||!window.confirm(`Iniciar a execução de ${sentido} da excursão?`))return;
     await executar(async()=>{
@@ -138,6 +161,7 @@ export default function GestaoExcursaoWeb({api,excursao,onSaved,onClose}) {
       {['RASCUNHO','PUBLICADA'].includes(item.estado)&&<button type="button" className="be-btn danger" disabled={busy} onClick={cancelar}>Cancelar excursão</button>}</div>
       {vagas&&<p className="be-muted">Vagas: {JSON.stringify(vagas)}</p>}
       {inscricoes!==null&&<div className="be-list"><h3>Inscrições</h3>{inscricoes.length?inscricoes.map(p=><div key={p.id} className="be-item"><strong>{p.nome||`Inscrição #${p.id}`}</strong><p>{p.estado}</p>{p.estado==='SOLICITADA'&&<div className="be-actions"><button type="button" className="be-btn primary" disabled={busy} onClick={()=>confirma(p,true)}>Confirmar vaga</button><button type="button" className="be-btn" disabled={busy} onClick={()=>confirma(p,false)}>Recusar</button></div>}</div>):<p>Nenhuma inscrição.</p>}</div>}
+      {item.estado==='PUBLICADA'&&<section className="be-section"><h3>Convites para inscrição</h3><div className="be-fieldset"><label>Convite válido até<input type="datetime-local" value={expiraEm} onChange={e=>setExpiraEm(e.target.value)}/></label></div><div className="be-actions"><button type="button" className="be-btn primary" onClick={criarConvite} disabled={busy||!expiraEm}>Gerar convite seguro</button><button type="button" className="be-btn" onClick={listarConvites} disabled={busy}>Listar convites</button></div>{linkNovo&&<div className="be-card"><p>Link gerado. O token só é revelado nesta emissão. Copie antes de sair desta tela.</p><button type="button" className="be-btn" onClick={copiarLink}>Copiar link do convite</button></div>}{convites!==null&&<div className="be-list">{convites.map(c=><div className="be-item" key={c.id}><strong>Convite #{c.id}</strong><p>Expira em: {new Date(c.expiraEm).toLocaleString('pt-BR')} · {c.revogadoEm?'Revogado':'Ativo ou expirado'}</p>{!c.revogadoEm&&<button type="button" className="be-btn danger" disabled={busy} onClick={()=>revogarConvite(c.id)}>Revogar</button>}</div>)}</div>}</section>}
       {item.estado==='PUBLICADA'&&<div className="be-actions"><button className="be-btn primary" disabled={busy} onClick={()=>iniciar('IDA')}>Iniciar ida</button>{item.retornoEm&&<button className="be-btn" disabled={busy} onClick={()=>iniciar('VOLTA')}>Iniciar volta</button>}</div>}
       {execucoes!==null&&<div className="be-list"><h3>Execuções</h3>{execucoes.map(ex=><div key={ex.id} className="be-item"><strong>#{ex.id} · {ex.sentido} · {ex.estado}</strong>{ex.estado==='EM_ANDAMENTO'&&<button type="button" className="be-btn" disabled={busy} onClick={()=>finalizar(ex)}>Finalizar execução</button>}</div>)}</div>}
     </div>}
