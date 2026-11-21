@@ -17,7 +17,7 @@ export default function ViagensWeb({api,profile,driver}){
  const [sentido,setSentido]=useState('IDA'),[presenca,setPresenca]=useState(''),[ida,setIda]=useState(''),[volta,setVolta]=useState('');
  const [erro,setErro]=useState(''),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false),[sharing,setSharing]=useState(false);
  const [load,setLoad]=useState(false);
- const watch=useRef(null),lastSend=useRef(0),working=useRef(false),current=useRef({api:null,active:null,sharing:false}),sequence=useRef(0);
+ const watch=useRef(null),lastSend=useRef(0),working=useRef(false),current=useRef({api:null,active:null,sharing:false});
  const mounted=useRef(true);
  const chosenTurma=turmas.find(t=>String(t.id)===turmaId);
  const active=tipo==='VIAGEM'?(estado?.status==='ATIVA'?estado.viagemId:null):execucaoId;
