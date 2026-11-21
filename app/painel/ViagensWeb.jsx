@@ -65,6 +65,7 @@ export default function ViagensWeb({api,profile,driver}){
    }
   }catch(e){setErro(err(e));}finally{setLoad(false);}
  };
+ useEffect(()=>{refreshRef.current=refresh;});
  useEffect(()=>{mounted.current=true;const controller=new AbortController();
   Promise.all([
    api(driver?'/turmas/motorista/'+id(profile.id):'/turmas/usuario/'+id(profile.id)+'/todas',{signal:controller.signal}),
@@ -74,8 +75,8 @@ export default function ViagensWeb({api,profile,driver}){
   }).catch(e=>{if(!controller.signal.aborted)setErro(err(e));});
   return()=>{mounted.current=false;controller.abort();};
  },[api,driver,profile.id]);
- useEffect(()=>{setEstado(null);setPontos([]);clearLocation();setErro('');},[turmaId,tipo,excursaoId]);
- useEffect(()=>{if(turmaId||tipo==='EXCURSAO'&&excursaoId)refresh();},[turmaId,tipo,excursaoId]); // consulta inicial, atualização manual posterior
+ function resetSelection(){setEstado(null);setPontos([]);clearLocation();setErro('');setSharing(false);}
+ useEffect(()=>{if(turmaId||tipo==='EXCURSAO'&&excursaoId)Promise.resolve().then(()=>refreshRef.current?.());},[turmaId,tipo,excursaoId]);
  useEffect(()=>{
   if(!active)return;
   let live=true;let task;
@@ -89,7 +90,6 @@ export default function ViagensWeb({api,profile,driver}){
   read();task=setInterval(read,10000);
   return()=>{live=false;clearInterval(task);setPosicao(null);};
  },[api,active,activeType]);
- current.current={api,active:sharing?active:null,sharing};
  useEffect(()=>{
   if(!sharing||!driver||!active||!navigator.geolocation){return;}
   let live=true;lastSend.current=0;working.current=false;
@@ -116,7 +116,6 @@ export default function ViagensWeb({api,profile,driver}){
   document.addEventListener('visibilitychange',visibility);
   return()=>{live=false;document.removeEventListener('visibilitychange',visibility);if(watch.current!==null){navigator.geolocation.clearWatch(watch.current);watch.current=null;}};
  },[sharing,driver,active,activeType,api]);
- useEffect(()=>{if(!active||estado?.status!=='ATIVA')setSharing(false);},[active,estado?.status]);
  async function write(work,success){
   if(busy)return;setBusy(true);setErro('');setFeedback('');
   try{await work();setFeedback(success);await refresh();}
