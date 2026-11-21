@@ -12,16 +12,21 @@ export default function InscricaoConvite(){
   const [inscricaoToken,setInscricaoToken]=useState(''),[inscricao,setInscricao]=useState(null);
   const [form,setForm]=useState(vazia),[carregando,setCarregando]=useState(false),[busy,setBusy]=useState(false),[erro,setErro]=useState(''),[aviso,setAviso]=useState('');
   useEffect(()=>{
-    // A URL contém apenas o fragmento local: nunca envie o token via parâmetros.
+    // Retira o fragmento local imediatamente, antes de consultar o serviço.
     const raw=new URLSearchParams(window.location.hash.replace(/^#/,''));const token=raw.get('token')||'';
     if(window.location.hash)window.history.replaceState(null,'',window.location.pathname+window.location.search);
-    if(!credencialValida(token)){setErro('Convite inválido ou ausente. Peça um link novo ao organizador.');return;}
-    setConvite(token);
     let ativo=true;
-    Promise.resolve().then(async()=>{setCarregando(true);try{
-      const data=await conviteRequest('/publico/excursoes/convite',{convite:token});
-      if(ativo){setDetalhes(data);setErro('');}
-    }catch(e){if(ativo)setErro(e.message);}finally{if(ativo)setCarregando(false);}});
+    Promise.resolve().then(async()=>{
+      if(!ativo)return;
+      if(!credencialValida(token)){setErro('Convite inválido ou ausente. Peça um link novo ao organizador.');return;}
+      setConvite(token);
+      setCarregando(true);
+      try{
+        const data=await conviteRequest('/publico/excursoes/convite',{convite:token});
+        if(ativo){setDetalhes(data);setErro('');}
+      }catch(e){if(ativo)setErro(e.message);}
+      finally{if(ativo)setCarregando(false);}
+    });
     return()=>{ativo=false;};
   },[]);
 
