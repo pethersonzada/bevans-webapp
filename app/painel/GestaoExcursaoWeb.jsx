@@ -2,6 +2,7 @@
 
 import {useState} from 'react';
 import MapaOperacional,{pontoValido} from './MapaOperacional';
+import OperacaoExcursaoWeb from './OperacaoExcursaoWeb';
 
 const localDate=s=>{
   if(!s)return '';
@@ -163,7 +164,7 @@ export default function GestaoExcursaoWeb({api,excursao,onSaved,onClose}) {
       {inscricoes!==null&&<div className="be-list"><h3>Inscrições</h3>{inscricoes.length?inscricoes.map(p=><div key={p.id} className="be-item"><strong>{p.nome||`Inscrição #${p.id}`}</strong><p>{p.estado}</p>{p.estado==='SOLICITADA'&&<div className="be-actions"><button type="button" className="be-btn primary" disabled={busy} onClick={()=>confirma(p,true)}>Confirmar vaga</button><button type="button" className="be-btn" disabled={busy} onClick={()=>confirma(p,false)}>Recusar</button></div>}</div>):<p>Nenhuma inscrição.</p>}</div>}
       {item.estado==='PUBLICADA'&&<section className="be-section"><h3>Convites para inscrição</h3><div className="be-fieldset"><label>Convite válido até<input type="datetime-local" value={expiraEm} onChange={e=>setExpiraEm(e.target.value)}/></label></div><div className="be-actions"><button type="button" className="be-btn primary" onClick={criarConvite} disabled={busy||!expiraEm}>Gerar convite seguro</button><button type="button" className="be-btn" onClick={listarConvites} disabled={busy}>Listar convites</button></div>{linkNovo&&<div className="be-card"><p>Link gerado. O token só é revelado nesta emissão. Copie antes de sair desta tela.</p><button type="button" className="be-btn" onClick={copiarLink}>Copiar link do convite</button></div>}{convites!==null&&<div className="be-list">{convites.map(c=><div className="be-item" key={c.id}><strong>Convite #{c.id}</strong><p>Expira em: {new Date(c.expiraEm).toLocaleString('pt-BR')} · {c.revogadoEm?'Revogado':'Ativo ou expirado'}</p>{!c.revogadoEm&&<button type="button" className="be-btn danger" disabled={busy} onClick={()=>revogarConvite(c.id)}>Revogar</button>}</div>)}</div>}</section>}
       {item.estado==='PUBLICADA'&&<div className="be-actions"><button className="be-btn primary" disabled={busy} onClick={()=>iniciar('IDA')}>Iniciar ida</button>{item.retornoEm&&<button className="be-btn" disabled={busy} onClick={()=>iniciar('VOLTA')}>Iniciar volta</button>}</div>}
-      {execucoes!==null&&<div className="be-list"><h3>Execuções</h3>{execucoes.map(ex=><div key={ex.id} className="be-item"><strong>#{ex.id} · {ex.sentido} · {ex.estado}</strong>{ex.estado==='EM_ANDAMENTO'&&<button type="button" className="be-btn" disabled={busy} onClick={()=>finalizar(ex)}>Finalizar execução</button>}</div>)}</div>}
+      {execucoes!==null&&<div className="be-list"><h3>Execuções</h3>{execucoes.map(ex=><div key={ex.id} className="be-item"><strong>#{ex.id} · {ex.sentido} · {ex.estado}</strong><OperacaoExcursaoWeb key={ex.id} api={api} execucao={ex}/>{ex.estado==='EM_ANDAMENTO'&&<button type="button" className="be-btn" disabled={busy} onClick={()=>finalizar(ex)}>Finalizar execução</button>}</div>)}</div>}
     </div>}
   </section>;
 }
