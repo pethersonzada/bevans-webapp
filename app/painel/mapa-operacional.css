@@ -1,0 +1,9 @@
+.be-map-shell{margin:1rem 0;border:1px solid var(--be-border,#ced8e1);border-radius:14px;overflow:hidden;background:var(--be-surface,#fff)}
+.be-map-heading{padding:12px 16px;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:5px}
+.be-map-heading strong{font-size:1rem}.be-map-heading small,.be-map-credit{font-size:.78rem;opacity:.8}
+.be-map-canvas{height:370px;width:100%;background:#dce9ed;z-index:0}
+.be-map-error{padding:12px 16px;color:#b00020}
+.be-map-list{padding:12px 16px}.be-map-list summary{cursor:pointer;font-weight:600}
+.be-map-list ol{max-height:180px;overflow:auto;margin:8px 0;padding-left:25px}
+.be-map-credit{padding:0 16px 10px;margin:8px 0}
+@media(max-width:650px){.be-map-canvas{height:300px}}
