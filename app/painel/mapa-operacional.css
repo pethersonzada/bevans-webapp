@@ -7,3 +7,8 @@
 .be-map-list ol{max-height:180px;overflow:auto;margin:8px 0;padding-left:25px}
 .be-map-credit{padding:0 16px 10px;margin:8px 0}
 @media(max-width:650px){.be-map-canvas{height:300px}}
+
+.be-map-pick{font-size:.84rem;padding:0 16px}
+.be-map-selectable{cursor:crosshair}
+.be-map-route{padding:8px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.be-map-route small{opacity:.85;font-size:.78rem}
