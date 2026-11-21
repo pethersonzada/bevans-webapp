@@ -5,6 +5,10 @@ import Image from 'next/image';
 import {firebaseSignIn,firebaseRefresh,firebasePasswordReset} from '../lib/bevans-auth.mjs';
 import {apiRequest,array,pagina,ep,diaLocal,idSeguro} from '../lib/bevans-api.mjs';
 import './painel.css';
+import MapaOperacional,{pontosRotaPublica} from './MapaOperacional';
+import AcompanhamentoViagem from './AcompanhamentoViagem';
+import EnderecosWeb from './EnderecosWeb';
+import PresencaWeb from './PresencaWeb';
 
 const statuses={PENDENTE:'Pendente',APROVADO:'Aprovado',REJEITADO:'Recusado',EMBARCADO:'Embarcado',AGUARDANDO:'Aguardando',DESEMBARCADO:'Desembarcado',NAO_EMBARCOU:'Não embarcou'};
 const display=v=>v==null?'Não informado':statuses[v]||String(v);
@@ -81,7 +85,7 @@ export default function AuthEntry(){
   </section>
  </main>;
  const driver=profile.tipo==='MOTORISTA';
- const tabs=[['inicio','Início'],['turmas','Turmas'],['rotas',driver?'Rotas públicas':'Explorar rotas'],['solicitacoes','Solicitações'],['excursoes','Excursões'],['notificacoes','Notificações'],['operacao','Operações']];
+ const tabs=[['inicio','Início'],['turmas','Turmas'],['rotas',driver?'Rotas públicas':'Explorar rotas'],['enderecos','Endereços'],['solicitacoes','Solicitações'],['excursoes','Excursões'],['notificacoes','Notificações'],['operacao','Operações']];
  const selected=tabs.find(item=>item[0]===tab);
  const firstName=(profile.nome||'').trim().split(/\s+/)[0]||'Usuário';
  return <main className="be-app" id="conteudo">
@@ -97,6 +101,7 @@ export default function AuthEntry(){
     {tab==='inicio'&&<Overview api={api} profile={profile} driver={driver} onGo={setTab}/>}
     {tab==='turmas'&&<Turmas api={api} profile={profile} driver={driver}/>}
     {tab==='rotas'&&<Rotas api={api} profile={profile} driver={driver}/>}
+    {tab==='enderecos'&&<EnderecosWeb api={api} usuarioId={profile.id}/>}
     {tab==='solicitacoes'&&<Solicitacoes api={api} profile={profile} driver={driver}/>}
     {tab==='excursoes'&&<Excursoes api={api} driver={driver}/>}
     {tab==='notificacoes'&&<Notificacoes api={api} onGo={setTab}/>}
@@ -145,15 +150,17 @@ function Turmas({api,profile,driver}){
 function Rotas({api,driver}){
  const [filters,setFilters]=useState({cidade:'',destino:''}),[selected,setSelected]=useState(null),[route,setRoute]=useState(null),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false);
  const list=useAsync(s=>api(driver?ep.rotas:ep.catalogo(filters),{signal:s}).then(r=>driver?array(r):pagina(r)),[driver,filters.cidade,filters.destino]);
- const [details,setDetails]=useState(null);
- async function open(id){setFeedback('');setRoute(null);setSelected(id);try{const r=await api(ep.rota(id));if(r?.id!==id)throw Error('O servidor retornou outra rota.');setRoute(r);}catch(e){setFeedback(e.message);}}
+ const [preview,setPreview]=useState([]);
+ async function open(id){setFeedback('');setRoute(null);setPreview([]);setSelected(id);try{const r=await api(ep.rota(id));if(r?.id!==id)throw Error('O servidor retornou outra rota.');setRoute(r);}catch(e){setFeedback(e.message);}}
  async function write(task){if(busy)return;setBusy(true);setFeedback('');try{await task();list.reload();if(selected)await open(selected);}catch(e){setFeedback(e.message);}finally{setBusy(false);}}
  return <section className="be-section"><div className="be-row"><h2>{driver?'Gerenciamento de rotas públicas':'Catálogo de rotas públicas'}</h2><Button onClick={list.reload}>Atualizar</Button></div><Alert error={list.error||feedback}/>
  {!driver&&<div className="be-fieldset"><label>Cidade<input value={filters.cidade} onChange={e=>setFilters(p=>({...p,cidade:e.target.value}))}/></label><label>Destino<input value={filters.destino} onChange={e=>setFilters(p=>({...p,destino:e.target.value}))}/></label></div>}
  {list.loading?<Empty>Consultando rotas…</Empty>:!list.data?.length?<Empty>Nenhuma rota disponível.</Empty>:<div className="be-grid">{list.data.map(r=><Panel key={r.id} title={r.nome}><p>{r.cidade} {r.modo?`· ${r.modo}`:''}</p><p className="be-muted">{r.destinoNome||r.destino||''}</p><p className="be-muted">{driver?(r.publicada?'Publicada':'Não publicada'):`Vagas: ${r.vagas?.disponiveis??'indisponível'}`}</p><div className="be-actions"><Button onClick={()=>open(r.id)}>Detalhes oficiais</Button>{!driver&&<Button disabled={busy} onClick={()=>write(async()=>{const response=await api(ep.favoritas(r.id),{method:r.favorita?'DELETE':'PUT'});return response;})}>{r.favorita?'Remover favorito':'Favoritar'}</Button>}</div></Panel>)}</div>}
  {selected&&!route&&<Empty>Carregando a rota selecionada…</Empty>}
  {route&&<Panel title={`Rota: ${route.nome}`}><p>{route.origemNome} → {route.destinoNome}</p><p>{route.modo} · {route.categoria} · IDA {route.horarioIda||'não configurada'} · VOLTA {route.horarioVolta||'não configurada'}</p><p className="be-muted">Dias: {route.dias?.join(', ')}</p><h3>Paradas</h3>{route.paradas?.length?<div className="be-list">{route.paradas.map((p,i)=><div key={p.id||i} className="be-item">{i+1}. {p.nome}</div>)}</div>:<Empty>Sem paradas cadastradas.</Empty>}
- {driver?<><p className="be-alert">A publicação altera o catálogo. Confira os dados e confirme conscientemente.</p><div className="be-actions"><Button disabled={busy} onClick={()=>write(async()=>{if(!window.confirm(`${route.publicada?'Despublicar':'Publicar'} a rota ${route.nome}?`))return;const r=await api(`/rotas-publicas/${idSeguro(route.id)}/publicacao`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({valor:!route.publicada})});if(!r||r.publicada===route.publicada)throw Error('O servidor não confirmou a publicação.');})}>{route.publicada?'Despublicar rota':'Publicar rota'}</Button></div></>:<PassengerRequest api={api} route={route} busy={busy} write={write}/>}
+ <MapaOperacional titulo="Mapa da rota pública" pontos={preview.length?preview:pontosRotaPublica(route)}/>
+  {driver&&<div className="be-actions"><Button disabled={busy} onClick={async()=>{setFeedback('');try{const p=await api(`/rotas-publicas/${idSeguro(route.id)}/planejamento?sentido=IDA&otimizar=true`,{method:'POST'});if(!Array.isArray(p))throw Error('Prévia inválida.');setPreview(p);}catch(e){setFeedback(e.message);}}}>Prévia otimizada (ida)</Button><Button disabled={busy} onClick={()=>setPreview([])}>Ver ordem cadastrada</Button></div>}
+  {driver?<><p className="be-alert">A publicação altera o catálogo. Confira os dados e confirme conscientemente.</p><div className="be-actions"><Button disabled={busy} onClick={()=>write(async()=>{if(!window.confirm(`${route.publicada?'Despublicar':'Publicar'} a rota ${route.nome}?`))return;const r=await api(`/rotas-publicas/${idSeguro(route.id)}/publicacao`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({valor:!route.publicada})});if(!r||r.publicada===route.publicada)throw Error('O servidor não confirmou a publicação.');})}>{route.publicada?'Despublicar rota':'Publicar rota'}</Button></div></>:<PassengerRequest api={api} route={route} busy={busy} write={write}/>}
  </Panel>}</section>;
 }
 function PassengerRequest({api,route,busy,write}){
@@ -197,6 +204,8 @@ function Operacoes({api,profile,driver}){
   if(r?.estado!==novo||r?.id!==registro.id)throw Error('A operação não foi confirmada.');await refresh();
  }catch(e){setError(e.message);await refresh();}finally{setBusy(false);}}
  return <section className="be-section"><h2>Controle operacional</h2><p className="be-muted">Exibe o estado oficial da viagem privada ou pública associada à turma. Nenhum início é inferido localmente.</p><Alert error={turmas.error||error}/><div className="be-fieldset"><label>Turma<select value={turma} onChange={e=>{setTurma(e.target.value);setViagem(null);setPainel(null);}}><option value="">Selecione uma turma</option>{turmas.data?.map(t=><option key={t.id} value={t.id}>{t.nome||`Turma ${t.id}`}</option>)}</select></label><Button disabled={!turma||busy} primary onClick={refresh}>Consultar estado oficial</Button></div>
- {viagem&&<Panel title="Estado atual"><p><strong>{display(viagem.status)}</strong> {viagem.sentido&&`· ${dir(viagem.sentido)}`} {viagem.modalidade&&`· ${viagem.modalidade}`}</p>{viagem.status==='INATIVA'?<Empty>Nenhuma viagem ativa nesta turma.</Empty>:!painel?<Empty>Aguardando painel operacional…</Empty>:driver?<><div className="be-kpis"><div className="be-kpi"><b>{painel.contadores?.esperados??'?'}</b>Esperados</div><div className="be-kpi"><b>{painel.contadores?.naVan??'?'}</b>Na van</div><div className="be-kpi"><b>{painel.contadores?.aguardando??'?'}</b>Aguardando</div></div><div className="be-list">{painel.registros.map(p=><div className="be-item" key={p.id}><strong>{p.nome}</strong><p>{display(p.estado)}</p><div className="be-actions">{p.estado==='AGUARDANDO'&&<><Button disabled={busy} primary onClick={()=>change(p,'EMBARCADO')}>Confirmar embarque</Button><Button disabled={busy} onClick={()=>change(p,'NAO_EMBARCOU')}>Registrar ausência</Button></>}{p.estado==='EMBARCADO'&&<Button disabled={busy} onClick={()=>change(p,'DESEMBARCADO')}>Confirmar desembarque</Button>}</div></div>)}</div></>:<><p><strong>Meu estado:</strong> {display(painel.estado)}</p>{painel.estado==='AGUARDANDO'&&<Button disabled={busy} primary onClick={()=>change(painel,'EMBARCADO')}>Confirmar que embarquei</Button>}</>}</Panel>}
- <p className="be-footnote">Iniciar/finalizar viagens e navegação GPS permanecem restritos ao Android nesta entrega. Não foram criadas ações sem os bloqueios de snapshot e roteiro.</p></section>;
+ {viagem&&<AcompanhamentoViagem api={api} turmaId={turma} viagem={viagem} driver={driver} onRefresh={refresh}/>}
+  {viagem&&!driver&&<PresencaWeb api={api} turmaId={turma} usuarioId={profile.id} viagem={viagem}/>}
+  {viagem&&<Panel title="Estado atual"><p><strong>{display(viagem.status)}</strong> {viagem.sentido&&`· ${dir(viagem.sentido)}`} {viagem.modalidade&&`· ${viagem.modalidade}`}</p>{viagem.status==='INATIVA'?<Empty>Nenhuma viagem ativa nesta turma.</Empty>:!painel?<Empty>Aguardando painel operacional…</Empty>:driver?<><div className="be-kpis"><div className="be-kpi"><b>{painel.contadores?.esperados??'?'}</b>Esperados</div><div className="be-kpi"><b>{painel.contadores?.naVan??'?'}</b>Na van</div><div className="be-kpi"><b>{painel.contadores?.aguardando??'?'}</b>Aguardando</div></div><div className="be-list">{painel.registros.map(p=><div className="be-item" key={p.id}><strong>{p.nome}</strong><p>{display(p.estado)}</p><div className="be-actions">{p.estado==='AGUARDANDO'&&<><Button disabled={busy} primary onClick={()=>change(p,'EMBARCADO')}>Confirmar embarque</Button><Button disabled={busy} onClick={()=>change(p,'NAO_EMBARCOU')}>Registrar ausência</Button></>}{p.estado==='EMBARCADO'&&<Button disabled={busy} onClick={()=>change(p,'DESEMBARCADO')}>Confirmar desembarque</Button>}</div></div>)}</div></>:<><p><strong>Meu estado:</strong> {display(painel.estado)}</p>{painel.estado==='AGUARDANDO'&&<Button disabled={busy} primary onClick={()=>change(painel,'EMBARCADO')}>Confirmar que embarquei</Button>}</>}</Panel>}
+ <p className="be-footnote">O mapa web exibe pontos e GPS autorizado. Para navegação no trânsito, use uma solução de roteamento própria. O GPS deste navegador requer HTTPS, permissão explícita e aba visível.</p></section>;
 }
