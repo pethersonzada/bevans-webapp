@@ -16,7 +16,7 @@ export function caminhoPosicao(tipo,ref){
 }
 function Painel({titulo,children}){return <section className="be-card be-live-card"><h2>{titulo}</h2>{children}</section>;}
 function Aviso({error}){return error?<p role="alert" className="be-error">{error}</p>:null;}
-function Ponto({value}){return value?.latitude?.toFixed(5)+', '+value?.longitude?.toFixed(5);}
+function formatPonto(value){return value.latitude.toFixed(5)+', '+value.longitude.toFixed(5);}
 export default function ViagensWeb({api,profile,driver}){
  const [turmas,setTurmas]=useState([]),[turmaId,setTurmaId]=useState('');
  const [tipo,setTipo]=useState('VIAGEM'),[excursaoId,setExcursaoId]=useState(''),[excursoes,setExcursoes]=useState([]),[execucaoId,setExecucaoId]=useState('');
@@ -194,7 +194,7 @@ export default function ViagensWeb({api,profile,driver}){
      {driver&&active&&<button className={'be-btn '+(sharing?'danger':'primary')} onClick={()=>{setErro('');setSharing(x=>!x);}}>{sharing?'Parar compartilhamento GPS':'Compartilhar GPS nesta aba'}</button>}
      {driver&&pontos.length>=2&&<button type="button" className="be-btn" onClick={directions}>Traçar percurso rodoviário</button>}
     </div>
-    <p className="be-muted">GPS: {posicao?'posição recente ('+<Ponto value={posicao}/>+')':'sem localização atual (aguardando ou expirada)'}. Consulta a cada 10 segundos com a aba visível.</p>
+    <p className="be-muted">GPS: {posicao?'posição recente ('+formatPonto(posicao)+')':'sem localização atual (aguardando ou expirada)'}. Consulta a cada 10 segundos com a aba visível.</p>
     {driver&&sharing&&<p className="be-alert">Seu GPS está sendo enviado durante esta viagem. A transmissão para ao fechar, ocultar a aba ou clicar em parar. O navegador não fornece rastreamento confiável em segundo plano.</p>}
    </Painel>
    <Painel titulo="Mapa da operação">
