@@ -34,6 +34,7 @@ function montarRotaGeojson(coordinates){
 export default function MapaWeb({pontos=[],posicao=null,rota=null,onSelecionar=null,altura=420}){
  const host=useRef(null),map=useRef(null),markers=useRef([]),onPick=useRef(onSelecionar);
  const [error,setError]=useState('');
+ const [ready,setReady]=useState(false);
  const token=process.env.NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN || '';
  useEffect(()=>{onPick.current=onSelecionar;},[onSelecionar]);
  useEffect(()=>{
@@ -44,6 +45,7 @@ export default function MapaWeb({pontos=[],posicao=null,rota=null,onSelecionar=n
    gl.accessToken=token;
    const instance=new gl.Map({container:host.current,style:'mapbox://styles/mapbox/streets-v12',center:[-35.1,-8.1],zoom:11});
    map.current=instance;
+   setReady(true);
    instance.addControl(new gl.NavigationControl(),'top-right');
    instance.on('click',e=>{
     if(onPick.current)onPick.current({latitude:e.lngLat.lat,longitude:e.lngLat.lng});
@@ -84,7 +86,7 @@ export default function MapaWeb({pontos=[],posicao=null,rota=null,onSelecionar=n
   if(instance.isStyleLoaded())draw();
   else instance.once('load',draw);
   return()=>{active=false;instance.off('load',draw);};
- },[pontos,posicao,rota]);
+ },[ready,pontos,posicao,rota]);
  return <div className="be-map-section">
   {error&&<p role="alert" className="be-error">{error}</p>}
   <div ref={host} className="be-map-canvas" style={{height:altura}} aria-label="Mapa interativo da operação" role="region"/>
