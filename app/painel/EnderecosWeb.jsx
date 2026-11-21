@@ -14,7 +14,7 @@ function EnderecoEditor({api,profile,onConcluir}){
   setEnderecos(r);
  }catch(e){setErro(error(e));}finally{setLoading(false);}
  },[api,profile.id]);
- useEffect(()=>{reload();},[reload]);
+ useEffect(()=>{Promise.resolve().then(()=>reload());},[reload]);
  const patch=(key,value)=>setForm(p=>({...p,[key]:value}));
  const cancel=()=>{setEditId(null);setForm(vazio);};
  async function save(e){
@@ -60,12 +60,8 @@ function OrigemDestino({api,profile}){
   try{const r=await api('/turmas/motorista/'+positive(profile.id));if(!Array.isArray(r))throw Error('Lista de turmas inválida.');setTurmas(r);}
   catch(e){setErro(error(e));}
  },[api,profile.id]);
- useEffect(()=>{reload();},[reload]);
- useEffect(()=>{const t=turmas.find(t=>String(t.id)===selected);const prefix=tipo==='ORIGEM'?'origem':'destino';
-  setNome(t?.[prefix+'Nome']||'');
-  const p={latitude:t?.[prefix+'Latitude'],longitude:t?.[prefix+'Longitude']};
-  setCoord(coordenadaValida(p)?p:null);
- },[tipo,selected,turmas]);
+ useEffect(()=>{Promise.resolve().then(()=>reload());},[reload]);
+ function escolherPonto(turma,tipoAtual){const prefix=tipoAtual==='ORIGEM'?'origem':'destino';setNome(turma?.[prefix+'Nome']||'');const p={latitude:turma?.[prefix+'Latitude'],longitude:turma?.[prefix+'Longitude']};setCoord(coordenadaValida(p)?p:null);}
  async function save(){
   if(!selected||!nome.trim()||!coordenadaValida(coord)||busy)return;
   setBusy(true);setErro('');
@@ -79,8 +75,8 @@ function OrigemDestino({api,profile}){
  }
  return <section className="be-card"><h2>Pontos das turmas (motorista)</h2>
   {erro&&<p className="be-error" role="alert">{erro}</p>}
-  <div className="be-fieldset"><label>Turma<select value={selected} onChange={e=>setSelected(e.target.value)}><option value="">Selecione</option>{turmas.map(t=><option key={t.id} value={t.id}>{t.nome}</option>)}</select></label>
-  <label>Ponto<select value={tipo} onChange={e=>setTipo(e.target.value)}><option value="ORIGEM">Origem / garagem</option><option value="DESTINO">Destino</option></select></label></div>
+  <div className="be-fieldset"><label>Turma<select value={selected} onChange={e=>{setSelected(e.target.value);escolherPonto(turmas.find(t=>String(t.id)===e.target.value),tipo);}}><option value="">Selecione</option>{turmas.map(t=><option key={t.id} value={t.id}>{t.nome}</option>)}</select></label>
+  <label>Ponto<select value={tipo} onChange={e=>{setTipo(e.target.value);escolherPonto(turmas.find(t=>String(t.id)===selected),e.target.value);}}><option value="ORIGEM">Origem / garagem</option><option value="DESTINO">Destino</option></select></label></div>
   {selected&&<><div className="be-form"><label>Nome do ponto<input value={nome} onChange={e=>setNome(e.target.value)} required/></label></div>
   <MapaWeb pontos={coord?[{...coord,nome:nome||tipo}]:[]} onSelecionar={setCoord} altura={320}/>
   <button type="button" className="be-btn primary" disabled={busy||!nome.trim()||!coordenadaValida(coord)} onClick={save}>Salvar {tipo==='ORIGEM'?'origem':'destino'}</button></>}
