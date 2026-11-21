@@ -1,0 +1,112 @@
+'use client';
+
+import {useEffect,useRef,useState} from 'react';
+import './mapa-operacional.css';
+
+let leafletPromise;
+function loadLeaflet() {
+  if (typeof window === 'undefined') return Promise.reject(new Error('Mapa disponível somente no navegador.'));
+  if (window.L) return Promise.resolve(window.L);
+  if (leafletPromise) return leafletPromise;
+  leafletPromise = new Promise((resolve,reject)=>{
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(css);
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.async = true;
+    script.onload = () => window.L ? resolve(window.L) : reject(new Error('Biblioteca do mapa indisponível.'));
+    script.onerror = () => reject(new Error('Não foi possível carregar o mapa. Verifique a conexão.'));
+    document.head.appendChild(script);
+  }).catch(e=>{leafletPromise=null;throw e;});
+  return leafletPromise;
+}
+
+export function pontoValido(latitude,longitude) {
+  return typeof latitude === 'number' && Number.isFinite(latitude) && Math.abs(latitude) <= 90
+    && typeof longitude === 'number' && Number.isFinite(longitude) && Math.abs(longitude) <= 180
+    && !(latitude === 0 && longitude === 0);
+}
+
+export function pontosRotaPublica(rota) {
+  if (!rota) return [];
+  const points = [
+    {nome:rota.origemNome || 'Origem',latitude:rota.origemLatitude,longitude:rota.origemLongitude,tipo:'origem'},
+    ...(Array.isArray(rota.paradas) ? rota.paradas.map(p=>({nome:p.nome || 'Parada',latitude:p.latitude,longitude:p.longitude,tipo:'parada'})) : []),
+    {nome:rota.destinoNome || 'Destino',latitude:rota.destinoLatitude,longitude:rota.destinoLongitude,tipo:'destino'},
+  ];
+  return points.filter(p=>pontoValido(p.latitude,p.longitude));
+}
+
+export function pontosRoteiroOperacional(roteiro) {
+  if (!Array.isArray(roteiro)) return [];
+  return roteiro.filter(p=>pontoValido(p.latitude,p.longitude)).map(p=>({
+    nome:p.nome || p.tipo || 'Ponto da viagem',
+    latitude:p.latitude,longitude:p.longitude,tipo:p.tipo,
+  }));
+}
+
+/** Mapa de referência; linhas ligam pontos diretamente, sem sugerir caminhos pelas ruas. */
+export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da rota'}) {
+  const containerRef=useRef(null),mapRef=useRef(null),layerRef=useRef(null),leafletRef=useRef(null);
+  const latestRef=useRef({pontos,posicao});
+  const [erro,setErro]=useState('');
+  latestRef.current={pontos,posicao};
+
+  const redrawRef=useRef(null);
+  useEffect(()=>{
+    let cancelled=false;
+    loadLeaflet().then(L=>{
+      if(cancelled || !containerRef.current) return;
+      leafletRef.current=L;
+      const map=L.map(containerRef.current,{scrollWheelZoom:false});
+      mapRef.current=map;
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        maxZoom:19,attribution:'&copy; OpenStreetMap contributors',
+      }).addTo(map);
+      layerRef.current=L.layerGroup().addTo(map);
+      const redraw=()=>{
+        if(!mapRef.current || !layerRef.current) return;
+        layerRef.current.clearLayers();
+        const input=latestRef.current;
+        const pins=Array.isArray(input.pontos)?input.pontos.filter(p=>pontoValido(p.latitude,p.longitude)):[];
+        const coords=[];
+        for(const p of pins) {
+          const ll=[p.latitude,p.longitude]; coords.push(ll);
+          const marker=L.circleMarker(ll,{radius:p.tipo==='origem'||p.tipo==='ORIGEM'?9:7,weight:2,color:'#14253a',fillColor:p.tipo==='destino'||p.tipo==='DESTINO'?'#15a6c7':'#007bff',fillOpacity:0.9});
+          const tooltip=document.createElement('span');
+          tooltip.textContent=p.nome || 'Ponto de parada';
+          marker.bindTooltip(tooltip).addTo(layerRef.current);
+        }
+        if(coords.length>1) L.polyline(coords,{color:'#007bff',opacity:0.7,weight:3,dashArray:'7 7'}).addTo(layerRef.current);
+        const v=input.posicao;
+        if(v && v.estado==='ATUALIZADA' && pontoValido(v.latitude,v.longitude)){
+          const ll=[v.latitude,v.longitude];
+          const marker=L.circleMarker(ll,{radius:11,weight:3,color:'#0c533d',fillColor:'#16a779',fillOpacity:0.95});
+          const tooltip=document.createElement('span');tooltip.textContent='Posição recente da van';
+          marker.bindTooltip(tooltip).addTo(layerRef.current);
+          if(!coords.length) coords.push(ll);
+        }
+        if(coords.length) {
+          const bounds=L.latLngBounds(coords);
+          map.fitBounds(bounds.pad(0.2),{maxZoom:15,animate:false});
+        } else map.setView([-8.05,-34.9],8);
+        map.invalidateSize();
+      };
+      redrawRef.current=redraw;
+      redraw();
+    }).catch(e=>{if(!cancelled)setErro(e.message);});
+    return ()=>{cancelled=true;redrawRef.current=null;mapRef.current?.remove();mapRef.current=null;layerRef.current=null;};
+  },[]);
+
+  useEffect(()=>{redrawRef.current?.();},[pontos,posicao]);
+
+  return <section className="be-map-shell" aria-label={titulo}>
+    <div className="be-map-heading"><strong>{titulo}</strong><small>Mapa de referência. As linhas pontilhadas não representam vias ou navegação.</small></div>
+    {erro?<p role="alert" className="be-map-error">{erro}</p>:null}
+    <div ref={containerRef} className="be-map-canvas" aria-label={titulo}/>
+    {pontos.length>0&&<details className="be-map-list"><summary>Pontos no mapa ({pontos.length})</summary><ol>{pontos.map((p,i)=><li key={i}>{p.nome || 'Ponto'}</li>)}</ol></details>}
+    <p className="be-map-credit">Mapa: OpenStreetMap. Geolocalização disponível apenas para usuários autorizados durante uma viagem ativa.</p>
+  </section>;
+}
