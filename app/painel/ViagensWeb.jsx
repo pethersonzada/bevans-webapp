@@ -12,7 +12,7 @@ function formatPonto(value){return value.latitude.toFixed(5)+', '+value.longitud
 export default function ViagensWeb({api,profile,driver}){
  const [turmas,setTurmas]=useState([]),[turmaId,setTurmaId]=useState('');
  const [tipo,setTipo]=useState('VIAGEM'),[excursaoId,setExcursaoId]=useState(''),[excursoes,setExcursoes]=useState([]),[execucaoId,setExecucaoId]=useState('');
- const [estado,setEstado]=useState(null),[pontos,setPontos]=useState([]),[posicao,setPosicao]=useState(null),[trace,setTrace]=useState(null);
+ const [estado,setEstado]=useState(null),[pontos,setPontos]=useState([]),[posicao,setPosicao]=useState(null),[trace,setTrace]=useState(null),[instrucoes,setInstrucoes]=useState([]),[manobra,setManobra]=useState(0);
  const [passageiros,setPassageiros]=useState([]),[enderecos,setEnderecos]=useState([]),[confirmacao,setConfirmacao]=useState(null),[coletaIda,setColetaIda]=useState(null),[coletaVolta,setColetaVolta]=useState(null);
  const [sentido,setSentido]=useState('IDA'),[presenca,setPresenca]=useState(''),[ida,setIda]=useState(''),[volta,setVolta]=useState('');
  const [erro,setErro]=useState(''),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false),[sharing,setSharing]=useState(false);
@@ -22,7 +22,7 @@ export default function ViagensWeb({api,profile,driver}){
  const chosenTurma=turmas.find(t=>String(t.id)===turmaId);
  const active=tipo==='VIAGEM'?(estado?.status==='ATIVA'?estado.viagemId:null):execucaoId;
  const activeType=tipo;
- const clearLocation=()=>{setPosicao(null);setTrace(null);};
+ const clearLocation=()=>{setPosicao(null);setTrace(null);setInstrucoes([]);setManobra(0);};
  const refresh=async()=>{
   if(!turmaId&&tipo==='VIAGEM')return;
   setLoad(true);setErro('');
@@ -172,8 +172,10 @@ export default function ViagensWeb({api,profile,driver}){
    const route=result?.routes?.[0];
    if(!response.ok||!validarRotaDirecoes(result,pontos.length))throw Error('O Mapbox não confirmou todas as paradas desta rota.');
    setTrace(route.geometry.coordinates);
+   const steps=route.legs.flatMap(leg=>Array.isArray(leg.steps)?leg.steps:[]).filter(step=>typeof step?.maneuver?.instruction==='string').map(step=>({instruction:step.maneuver.instruction,distance:step.distance||0,duration:step.duration||0}));
+   setInstrucoes(steps);setManobra(0);
    setFeedback('Trajeto rodoviário calculado. Distância estimada: '+(route.distance/1000).toFixed(1)+' km.');
-  }catch(e){setTrace(null);setErro(err(e));}
+  }catch(e){setTrace(null);setInstrucoes([]);setManobra(0);setErro(err(e));}
  }
  return <section className="be-section be-live">
   <div className="be-row"><h2>Mapa e viagens</h2><button type="button" className="be-btn" disabled={busy||load} onClick={refresh}>Atualizar estado</button></div>
@@ -196,6 +198,7 @@ export default function ViagensWeb({api,profile,driver}){
     </div>
     <p className="be-muted">GPS: {posicao?'posição recente ('+formatPonto(posicao)+')':'sem localização atual (aguardando ou expirada)'}. Consulta a cada 10 segundos com a aba visível.</p>
     {driver&&sharing&&<p className="be-alert">Seu GPS está sendo enviado durante esta viagem. A transmissão para ao fechar, ocultar a aba ou clicar em parar. O navegador não fornece rastreamento confiável em segundo plano.</p>}
+    {driver&&instrucoes.length>0&&<section className="be-item" aria-label="Instruções do trajeto"><h3>Navegação por etapas</h3><p className="be-muted">Guia manual gerado pelo Mapbox. A etapa não avança automaticamente com o GPS. Respeite a sinalização e não opere a interface dirigindo.</p><p role="status" aria-live="polite"><strong>{manobra+1}/{instrucoes.length}: {instrucoes[manobra]?.instruction}</strong></p><p className="be-muted">{Math.round(instrucoes[manobra]?.distance||0)} metros previstos nesta etapa</p><div className="be-actions"><button type="button" className="be-btn" disabled={manobra===0} onClick={()=>setManobra(i=>Math.max(0,i-1))}>Etapa anterior</button><button type="button" className="be-btn primary" disabled={manobra>=instrucoes.length-1} onClick={()=>setManobra(i=>Math.min(instrucoes.length-1,i+1))}>Próxima etapa</button></div></section>}
    </Painel>
    <Painel titulo="Mapa da operação">
     <MapaWeb pontos={pontos} posicao={posicao} rota={trace}/>
