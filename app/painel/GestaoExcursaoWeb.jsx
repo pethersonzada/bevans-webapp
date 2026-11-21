@@ -11,7 +11,7 @@ export default function GestaoExcursaoWeb({api}){
  const [pinTarget,setPinTarget]=useState('DESTINO');
  const [list,setList]=useState([]),[selected,setSelected]=useState(''),[editing,setEditing]=useState(false),[form,setForm]=useState(empty),[detail,setDetail]=useState(null),[pontos,setPontos]=useState([]),[inscritos,setInscritos]=useState([]),[convites,setConvites]=useState([]),[execucoes,setExecucoes]=useState([]),[sentido,setSentido]=useState('IDA'),[preview,setPreview]=useState([]),[validade,setValidade]=useState(''),[conviteToken,setConviteToken]=useState(''),[error,setError]=useState(''),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false);
  const refresh=useCallback(async()=>{setError('');try{const p=await api('/excursoes?pagina=0&tamanho=50');if(!Array.isArray(p?.itens))throw Error('Lista inválida.');setList(p.itens);}catch(e){setError(message(e));}},[api]);
- useEffect(()=>{refresh();},[refresh]);
+ useEffect(()=>{Promise.resolve().then(()=>refresh());},[refresh]);
  async function open(key){
   setSelected(String(key));setPreview([]);setConviteToken('');setError('');setEditing(false);
   try{
