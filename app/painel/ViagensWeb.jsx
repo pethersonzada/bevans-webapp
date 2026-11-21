@@ -1,19 +1,11 @@
 'use client';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import MapaWeb,{coordenadaValida,normalizarPontos} from './MapaWeb';
+import {gpsRecente,caminhoPosicao,validarRotaDirecoes} from '../lib/mapa-web.mjs';
 
 const err=e=>e instanceof Error?e.message:'Não foi possível concluir a operação.';
 const id=v=>{if(!/^[1-9][0-9]*$/.test(String(v))||!Number.isSafeInteger(Number(v)))throw Error('Identificador inválido.');return Number(v);};
 const json=(method,body)=>({method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-export function gpsRecente(p,now=Date.now()){
- if(!p||p.estado!=='ATUALIZADA'||!coordenadaValida(p))return null;
- const age=now-Date.parse(p.observadoEm||'');
- return Number.isFinite(age)&&age>=-5000&&age<30000?{latitude:p.latitude,longitude:p.longitude}:null;
-}
-export function caminhoPosicao(tipo,ref){
- if(!['VIAGEM','EXCURSAO'].includes(tipo))throw Error('Tipo de operação inválido.');
- return '/'+(tipo==='VIAGEM'?'viagens':'execucoes-excursao')+'/'+id(ref)+'/localizacao';
-}
 function Painel({titulo,children}){return <section className="be-card be-live-card"><h2>{titulo}</h2>{children}</section>;}
 function Aviso({error}){return error?<p role="alert" className="be-error">{error}</p>:null;}
 function formatPonto(value){return value.latitude.toFixed(5)+', '+value.longitude.toFixed(5);}
@@ -150,8 +142,8 @@ export default function ViagensWeb({api,profile,driver}){
  }
  async function confirmPresence(){
   if(presenca!=='NAO_VOU'&&presenca!=='LIMPAR'){
-   if(['IDA','AMBOS'].includes(presenca)&&!ida)throw setErro('Selecione o endereço da ida.');
-   if(['VOLTA','AMBOS'].includes(presenca)&&!volta)throw setErro('Selecione o endereço da volta.');
+   if(['IDA','AMBOS'].includes(presenca)&&!ida)setErro('Selecione o endereço da ida.');
+   if(['VOLTA','AMBOS'].includes(presenca)&&!volta)setErro('Selecione o endereço da volta.');
   }
   const params=new URLSearchParams({usuarioId:String(id(profile.id)),turmaId:String(id(turmaId)),status:presenca});
   if(['IDA','AMBOS'].includes(presenca)&&ida)params.set('enderecoIda',String(id(ida)));
@@ -170,7 +162,7 @@ export default function ViagensWeb({api,profile,driver}){
    const response=await fetch(url,{cache:'no-store'});
    const result=await response.json();
    const route=result?.routes?.[0];
-   if(!response.ok||result?.code!=='Ok'||!Array.isArray(route?.geometry?.coordinates)||!Array.isArray(route?.legs)||route.legs.length!==pontos.length-1)throw Error('O Mapbox não confirmou todas as paradas desta rota.');
+   if(!response.ok||!validarRotaDirecoes(result,pontos.length))throw Error('O Mapbox não confirmou todas as paradas desta rota.');
    setTrace(route.geometry.coordinates);
    setFeedback('Trajeto rodoviário calculado. Distância estimada: '+(route.distance/1000).toFixed(1)+' km.');
   }catch(e){setTrace(null);setErro(err(e));}
