@@ -99,12 +99,12 @@ A sessão é mantida **em memória da aba**, incluindo o token de atualização.
 
 ### Painel operacional
 
-`app/painel/AuthEntry.jsx` expõe áreas de **início, turmas, rotas públicas, solicitações, excursões, notificações e operações**. O painel consome a API para buscar dados e oferecer ações conforme o perfil. A cobertura das ações varia por módulo e por papel. Não confunda a existência de uma seção web com paridade funcional completa com o aplicativo Android.
+`app/painel/AuthEntry.jsx` expõe áreas de **início, turmas, rotas públicas, solicitações, excursões, notificações, operações, mapa e viagens, endereços, coleta privada e configurações**. Para motoristas, inclui também editores de rotas públicas e excursões. O painel consome a API para buscar dados e oferecer ações conforme o perfil. A cobertura das ações varia por módulo e por papel. Não confunda a existência de uma seção web com paridade funcional completa com o aplicativo Android.
 
 ### Excursões e modalidades
 
 - **Turmas e rotas**: fluxos de operação disponíveis no ecossistema BeVans.
-- **Excursões**: criação e execução completas concentradas no aplicativo mobile, com inscrições via convite no navegador; o painel web amplia sua cobertura gradualmente.
+- **Excursões**: o app mobile oferece os fluxos operacionais; no webapp existem cadastro, publicação, modo de coleta, paradas, convites, inscrições, prévia, execuções e acompanhamento, sujeitos à homologação com o backend.
 - **Gestão de frotas**: evolução futura, sem promessa de disponibilidade no produto atual.
 - Não há venda automatizada de planos nem cadastro público aberto no webapp.
 
@@ -115,10 +115,16 @@ app/
 ├── components/            # navegação, apresentação e seções da landing page
 ├── painel/
 │   ├── AuthEntry.jsx      # login e áreas operacionais autenticadas
+│   ├── ColetaPrivadaWeb.jsx # configuração, sugestão e escolha de paradas
+│   ├── ColetaExcursaoWeb.jsx # editor de coleta para excursões
+│   ├── ConfiguracoesWeb.jsx # preferências e contato comercial
+│   ├── ViagensWeb.jsx      # GPS, viagem, presença e manobras
+│   ├── RotasEditorWeb.jsx  # rotas públicas e paradas
 │   └── painel.css         # estilos do painel
 ├── lib/
 │   ├── bevans-auth.mjs    # autenticação e recuperação pelo Firebase
 │   └── bevans-api.mjs     # cliente HTTP, tratamento de erros e contratos
+├── convite/               # inscrição pública com credencial individual
 ├── login/                 # entrada autenticada
 ├── cadastro/              # aviso de cadastro público fechado
 ├── excursoes/             # apresentação das excursões
@@ -142,7 +148,7 @@ Este repositório não deve conter arquivos `.env.local` com valores reais, segr
 
 ## Deploy e verificações
 
-1. Configure as variáveis de ambiente aplicáveis ao ambiente de hospedagem; as duas últimas são indispensáveis ao painel autenticado.
+1. Configure as variáveis de ambiente aplicáveis ao ambiente de hospedagem: `NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY`, `NEXT_PUBLIC_BEVANS_API_URL` e `NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN` para mapas.
 2. Disponibilize a API BeVans publicamente por HTTPS e configure no backend as origens permitidas para requisições do navegador.
 3. Execute `npm test && npm run lint && npm run build`.
 4. Valide o acesso com uma conta autorizada e as permissões correspondentes no backend.
@@ -153,11 +159,14 @@ O repositório usa a hospedagem de referência `https://bevans-webapp.vercel.app
 ## Limitações e próximos passos
 
 - Cadastro público fechado.
-- O painel oferece módulos web incrementais de mapa, GPS, presença, endereços, edição de rotas públicas e gestão de excursões no PR #19. **A branch da funcionalidade deve ser testada antes de mesclar; enquanto não for mesclada, essas funções não estão na main.**
-- Cobertura web ainda parcial em relação aos recursos do aplicativo Android, especialmente navegação turn-by-turn, notificações push, coleta configurável e recursos específicos de segundo plano.
+- **PR #19 já integrado à main:** mapas Mapbox, GPS autorizado, presença, endereços, rotas e excursões.
+- **PR #23 (ainda sujeito a revisão):** coleta privada com paradas e seleção pelo passageiro, entrada em turma com convite, coleta e paradas das excursões, publicação/disponibilidade/pontos excepcionais de rotas, preferências de notificações e contato comercial, recuperação voluntária por credencial individual de inscrição, guia manual de manobras Mapbox.
+- Cobertura web ainda parcial em relação aos recursos do aplicativo Android, especialmente navegação automática assistida por GPS, notificações push para navegador, gestão de responsáveis, perfil completo, testes reais de homologação e recursos específicos de segundo plano.
 - GPS no navegador depende de HTTPS, permissão explícita, aba visível e autorização do backend. O envio limita a frequência a pelo menos cinco segundos e é interrompido quando a aba fica oculta. Não há localização em segundo plano.
 - A rota rodoviária usa a API Directions do Mapbox quando solicitada, limitada a 25 coordenadas e sem omitir paradas.
-- O fluxo público de convites exige revisão de consentimentos e privacidade, especialmente para menores, antes de produção.
+- O fluxo público de convites exige revisão de consentimentos e privacidade, especialmente para menores, antes de produção. A credencial individual nunca é salva automaticamente em `localStorage`, cookie ou URL; o titular deve copiá-la para reabrir a inscrição.
+- A navegação no webapp mostra manobras da API Directions do Mapbox em sequência **manual**. Não realiza condução por voz ou avanço automático do GPS.
+- O backend precisa permitir CORS para a origem do webapp, manter autenticação/autorização em todas as operações privadas e limitar localização a perfis autorizados.
 - Conteúdo ilustrativo da landing page não representa dados de viagens reais.
 - O contato comercial depende de um aplicativo de e-mail instalado/configurado no dispositivo.
 - Validações automatizadas não substituem testes de integração com Firebase/API e revisão visual.
