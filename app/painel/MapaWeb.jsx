@@ -1,5 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
+export {coordenadaValida,normalizarPontos} from '../lib/mapa-web.mjs';
+import {coordenadaValida,normalizarPontos} from '../lib/mapa-web.mjs';
 
 // Mapbox GL JS roda somente no navegador. Token público separado do projeto mobile.
 const JS='https://api.mapbox.com/mapbox-gl-js/v3.9.0/mapbox-gl.js';
@@ -16,16 +18,6 @@ function loadMapbox(){
   document.head.appendChild(script);
  }).catch(err=>{loading=null;throw err;});
  return loading;
-}
-export function coordenadaValida(p){
- return p && typeof p.latitude==='number' && Number.isFinite(p.latitude) && Math.abs(p.latitude)<=90 &&
- typeof p.longitude==='number' && Number.isFinite(p.longitude) && Math.abs(p.longitude)<=180 &&
- !(p.latitude===0&&p.longitude===0);
-}
-export function normalizarPontos(lista){
- return Array.isArray(lista)?lista.filter(coordenadaValida).map(p=>({
-  latitude:p.latitude,longitude:p.longitude,nome:String(p.nome||p.tipo||'Ponto'),tipo:p.tipo||'PARADA'
- })):[];
 }
 function montarRotaGeojson(coordinates){
  if(!Array.isArray(coordinates)||coordinates.length<2)return null;
