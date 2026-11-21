@@ -142,7 +142,7 @@ Este repositório não deve conter arquivos `.env.local` com valores reais, segr
 
 ## Deploy e verificações
 
-1. Configure as quatro variáveis de ambiente aplicáveis ao ambiente de hospedagem; as duas últimas são indispensáveis ao painel autenticado.
+1. Configure as variáveis de ambiente aplicáveis ao ambiente de hospedagem; as duas últimas são indispensáveis ao painel autenticado.
 2. Disponibilize a API BeVans publicamente por HTTPS e configure no backend as origens permitidas para requisições do navegador.
 3. Execute `npm test && npm run lint && npm run build`.
 4. Valide o acesso com uma conta autorizada e as permissões correspondentes no backend.
