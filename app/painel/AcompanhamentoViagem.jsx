@@ -101,7 +101,7 @@ export default function AcompanhamentoViagem({api,turmaId,viagem,driver,onRefres
       </div>}
       {driver&&<p className="be-footnote">Ao ativar, a posição deste navegador será enviada à API da viagem. Use somente no dispositivo do motorista durante o trajeto. Ao ocultar a aba, a transmissão é interrompida. O navegador não garante GPS em segundo plano.</p>}
       {gpsErro&&<p role="alert" className="be-error">{gpsErro}</p>}</div>
-      {(roteiro.length>0||posicao?.estado==='ATUALIZADA')?<MapaOperacional key={id} pontos={driver?roteiro:[]} posicao={posicao} titulo={driver?'Roteiro oficial e posição da van':'Posição atual da van'} autorizarRoteamento={driver&&roteiro.length>1}/>:<p className="be-muted">{driver?'Sem roteiro acessível ou GPS recente.':'A localização só aparece enquanto há GPS recente e autorizado.'}</p>}
+      {(roteiro.length>0||posicao?.estado==='ATUALIZADA')?<MapaOperacional key={id} pontos={driver?roteiro:[]} posicao={posicao} titulo={driver?'Roteiro oficial e posição da van':'Posição atual da van'} autorizarRoteamento={driver&&roteiro.length>1} privado/>:<p className="be-muted">{driver?'Sem roteiro acessível ou GPS recente.':'A localização só aparece enquanto há GPS recente e autorizado.'}</p>}
       {driver&&roteiro.length>0&&<p className="be-footnote">O roteiro é o snapshot da viagem. Confira a ordem oficial e use navegação apropriada para dirigir; as linhas no mapa não seguem as ruas.</p>}
     </>}
   </section>;
