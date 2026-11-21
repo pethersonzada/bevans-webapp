@@ -48,6 +48,9 @@ NEXT_PUBLIC_CONTACT_EMAIL=contato@seu-dominio.com
 # Login/painel web (necessários para funcionalidades autenticadas)
 NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY=sua_chave_web_publica_firebase
 NEXT_PUBLIC_BEVANS_API_URL=https://sua-api-bevans.exemplo.com
+
+# Opcional: percursos viários e instruções em mapas autorizados
+NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.seu_token_publico_mapbox
 ```
 
 | Variável | Utilização |
@@ -56,6 +59,7 @@ NEXT_PUBLIC_BEVANS_API_URL=https://sua-api-bevans.exemplo.com
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Destinatário do formulário comercial via `mailto:`; sem ela, o formulário não prepara o e-mail |
 | `NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY` | Chave pública web do Firebase usada pelo fluxo de login e recuperação de senha |
 | `NEXT_PUBLIC_BEVANS_API_URL` | URL de origem da API BeVans; o cliente exige HTTPS, com HTTP permitido apenas para `localhost`/`127.0.0.1` no desenvolvimento |
+| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Chave pública opcional para traçar percursos e exibir instruções viárias via Mapbox Directions, somente por ação explícita |
 
 > Variáveis `NEXT_PUBLIC_*` ficam visíveis no JavaScript entregue ao navegador. **Nunca** armazene nelas chaves privadas, contas de serviço, tokens secretos ou senhas. A chave web pública do Firebase não substitui as regras de segurança e autorização do backend.
 
@@ -97,6 +101,21 @@ A sessão é mantida **em memória da aba**, incluindo o token de atualização.
 ### Painel operacional
 
 `app/painel/AuthEntry.jsx` expõe áreas de **início, turmas, rotas públicas, solicitações, excursões, notificações e operações**. O painel consome a API para buscar dados e oferecer ações conforme o perfil. A cobertura das ações varia por módulo e por papel. Não confunda a existência de uma seção web com paridade funcional completa com o aplicativo Android.
+
+### Mapas, presença e GPS no painel web (implementação em validação)
+
+O painel possui módulos web de **endereços, presença diária, edição de rotas públicas, prévia de planejamento e mapa de viagens**. Estas integrações estão em validação no pull request correspondente, antes da liberação na branch de produção.
+
+- **Endereços:** cadastrar, editar e excluir endereços próprios com pin explicitamente selecionado no mapa. A precisão do pin deve ser conferida pelo usuário.
+- **Presença:** confirmar ida, volta, ambos, ausência ou limpar a confirmação para a turma selecionada, usando `/rota/confirmar` e `/rota/minha-confirmacao`.
+- **Rotas públicas:** criar, editar, ordenar paradas, publicar, obter prévia de ordem e iniciar viagem pública com autenticação de motorista.
+- **Viagens privadas:** início e encerramento do ciclo, com consulta de estado oficial e bloqueio antes do encerramento se houver passageiros embarcados.
+- **Mapa operacional:** motorista autenticado consulta `/operacoes/VIAGEM/{id}/roteiro` e passageiros autorizados consultam somente a posição GPS da van. Posição obsoleta/expirada não é exibida como atual.
+- **GPS do navegador:** motorista pode autorizar o envio de sua localização para `PUT /viagens/{id}/localizacao` durante viagem ativa, com frequência controlada. HTTPS e permissão de localização são obrigatórios; **o envio para ao ocultar a aba**. Não é substituto do rastreamento nativo contínuo em segundo plano.
+- **Mapa externo:** Leaflet 1.9.4 com tiles OpenStreetMap. Em mapas privados e de endereços o carregamento depende de ação explícita, pois o provedor externo recebe solicitações de tiles. Linhas pontilhadas mostram apenas a sequência dos pontos, não vias.
+- **Rotas pelas ruas:** opcionalmente, um motorista pode autorizar uma chamada ao Mapbox Directions (máximo 25 pontos válidos) para receber percurso por vias e instruções. O token público deve estar configurado. Essa consulta envia as coordenadas do roteiro ao Mapbox; uma confirmação antecede o envio.
+
+**Limites atuais:** o navegador não oferece equivalência a GPS em segundo plano, navegação guiada/turn-by-turn nativa, notificações push do Expo ou recursos completos de excursões. Dados reais dependem da configuração e autorização do backend; testes de integração em ambiente homologado ainda são necessários.
 
 ### Excursões e modalidades
 
