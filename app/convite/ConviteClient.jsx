@@ -23,11 +23,13 @@ export default function ConviteClient(){
  const iniciado=useRef(false);
  useEffect(()=>{
   if(iniciado.current)return;iniciado.current=true;
-  const raw=decodeURIComponent(window.location.hash.slice(1));
-  window.history.replaceState(null,'',window.location.pathname);
-  if(!raw||raw.length>500||/\s/.test(raw)){setErro('Link sem convite válido. Solicite um novo convite ao organizador.');setLoading(false);return;}
-  setConvite(raw);
-  publico('/publico/excursoes/convite',{'X-Convite':raw}).then(setDados).catch(e=>setErro(text(e))).finally(()=>setLoading(false));
+  Promise.resolve().then(()=>{
+   let raw='';try{raw=decodeURIComponent(window.location.hash.slice(1));}catch{setErro('Token de convite inválido.');setLoading(false);return;}
+   window.history.replaceState(null,'',window.location.pathname);
+   if(!raw||raw.length>500||/\s/.test(raw)){setErro('Link sem convite válido. Solicite um novo convite ao organizador.');setLoading(false);return;}
+   setConvite(raw);
+   publico('/publico/excursoes/convite',{'X-Convite':raw}).then(setDados).catch(e=>setErro(text(e))).finally(()=>setLoading(false));
+  });
  },[]);
  const modo=dados?.modoColeta||'PORTA_A_PORTA';
  const safePins=(dados?.paradas||[]).filter(valid).map(p=>({...p,nome:p.nome||'Parada'}));
