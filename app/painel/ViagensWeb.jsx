@@ -142,8 +142,8 @@ export default function ViagensWeb({api,profile,driver}){
  }
  async function confirmPresence(){
   if(presenca!=='NAO_VOU'&&presenca!=='LIMPAR'){
-   if(['IDA','AMBOS'].includes(presenca)&&!ida)setErro('Selecione o endereço da ida.');
-   if(['VOLTA','AMBOS'].includes(presenca)&&!volta)setErro('Selecione o endereço da volta.');
+   if(['IDA','AMBOS'].includes(presenca)&&!ida)return setErro('Selecione o endereço da ida.');
+   if(['VOLTA','AMBOS'].includes(presenca)&&!volta)return setErro('Selecione o endereço da volta.');
   }
   const params=new URLSearchParams({usuarioId:String(id(profile.id)),turmaId:String(id(turmaId)),status:presenca});
   if(['IDA','AMBOS'].includes(presenca)&&ida)params.set('enderecoIda',String(id(ida)));
@@ -183,7 +183,7 @@ export default function ViagensWeb({api,profile,driver}){
     <div className="be-actions">
      {driver&&tipo==='VIAGEM'&&estado?.status!=='ATIVA'&&<button className="be-btn primary" disabled={busy} onClick={start}>Iniciar {sentido==='IDA'?'ida':'volta'}</button>}
      {driver&&tipo==='VIAGEM'&&estado?.status==='ATIVA'&&<button className="be-btn danger" disabled={busy} onClick={finish}>Encerrar viagem</button>}
-     {driver&&active&&<button className={'be-btn '+(sharing?'danger':'primary')} onClick={()=>{setErro('');setSharing(x=>!x);}}>{sharing?'Parar compartilhamento GPS':'Compartilhar GPS nesta aba'}</button>}
+     {driver&&active&&<button className={'be-btn '+(sharing?'danger':'primary')} onClick={()=>{setErro('');if(!navigator.geolocation){setErro('Geolocalização não disponível neste navegador.');return;}setSharing(x=>!x);}}>{sharing?'Parar compartilhamento GPS':'Compartilhar GPS nesta aba'}</button>}
      {driver&&pontos.length>=2&&<button type="button" className="be-btn" onClick={directions}>Traçar percurso rodoviário</button>}
     </div>
     <p className="be-muted">GPS: {posicao?'posição recente ('+formatPonto(posicao)+')':'sem localização atual (aguardando ou expirada)'}. Consulta a cada 10 segundos com a aba visível.</p>
