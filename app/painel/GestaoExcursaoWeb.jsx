@@ -8,6 +8,7 @@ const empty={titulo:'',destinoNome:'',destinoLatitude:null,destinoLongitude:null
 function inputISO(text){if(!text)return null;const d=new Date(text);if(!Number.isFinite(d.getTime()))throw Error('Data inválida.');return d.toISOString();}
 function fromISO(text){if(!text)return '';const d=new Date(text);if(!Number.isFinite(d.getTime()))return '';return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);}
 export default function GestaoExcursaoWeb({api}){
+ const [pinTarget,setPinTarget]=useState('DESTINO');
  const [list,setList]=useState([]),[selected,setSelected]=useState(''),[editing,setEditing]=useState(false),[form,setForm]=useState(empty),[detail,setDetail]=useState(null),[pontos,setPontos]=useState([]),[inscritos,setInscritos]=useState([]),[convites,setConvites]=useState([]),[execucoes,setExecucoes]=useState([]),[sentido,setSentido]=useState('IDA'),[preview,setPreview]=useState([]),[validade,setValidade]=useState(''),[conviteToken,setConviteToken]=useState(''),[error,setError]=useState(''),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false);
  const refresh=useCallback(async()=>{setError('');try{const p=await api('/excursoes?pagina=0&tamanho=50');if(!Array.isArray(p?.itens))throw Error('Lista inválida.');setList(p.itens);}catch(e){setError(message(e));}},[api]);
  useEffect(()=>{refresh();},[refresh]);
@@ -51,7 +52,6 @@ export default function GestaoExcursaoWeb({api}){
   else await refresh();
  }
  function updateField(key,value){setForm(p=>({...p,[key]:value}));}
- const chosen=selected?list.find(x=>String(x.id)===selected):null;
  const stops=normalizarPontos([
   {nome:'Origem',latitude:form.origemLatitude,longitude:form.origemLongitude},
   ...pontos,
@@ -82,10 +82,9 @@ export default function GestaoExcursaoWeb({api}){
     <label>Partida<input required type="datetime-local" value={form.partidaEm} onChange={e=>updateField('partidaEm',e.target.value)}/></label>
     <label>Retorno (opcional)<input type="datetime-local" value={form.retornoEm||''} onChange={e=>updateField('retornoEm',e.target.value)}/></label>
     <label>Capacidade<input type="number" min="1" required value={form.capacidade} onChange={e=>updateField('capacidade',e.target.value)}/></label>
-    <p className="be-muted">Selecione destino ou origem e clique no mapa para definir as coordenadas oficiais.</p>
-    <MapaWeb pontos={stops} onSelecionar={p=>setForm(f=>({...f,destinoLatitude:p.latitude,destinoLongitude:p.longitude}))} altura={320}/>
-    <p className="be-muted">Clique no mapa para definir o destino. Para origem, use o botão abaixo e clique novamente.</p>
-    <button type="button" className="be-btn" onClick={()=>{if(coordenadaValida({latitude:form.destinoLatitude,longitude:form.destinoLongitude})){setForm(f=>({...f,origemLatitude:f.destinoLatitude,origemLongitude:f.destinoLongitude}));setFeedback('Origem ajustada para coordenadas do destino. Se forem diferentes, confirme a origem depois.');}}}>Usar destino como referência da origem</button>
+    <p className="be-muted">Escolha o tipo do ponto e confirme sua localização no mapa.</p>
+    <label>Editar pin de<select value={pinTarget} onChange={e=>setPinTarget(e.target.value)}><option value="DESTINO">Destino</option><option value="ORIGEM">Origem operacional</option></select></label>
+    <MapaWeb pontos={stops} onSelecionar={p=>{const k=pinTarget==='ORIGEM'?'origem':'destino';setForm(f=>({...f,[k+'Latitude']:p.latitude,[k+'Longitude']:p.longitude}));}} altura={320}/>
     <button className="be-btn primary" disabled={busy||!form.titulo.trim()||!form.destinoNome.trim()}>Salvar excursão</button>
    </form>}
    {detail&&!editing&&<>
