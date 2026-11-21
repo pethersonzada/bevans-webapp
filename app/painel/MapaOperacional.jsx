@@ -28,20 +28,17 @@ export {pontoValido,pontosRotaPublica,pontosRoteiroOperacional};
 
 /** Mapa de referência; linhas ligam pontos diretamente, sem sugerir caminhos pelas ruas. */
 export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da rota',onPick=null,autorizarRoteamento=false}) {
-  const containerRef=useRef(null),mapRef=useRef(null),layerRef=useRef(null),leafletRef=useRef(null);
+  const containerRef=useRef(null),mapRef=useRef(null),layerRef=useRef(null);
   const latestRef=useRef({pontos,posicao,caminho:null});
   const onPickRef=useRef(onPick);
   const [erro,setErro]=useState('');
   const [caminho,setCaminho]=useState(null),[passos,setPassos]=useState([]),[roteando,setRoteando]=useState(false),[erroRota,setErroRota]=useState('');
-  latestRef.current={pontos,posicao,caminho};
-  onPickRef.current=onPick;
 
   const redrawRef=useRef(null);
   useEffect(()=>{
     let cancelled=false;
     loadLeaflet().then(L=>{
       if(cancelled || !containerRef.current) return;
-      leafletRef.current=L;
       const map=L.map(containerRef.current,{scrollWheelZoom:false});
       mapRef.current=map;
       map.on('click',e=>{onPickRef.current?.({latitude:e.latlng.lat,longitude:e.latlng.lng});});
@@ -85,7 +82,7 @@ export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da 
     return ()=>{cancelled=true;redrawRef.current=null;mapRef.current?.remove();mapRef.current=null;layerRef.current=null;};
   },[]);
 
-  useEffect(()=>{redrawRef.current?.();},[pontos,posicao,caminho]);
+  useEffect(()=>{latestRef.current={pontos,posicao,caminho};onPickRef.current=onPick;redrawRef.current?.();},[pontos,posicao,caminho,onPick]);
 
   async function tracarRota(){
     if(roteando)return;
