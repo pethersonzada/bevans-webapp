@@ -19,7 +19,7 @@ async function publico(path,headers,method='GET',body=undefined){
 }
 export default function ConviteClient(){
  const [convite,setConvite]=useState(''),[dados,setDados]=useState(null),[nome,setNome]=useState(''),[contato,setContato]=useState(''),[paradaId,setParadaId]=useState(''),[pontoNome,setPontoNome]=useState(''),[ponto,setPonto]=useState(null),[aceite,setAceite]=useState(false);
- const [credencial,setCredencial]=useState(''),[inscricao,setInscricao]=useState(null),[busy,setBusy]=useState(false),[erro,setErro]=useState(''),[loading,setLoading]=useState(true);
+ const [credencial,setCredencial]=useState(''),[credencialDigitada,setCredencialDigitada]=useState(''),[inscricao,setInscricao]=useState(null),[notificacoes,setNotificacoes]=useState([]),[contatoMotorista,setContatoMotorista]=useState(null),[busy,setBusy]=useState(false),[erro,setErro]=useState(''),[loading,setLoading]=useState(true);
  const iniciado=useRef(false);
  useEffect(()=>{
   if(iniciado.current)return;iniciado.current=true;
@@ -54,6 +54,26 @@ export default function ConviteClient(){
    setInscricao(result);
   }catch(e){setErro(text(e));}finally{setBusy(false);}
  }
+ async function consultarInscricao(){
+  const value=(credencialDigitada||credencial).trim();
+  if(!value||value.length>500||/\\s/.test(value))return setErro('Informe uma credencial individual válida.');
+  setBusy(true);setErro('');
+  try{
+   const r=await publico('/publico/excursoes/inscricao',{'X-Inscricao':value});
+   if(!r?.id||!r?.estado)throw Error('O servidor não confirmou esta inscrição.');
+   setCredencial(value);setInscricao(r);setCredencialDigitada('');
+  }catch(e){setErro(text(e));}finally{setBusy(false);}
+ }
+ async function avisos(){
+  if(!credencial)return;
+  setBusy(true);setErro('');
+  try{const r=await publico('/publico/excursoes/inscricao/notificacoes?pagina=0&tamanho=20',{'X-Inscricao':credencial});if(!Array.isArray(r?.content))throw Error('Histórico de avisos inválido.');setNotificacoes(r.content);}catch(e){setErro(text(e));}finally{setBusy(false);}
+ }
+ async function mostrarContato(){
+  if(!credencial||inscricao?.estado!=='CONFIRMADA')return;
+  setBusy(true);setErro('');
+  try{const r=await publico('/publico/excursoes/inscricao/contato-motorista',{'X-Inscricao':credencial});if(!r?.waMe||!/^https:\\/\\/wa\\.me\\/[0-9]+$/.test(r.waMe))throw Error('Contato não autorizado.');setContatoMotorista(r);}catch(e){setErro(text(e));}finally{setBusy(false);}
+ }
  async function cancelar(){
   if(!credencial||!window.confirm('Cancelar esta inscrição? A vaga será liberada.'))return;
   setBusy(true);setErro('');
@@ -71,6 +91,7 @@ export default function ConviteClient(){
     <MapaWeb pontos={[...safePins,{nome:'Destino',latitude:dados.destinoLatitude,longitude:dados.destinoLongitude}]} altura={300}/>
     </>}
    </section>
+   {!inscricao&&<section className="be-card be-section"><h2>Já tenho uma credencial</h2><p className="be-muted">Cole a credencial individual que você salvou anteriormente. Ela não será colocada na URL nem armazenada no navegador.</p><div className="be-form"><label>Credencial individual<input autoComplete="off" type="password" value={credencialDigitada} onChange={e=>setCredencialDigitada(e.target.value)} /></label><button className="be-btn" disabled={busy||!credencialDigitada.trim()} onClick={consultarInscricao} type="button">Consultar minha inscrição</button></div></section>}
    {dados&&!inscricao&&<section className="be-card be-section"><h2>Solicitar inscrição</h2>
     <form className="be-form" onSubmit={cadastrar}>
      <label>Nome completo<input required autoComplete="name" maxLength={160} value={nome} onChange={e=>setNome(e.target.value)}/></label>
@@ -86,7 +107,10 @@ export default function ConviteClient(){
     </form><p className="be-muted">Sua solicitação poderá ficar pendente até aprovação do organizador. Não é confirmação de pagamento.</p>
    </section>}
    {inscricao&&<section className="be-card be-section"><h2>Minha inscrição</h2><p><strong>{inscricao.nome||nome}</strong> · Estado: {inscricao.estado}</p>
-    <p className="be-alert">Guarde esta página aberta até concluir o acompanhamento. A credencial individual fica somente em memória e será perdida ao recarregar ou fechar a aba. Não compartilhe o link de acompanhamento.</p>
+    <p className="be-alert">Salve sua credencial em um local privado. Ela identifica sua inscrição e permite consultar ou cancelar depois. Este navegador não a armazena automaticamente.</p>
+    <div className="be-actions"><button type="button" className="be-btn" disabled={!credencial} onClick={()=>navigator.clipboard.writeText(credencial)}>Copiar credencial individual</button><button type="button" className="be-btn" disabled={busy} onClick={avisos}>Consultar notificações</button>{inscricao.estado==='CONFIRMADA'&&<button type="button" className="be-btn" disabled={busy} onClick={mostrarContato}>Contato do organizador</button>}</div>
+    {contatoMotorista&&<p><a className="be-btn primary" href={contatoMotorista.waMe} target="_blank" rel="noopener noreferrer">Abrir WhatsApp comercial autorizado</a></p>}
+    {!!notificacoes.length&&<div className="be-list">{notificacoes.map(n=><div className="be-item" key={n.id}><strong>{n.titulo}</strong><p>{n.mensagem}</p></div>)}</div>}
     {inscricao.estado!=='CANCELADA'&&<button className="be-btn danger" disabled={busy} onClick={cancelar}>Cancelar minha inscrição</button>}
    </section>}
   </div>
