@@ -1,0 +1,53 @@
+name: Browser smoke (isolated mocks)
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-smoke-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY: browser-test-key
+      NEXT_PUBLIC_BEVANS_API_URL: https://api.bevans.invalid
+      NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install project dependencies
+        run: npm ci
+      - name: Install isolated pinned Playwright runner
+        run: npm install --no-save --package-lock=false --ignore-scripts @playwright/test@1.56.1
+      - name: Install Chromium and OS dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Build with synthetic public configuration
+        run: npm run build
+      - name: Run browser smoke tests (no real credentials or backend mutations)
+        run: npx playwright test --config=e2e/playwright.config.mjs
+      - name: Upload browser report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-smoke-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
