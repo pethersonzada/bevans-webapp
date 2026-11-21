@@ -27,15 +27,17 @@ import {pontoValido,pontosRotaPublica,pontosRoteiroOperacional} from './mapa-uti
 export {pontoValido,pontosRotaPublica,pontosRoteiroOperacional};
 
 /** Mapa de referência; linhas ligam pontos diretamente, sem sugerir caminhos pelas ruas. */
-export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da rota',onPick=null,autorizarRoteamento=false}) {
+export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da rota',onPick=null,autorizarRoteamento=false,privado=false}) {
   const containerRef=useRef(null),mapRef=useRef(null),layerRef=useRef(null);
   const latestRef=useRef({pontos,posicao,caminho:null});
   const onPickRef=useRef(onPick);
   const [erro,setErro]=useState('');
+  const [permitido,setPermitido]=useState(!privado);
   const [caminho,setCaminho]=useState(null),[passos,setPassos]=useState([]),[roteando,setRoteando]=useState(false),[erroRota,setErroRota]=useState('');
 
   const redrawRef=useRef(null);
   useEffect(()=>{
+    if(!permitido)return;
     let cancelled=false;
     loadLeaflet().then(L=>{
       if(cancelled || !containerRef.current) return;
@@ -80,7 +82,7 @@ export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da 
       redraw();
     }).catch(e=>{if(!cancelled)setErro(e.message);});
     return ()=>{cancelled=true;redrawRef.current=null;mapRef.current?.remove();mapRef.current=null;layerRef.current=null;};
-  },[]);
+  },[permitido]);
 
   useEffect(()=>{latestRef.current={pontos,posicao,caminho};onPickRef.current=onPick;redrawRef.current?.();},[pontos,posicao,caminho,onPick]);
 
@@ -107,11 +109,12 @@ export default function MapaOperacional({pontos=[],posicao=null,titulo='Mapa da 
 
   return <section className="be-map-shell" aria-label={titulo}>
     <div className="be-map-heading"><strong>{titulo}</strong><small>{caminho?'Percurso viário calculado pelo Mapbox.':'Linhas pontilhadas não representam vias ou navegação.'}</small></div>
+    {privado&&!permitido&&<div className="be-map-consent"><p>O mapa carrega imagens do OpenStreetMap. Esse serviço pode receber a área aproximada visualizada e informações de conexão. Use apenas em ambiente autorizado.</p><button type="button" className="be-btn" onClick={()=>setPermitido(true)}>Carregar mapa externo</button></div>}
     {erro?<p role="alert" className="be-map-error">{erro}</p>:null}
     {autorizarRoteamento&&<div className="be-map-route"><button type="button" className="be-btn" disabled={roteando} onClick={tracarRota}>{roteando?'Calculando percurso…':'Traçar percurso pelas ruas (Mapbox)'}</button><small>Consulta opcional. Compartilha os pontos selecionados com o Mapbox.</small></div>}
     {erroRota&&<p role="alert" className="be-map-error">{erroRota}</p>}
     {onPick&&<p className="be-map-pick">Clique ou toque no mapa para escolher o ponto exato.</p>}
-    <div ref={containerRef} className={'be-map-canvas '+(onPick?'be-map-selectable':'')} aria-label={titulo}/>
+    {permitido&&<div ref={containerRef} className={'be-map-canvas '+(onPick?'be-map-selectable':'')} aria-label={titulo}/>}
     {passos.length>0&&<details className="be-map-list"><summary>Instruções do percurso ({passos.length})</summary><ol>{passos.map((passo,i)=><li key={i}>{passo}</li>)}</ol></details>}
     {pontos.length>0&&<details className="be-map-list"><summary>Pontos no mapa ({pontos.length})</summary><ol>{pontos.map((p,i)=><li key={i}>{p.nome || 'Ponto'}</li>)}</ol></details>}
     <p className="be-map-credit">Mapa: OpenStreetMap. Geolocalização disponível apenas para usuários autorizados durante uma viagem ativa.</p>
