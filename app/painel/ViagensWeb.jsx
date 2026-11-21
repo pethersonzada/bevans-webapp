@@ -1,5 +1,5 @@
 'use client';
-import {useCallback,useEffect,useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import MapaWeb,{coordenadaValida,normalizarPontos} from './MapaWeb';
 import {gpsRecente,caminhoPosicao,validarRotaDirecoes} from '../lib/mapa-web.mjs';
 
@@ -17,20 +17,20 @@ export default function ViagensWeb({api,profile,driver}){
  const [sentido,setSentido]=useState('IDA'),[presenca,setPresenca]=useState(''),[ida,setIda]=useState(''),[volta,setVolta]=useState('');
  const [erro,setErro]=useState(''),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false),[sharing,setSharing]=useState(false);
  const [load,setLoad]=useState(false);
- const watch=useRef(null),lastSend=useRef(0),working=useRef(false),current=useRef({api:null,active:null,sharing:false});
- const mounted=useRef(true);
+ const watch=useRef(null),lastSend=useRef(0),working=useRef(false);
+ const mounted=useRef(true),refreshRef=useRef(null);
  const chosenTurma=turmas.find(t=>String(t.id)===turmaId);
  const active=tipo==='VIAGEM'?(estado?.status==='ATIVA'?estado.viagemId:null):execucaoId;
  const activeType=tipo;
  const clearLocation=()=>{setPosicao(null);setTrace(null);};
- const refresh=useCallback(async()=>{
+ const refresh=async()=>{
   if(!turmaId&&tipo==='VIAGEM')return;
   setLoad(true);setErro('');
   try{
    if(tipo==='VIAGEM'){
     const turma=id(turmaId),status=await api('/rota/status-atual?turmaId='+turma);
     if(!status||!['ATIVA','INATIVA'].includes(status.status))throw Error('O servidor não confirmou a situação da turma.');
-    setEstado(status);
+    setEstado(status);if(status.status!=='ATIVA')setSharing(false);
     if(driver){
      const list=await api('/turmas/'+turma+'/passageiros');
      if(!Array.isArray(list))throw Error('Lista de passageiros inválida.');
@@ -64,7 +64,7 @@ export default function ViagensWeb({api,profile,driver}){
     setPontos(current?normalizarPontos(current.pontos):[]);
    }
   }catch(e){setErro(err(e));}finally{setLoad(false);}
- },[api,driver,profile.id,turmaId,tipo,excursaoId,execucaoId,chosenTurma?.origemNome,chosenTurma?.origemLatitude,chosenTurma?.origemLongitude,chosenTurma?.destinoNome,chosenTurma?.destinoLatitude,chosenTurma?.destinoLongitude]);
+ };
  useEffect(()=>{mounted.current=true;const controller=new AbortController();
   Promise.all([
    api(driver?'/turmas/motorista/'+id(profile.id):'/turmas/usuario/'+id(profile.id)+'/todas',{signal:controller.signal}),
@@ -83,7 +83,7 @@ export default function ViagensWeb({api,profile,driver}){
    if(!live||document.visibilityState!=='visible')return;
    try{
     const p=await api(caminhoPosicao(activeType,active));
-    if(live){setPosicao(gpsRecente(p));if(p?.estado==='FINALIZADA')setFeedback('Execução finalizada. Compartilhamento encerrado.');}
+    if(live){setPosicao(gpsRecente(p));if(p?.estado==='FINALIZADA'){setSharing(false);setFeedback('Execução finalizada. Compartilhamento encerrado.');}}
    }catch(e){if(live){setPosicao(null);setErro(err(e));}}
   };
   read();task=setInterval(read,10000);
@@ -94,7 +94,7 @@ export default function ViagensWeb({api,profile,driver}){
   if(!sharing||!driver||!active||!navigator.geolocation){return;}
   let live=true;lastSend.current=0;working.current=false;
   const successful=async position=>{
-   if(!live||!current.current.sharing||document.visibilityState!=='visible'||working.current)return;
+   if(!live||!sharing||document.visibilityState!=='visible'||working.current)return;
    const {latitude,longitude,accuracy,speed}=position.coords;
    if(!coordenadaValida({latitude,longitude})||!Number.isFinite(accuracy)||accuracy>5000)return;
    const now=Date.now();
@@ -172,9 +172,9 @@ export default function ViagensWeb({api,profile,driver}){
   <p className="be-muted">Viagens, presença, embarques e GPS autorizados pelo backend. Localização no navegador exige HTTPS e permissão explícita.</p>
   <Aviso error={erro}/>{feedback&&<p className="be-alert" role="status">{feedback}</p>}
   <div className="be-fieldset">
-   {driver&&<label>Modalidade<select value={tipo} onChange={e=>{setTipo(e.target.value);setSharing(false);}}><option value="VIAGEM">Turma fixa / viagem</option><option value="EXCURSAO">Excursão</option></select></label>}
-   {tipo==='VIAGEM'?<label>Turma<select value={turmaId} onChange={e=>{setSharing(false);setTurmaId(e.target.value);}}><option value="">Selecione uma turma</option>{turmas.map(t=><option key={t.id} value={t.id}>{t.nome}</option>)}</select></label>:
-   <label>Excursão<select value={excursaoId} onChange={e=>{setSharing(false);setExcursaoId(e.target.value);}}><option value="">Selecione uma excursão</option>{excursoes.map(e=><option value={e.id} key={e.id}>{e.titulo}</option>)}</select></label>}
+   {driver&&<label>Modalidade<select value={tipo} onChange={e=>{resetSelection();setTipo(e.target.value);}}><option value="VIAGEM">Turma fixa / viagem</option><option value="EXCURSAO">Excursão</option></select></label>}
+   {tipo==='VIAGEM'?<label>Turma<select value={turmaId} onChange={e=>{resetSelection();setTurmaId(e.target.value);}}><option value="">Selecione uma turma</option>{turmas.map(t=><option key={t.id} value={t.id}>{t.nome}</option>)}</select></label>:
+   <label>Excursão<select value={excursaoId} onChange={e=>{resetSelection();setExcursaoId(e.target.value);}}><option value="">Selecione uma excursão</option>{excursoes.map(e=><option value={e.id} key={e.id}>{e.titulo}</option>)}</select></label>}
    {driver&&tipo==='VIAGEM'&&<label>Sentido<select value={sentido} onChange={e=>setSentido(e.target.value)}><option value="IDA">Ida</option><option value="VOLTA">Volta</option></select></label>}
   </div>
   {tipo==='VIAGEM'&&turmaId||tipo==='EXCURSAO'&&excursaoId?<div className="be-live-stack">
