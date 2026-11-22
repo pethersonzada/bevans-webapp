@@ -13,7 +13,7 @@ test('login com estrutura própria e sem cadastro público',()=>{
 test('painel possui navegação lateral e responsiva e mantém os módulos funcionais',()=>{
  assert.match(jsx,/be-sidebar-nav/);
  assert.match(jsx,/be-mobile-tabs/);
- for(const part of ['Overview','Turmas','Rotas','Solicitacoes','Excursoes','Notificacoes','Operacoes'])assert.match(jsx,new RegExp('<'+part+' '));
+ for(const part of ['Overview','Turmas','Rotas','Solicitacoes','Excursoes','Notificacoes','OperacoesWeb'])assert.match(jsx,new RegExp('<'+part+' '));
 });
 test('design respeita telas pequenas e acessibilidade',()=>{
  assert.match(css,/@media\(max-width:800px\)/);
