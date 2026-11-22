@@ -1,3 +1,5 @@
+import {checkExpectedRelease} from '../app/lib/release-info.mjs';
+
 // Verificações não destrutivas para um ambiente explicitamente de homologação.
 // Não usa identidades, tokens, GPS nem acessa dados privados de contas reais.
 const STAGING_MARKER=/(?:staging|homolog|preview|(?:^|[.-])qa(?:[.-]|$)|-git-)/i;
@@ -25,6 +27,8 @@ function expectStatus(result,accepted,label){
 }
 
 async function run(){
+ const expected=process.env.BEVANS_STAGING_EXPECTED_SHA;
+ if(!/^[a-f0-9]{40}$/i.test(expected||''))throw Error('Defina BEVANS_STAGING_EXPECTED_SHA com os 40 caracteres do commit de homologação.');
  const web=readStagingURL('BEVANS_STAGING_WEB_URL');
  const api=readStagingURL('BEVANS_STAGING_API_URL');
  if(web.origin===api.origin)throw Error('Use origens web e API separadas para testar CORS corretamente.');
@@ -35,6 +39,16 @@ async function run(){
   throw Error('Permissions-Policy não protege câmera/microfone ou impede GPS da própria origem.');
  if(page.headers.get('x-content-type-options')!=='nosniff')throw Error('Cabeçalho nosniff ausente.');
  console.log('OK: página da web de homologação e cabeçalhos de proteção.');
+
+ const release=await fetch(web.origin+web.pathname+'/api/build-info',{
+  method:'GET',cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(12000),
+ });
+ expectStatus(release,[200],'Identidade do build');
+ if(!/no-store/i.test(release.headers.get('cache-control')||''))throw Error('Endpoint de build não desabilitou o cache.');
+ const build=await release.json().catch(()=>{throw Error('Endpoint de build não retornou JSON válido.');});
+ checkExpectedRelease(build,expected);
+ if(build.environment!=='preview')throw Error('Homologação exige build marcado como preview; confira o ambiente de implantação.');
+ console.log('OK: ambiente preview executa o SHA esperado ('+expected.slice(0,9)+').');
 
  for(const path of ['/notificacoes','/notificacoes/preferencias','/motorista/contato','/rotas-publicas/minhas']){
   const r=await check(api.origin+api.pathname+path);
