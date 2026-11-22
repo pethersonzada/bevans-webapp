@@ -104,3 +104,14 @@ test('login permanece utilizável em largura mobile',async ({page})=>{
  const {scrollWidth,viewportWidth}=await page.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,viewportWidth:window.innerWidth}));
  expect(scrollWidth).toBeLessThanOrEqual(viewportWidth+4);
 });
+
+test('identidade do build é pública, sem cache e não divulga ambiente privado',async ({request})=>{
+ const r=await request.get('/api/build-info');
+ expect(r.status()).toBe(200);
+ expect(r.headers()['cache-control']).toContain('no-store');
+ expect(r.headers()['x-robots-tag']).toContain('noindex');
+ const body=await r.json();
+ expect(Object.keys(body).sort()).toEqual(['commit','environment']);
+ expect(['production','preview','development','unknown']).toContain(body.environment);
+ if(body.commit!==null)expect(body.commit).toMatch(/^[a-f0-9]{40}$/);
+});
