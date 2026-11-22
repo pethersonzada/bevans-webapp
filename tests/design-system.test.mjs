@@ -21,3 +21,14 @@ test('design respeita telas pequenas e acessibilidade',()=>{
  assert.match(css,/prefers-reduced-motion/);
  assert.match(jsx,/aria-current/);
 });
+
+test('configurações usam layout próprio sem grid duplo e navegação tem foco visível',()=>{
+ const settings=readFileSync(new URL('../app/painel/ConfiguracoesWeb.jsx',import.meta.url),'utf8');
+ assert.match(settings,/be-settings-layout/);
+ assert.doesNotMatch(settings,/<div className="be-live-stack">/);
+ assert.match(css,/\.be-settings-layout>\.be-live-stack\{display:grid;grid-template-columns:minmax\(0,1fr\)/);
+ assert.match(css,/\.be-settings-layout>\.be-live-stack>\.be-card:nth-child\(2\)\{grid-row:auto\}/);
+ assert.match(css,/\.be-sidebar-nav button:focus-visible/);
+ assert.match(css,/\.be-mobile-tabs button:focus-visible/);
+ assert.match(css,/scroll-snap-type:x proximity/);
+});

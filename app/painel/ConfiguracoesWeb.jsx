@@ -1,10 +1,11 @@
 'use client';
 import {useCallback,useEffect,useState} from 'react';
+import ContaWeb from './ContaWeb';
 
 const json=(method,body)=>({method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const id=x=>{if(!/^[1-9][0-9]*$/.test(String(x))||!Number.isSafeInteger(Number(x)))throw Error('Identificador inválido.');return Number(x);};
 const message=e=>e instanceof Error?e.message:'Falha ao consultar configurações.';
-export default function ConfiguracoesWeb({api,profile,driver}){
+export default function ConfiguracoesWeb({api,profile,driver,session,isCurrent,onSessionRotated,onDeletionPending}){
  const [preferencias,setPreferencias]=useState(null),[contato,setContato]=useState(null),[telefone,setTelefone]=useState(''),[habilitado,setHabilitado]=useState(false),[aceite,setAceite]=useState(false);
  const [turmas,setTurmas]=useState([]),[turmaId,setTurmaId]=useState(''),[motorista,setMotorista]=useState(null);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
@@ -61,7 +62,8 @@ export default function ConfiguracoesWeb({api,profile,driver}){
   <div className="be-row"><h2>Configurações da conta</h2><button className="be-btn" type="button" onClick={load}>Atualizar</button></div>
   <p className="be-muted">Preferências associadas à sua conta autenticada. O recebimento de notificações push no navegador depende de implementação específica e de autorização do navegador.</p>
   {error&&<p className="be-error" role="alert">{error}</p>}{notice&&<p role="status" className="be-alert">{notice}</p>}
-  <div className="be-live-stack">
+  <div className="be-settings-layout">
+   <ContaWeb key={profile.id} api={api} session={session} profile={profile} isCurrent={isCurrent} onSessionRotated={onSessionRotated} onDeletionPending={onDeletionPending}/>
    <section className="be-card"><h3>Preferências de notificações</h3>
     {preferencias?<><div className="be-form"><label style={{display:'flex',flexDirection:'row',alignItems:'center',gap:10}}><input type="checkbox" checked={preferencias.pushOperacional} onChange={e=>setPreferencias(p=>({...p,pushOperacional:e.target.checked}))} style={{width:18}}/>Avisos operacionais</label>
      <label style={{display:'flex',flexDirection:'row',alignItems:'center',gap:10}}><input type="checkbox" checked={preferencias.pushInformativo} onChange={e=>setPreferencias(p=>({...p,pushInformativo:e.target.checked}))} style={{width:18}}/>Avisos informativos</label>

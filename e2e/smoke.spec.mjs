@@ -250,3 +250,156 @@ test('navegação usa roteiro e snapshot oficiais sem omitir parada obrigatória
  await page.getByRole('button',{name:'Traçar percurso rodoviário'}).click();
  await expect(page.getByRole('alert').filter({hasText:'Configure o token público Mapbox'})).toBeVisible();
 });
+
+test('conta própria: reautentica, solicita verificação e sincroniza apenas email verificado',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ const own={id:8,nome:'Passageiro Homologação',tipo:'PASSAGEIRO',email:'qa@exemplo.invalid',firebaseUid:'uid-homologacao',telefone:'999999999'};
+ const writes=[],oob=[];
+ await page.route('https://identitytoolkit.googleapis.com/**',route=>{
+  const url=route.request().url();
+  if(url.includes('signInWithPassword'))return respond(route,{idToken:'synthetic-test-token',refreshToken:'synthetic-refresh',localId:'uid-homologacao',expiresIn:'3600'});
+  if(url.includes('sendOobCode')){
+   oob.push(route.request().postDataJSON());
+   return respond(route,{email:'novo@exemplo.invalid'});
+  }
+  if(url.includes('lookup'))return respond(route,{users:[{localId:'uid-homologacao',email:'novo@exemplo.invalid',emailVerified:true}]});
+  return respond(route,{},404);
+ });
+ await page.route('https://api.bevans.invalid/usuarios/**',route=>{
+  const url=new URL(route.request().url());
+  if(url.pathname.endsWith('/email')){
+   writes.push(route.request().postDataJSON());
+   own.email='novo@exemplo.invalid';
+   return respond(route,own);
+  }
+  if(url.pathname==='/usuarios/por-uid/uid-homologacao')return respond(route,own);
+  return respond(route,{},404);
+ });
+ await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Configurações'}).click();
+ await expect(page.getByRole('heading',{name:'Meu perfil'})).toBeVisible();
+ await expect(page.getByText('qa@exemplo.invalid')).toBeVisible();
+ await page.getByRole('textbox',{name:'Novo e-mail'}).fill('novo@exemplo.invalid');
+ await page.getByLabel('Senha atual para solicitar a verificação').fill('senha-test-only');
+ await page.getByRole('button',{name:'Enviar verificação ao novo e-mail'}).click();
+ await expect(page.getByText(/Solicitação enviada/)).toBeVisible();
+ expect(oob).toEqual([{requestType:'VERIFY_AND_CHANGE_EMAIL',idToken:'synthetic-test-token',newEmail:'novo@exemplo.invalid'}]);
+ expect(writes).toHaveLength(0);
+ await page.getByLabel('Senha do e-mail verificado').fill('senha-test-only');
+ await page.getByRole('button',{name:'Conferir e sincronizar e-mail'}).click();
+ await expect(page.getByText(/Novo e-mail confirmado no Firebase e sincronizado/)).toBeVisible();
+ expect(writes).toEqual([{email:'novo@exemplo.invalid'}]);
+ await expect(page.getByText('novo@exemplo.invalid')).toBeVisible();
+});
+
+test('conta própria: conflito de exclusão preserva sessão e 202 encerra sem afirmar remoção Firebase',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ const own={id:8,nome:'Passageiro Homologação',tipo:'PASSAGEIRO',email:'qa@exemplo.invalid',firebaseUid:'uid-homologacao'};
+ let outcome=409,deletions=0;
+ await page.route('https://api.bevans.invalid/usuarios/**',route=>{
+  const url=new URL(route.request().url());
+  if(url.pathname==='/usuarios/por-uid/uid-homologacao')return respond(route,own);
+  if(url.pathname==='/usuarios/8'&&route.request().method()==='DELETE'){
+   deletions++;
+   return respond(route,outcome===409?{message:'Conflito de vínculos'}:{mensagem:'Fila de exclusão pendente'},outcome);
+  }
+  return respond(route,{},404);
+ });
+ page.on('dialog',dialog=>dialog.accept());
+ await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Configurações'}).click();
+ await expect(page.getByRole('heading',{name:'Exclusão da conta'})).toBeVisible();
+ await page.getByLabel('Digite EXCLUIR').fill('EXCLUIR');
+ await page.getByLabel('Senha atual para solicitar a exclusão').fill('senha-test-only');
+ await page.getByRole('button',{name:'Solicitar exclusão da minha conta'}).click();
+ await expect(page.getByRole('alert').filter({hasText:'Nenhum dado foi apagado'})).toBeVisible();
+ await expect(page.getByRole('navigation',{name:'Áreas do painel'})).toBeVisible();
+ expect(deletions).toBe(1);
+ outcome=202;
+ await page.getByLabel('Senha atual para solicitar a exclusão').fill('senha-test-only');
+ await page.getByRole('button',{name:'Solicitar exclusão da minha conta'}).click();
+ await expect(page.getByRole('heading',{name:'Acessar minha conta'})).toBeVisible();
+ await expect(page.getByText(/exclusão no Firebase continua pendente/)).toBeVisible();
+ expect(deletions).toBe(2);
+ const persisted=await page.evaluate(()=>JSON.stringify(Object.entries(localStorage)));
+ expect(persisted).not.toContain('synthetic-test-token');
+});
+
+async function loginComTokenPertoDoVencimento(page){
+ await page.route('https://identitytoolkit.googleapis.com/**',route=>{
+  const url=route.request().url();
+  if(url.includes('signInWithPassword'))return respond(route,{
+   idToken:'short-lived-token',refreshToken:'refresh-only-test',localId:'uid-sessao-teste',expiresIn:'30',
+  });
+  return respond(route,{},404);
+ });
+ await page.route('https://api.bevans.invalid/**',route=>{
+  const req=route.request(),path=new URL(req.url()).pathname;
+  if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:cors});
+  if(!['Bearer short-lived-token','Bearer renewed-token'].includes(req.headers().authorization))
+   return respond(route,{message:'Sem sessão'},401);
+  if(path==='/usuarios/por-uid/uid-sessao-teste')
+   return respond(route,{id:8,nome:'Passageiro de ensaio',tipo:'PASSAGEIRO',firebaseUid:'uid-sessao-teste',email:'qa@exemplo.invalid'});
+  if(path==='/turmas/usuario/8/todas')return respond(route,[]);
+  if(path==='/notificacoes/nao-lidas')return respond(route,0);
+  if(path==='/notificacoes')return respond(route,{itens:[],content:[]});
+  return respond(route,{});
+ });
+ await page.goto('/painel');
+ await page.getByLabel('E-mail').fill('qa@exemplo.invalid');
+ await page.getByLabel('Senha',{exact:true}).fill('senha-sintetica');
+ await page.getByRole('button',{name:'Entrar',exact:true}).click();
+}
+
+test('Firebase 503 não derruba o passageiro; três consultas simultâneas renovam token uma vez',async ({page})=>{
+ let refreshCalls=0;
+ await page.route('https://securetoken.googleapis.com/**',route=>{
+  refreshCalls++;
+  if(refreshCalls===1)return respond(route,{error:{message:'SERVICE_UNAVAILABLE'}},503);
+  return respond(route,{id_token:'renewed-token',refresh_token:'refresh-renovado',expires_in:'3600',user_id:'uid-sessao-teste'});
+ });
+ await loginComTokenPertoDoVencimento(page);
+ const nav=page.getByRole('navigation',{name:'Áreas do painel'});
+ await expect(nav).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Olá, Passageiro.'})).toBeVisible();
+ await expect.poll(()=>refreshCalls).toBe(1);
+ await nav.getByRole('button',{name:'Turmas'}).click();
+ await expect(page.getByRole('heading',{name:'Turmas vinculadas'})).toBeVisible();
+ await expect.poll(()=>refreshCalls).toBe(2);
+ await expect(nav).toBeVisible();
+ const stored=await page.evaluate(()=>JSON.stringify(Object.entries(localStorage)));
+ expect(stored).not.toContain('refresh-renovado');
+ expect(stored).not.toContain('renewed-token');
+});
+
+test('refresh token revogado encerra sessão e retira dados de navegação privada',async ({page})=>{
+ await page.route('https://securetoken.googleapis.com/**',route=>respond(route,{error:{message:'INVALID_REFRESH_TOKEN'}},400));
+ await loginComTokenPertoDoVencimento(page);
+ await expect(page.getByRole('heading',{name:'Acessar minha conta'})).toBeVisible();
+ await expect(page.getByRole('navigation',{name:'Áreas do painel'})).toHaveCount(0);
+ await expect(page.getByRole('heading',{name:'Turmas vinculadas'})).toHaveCount(0);
+});
+
+test('configurações exibem perfil e formulários sem rolagem horizontal em mobile e desktop',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ await page.route('https://api.bevans.invalid/usuarios/por-uid/uid-homologacao',route=>respond(route,{
+  id:8,nome:'Passageiro Homologação',tipo:'PASSAGEIRO',firebaseUid:'uid-homologacao',
+  email:'qa@exemplo.invalid',telefone:'5581999999999',
+ }));
+ for(const width of [390,768,1280]){
+  await page.setViewportSize({width,height:860});
+  const nav=width<=800?page.locator('.be-mobile-tabs'):page.locator('.be-sidebar-nav');
+  await nav.getByRole('button',{name:'Configurações'}).click();
+  await expect(page.getByRole('heading',{name:'Meu perfil'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Alterar e-mail de acesso'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Exclusão da conta'})).toBeVisible();
+  const screen=await page.evaluate(()=>({
+   viewport:window.innerWidth,scrollWidth:document.documentElement.scrollWidth,
+   layout:document.querySelector('.be-settings-layout').getBoundingClientRect().width,
+   account:document.querySelector('.be-settings-layout>.be-live-stack').getBoundingClientRect().width,
+   columns:getComputedStyle(document.querySelector('.be-settings-layout>.be-live-stack')).gridTemplateColumns,
+  }));
+  expect(screen.scrollWidth).toBeLessThanOrEqual(screen.viewport+4);
+  expect(screen.layout).toBeLessThanOrEqual(screen.viewport);
+  expect(screen.account).toBeLessThanOrEqual(screen.layout+1);
+  expect(screen.columns.trim().split(/\s+/)).toHaveLength(1);
+ }
+});

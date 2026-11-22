@@ -2,8 +2,8 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {firebaseSignIn,firebaseRefresh,firebasePasswordReset} from '../lib/bevans-auth.mjs';
-import {apiRequest,array,pagina,ep,diaLocal,idSeguro} from '../lib/bevans-api.mjs';
+import {firebaseSignIn,firebasePasswordReset,FirebaseSessionExpiredError,criarCoordenadorSessao} from '../lib/bevans-auth.mjs';
+import {apiRequest,ApiError,array,pagina,ep,diaLocal,idSeguro} from '../lib/bevans-api.mjs';
 import './painel.css';
 import ViagensWeb from './ViagensWeb';
 import EnderecosWeb from './EnderecosWeb';
@@ -51,19 +51,46 @@ function useAsync(load, deps=[]){
 export default function AuthEntry(){
  const [session,setSession]=useState(null),[profile,setProfile]=useState(null),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  const sessionRef=useRef(null),profileRef=useRef(null);
+ const [tokenCoordinator]=useState(()=>criarCoordenadorSessao());
  const [tab,setTab]=useState('inicio');
  const [showPassword,setShowPassword]=useState(false),[recovering,setRecovering]=useState(false),[notice,setNotice]=useState('');
- const signOut=useCallback(()=>{sessionRef.current=null;profileRef.current=null;setSession(null);setProfile(null);setError('');setTab('inicio');},[]);
+ const signOut=useCallback(()=>{
+  tokenCoordinator.clear();sessionRef.current=null;profileRef.current=null;
+  setSession(null);setProfile(null);setEmail('');setPassword('');setError('');setNotice('');setTab('inicio');
+ },[tokenCoordinator]);
  const getToken=useCallback(async()=>{
-  if(!sessionRef.current)throw Error('Entre novamente.');
-  try{const updated=await firebaseRefresh(sessionRef.current);if(sessionRef.current?.uid===updated.uid){sessionRef.current=updated;return updated.idToken;}throw Error('A conta mudou.');}
-  catch(e){signOut();throw e;}
- },[signOut]);
- const api=useCallback(async(path,options)=>apiRequest(await getToken(),path,options),[getToken]);
+  try{
+   const token=await tokenCoordinator.token();
+   const current=tokenCoordinator.current();
+   if(!current||!sessionRef.current||sessionRef.current.uid!==current.uid)
+    throw Error('A conta mudou. Entre novamente.');
+   if(current!==sessionRef.current){sessionRef.current=current;setSession(current);}
+   return token;
+  }catch(e){
+   // Apenas refresh realmente revogado/inválido encerra a sessão.
+   // Rede indisponível, HTTP 429 e Firebase 5xx preservam a identidade local.
+   if(e instanceof FirebaseSessionExpiredError)signOut();
+   throw e;
+  }
+ },[signOut,tokenCoordinator]);
+ const api=useCallback(async(path,options)=>{
+  const generation=tokenCoordinator.version();
+  let sentToken=null;
+  try{
+   sentToken=await getToken();
+   return await apiRequest(sentToken,path,options);
+  }catch(e){
+   // Uma resposta antiga 401 não pode encerrar uma sessão que já renovou o token.
+   if(e instanceof ApiError&&e.status===401&&tokenCoordinator.version()===generation&&
+      sentToken===tokenCoordinator.current()?.idToken)signOut();
+   throw e;
+  }
+ },[getToken,signOut,tokenCoordinator]);
+ const isOwnSession=useCallback((uid,id)=>sessionRef.current?.uid===uid&&profileRef.current?.id===id,[]);
  async function onSubmit(e){e.preventDefault();if(busy)return;setBusy(true);setError('');setNotice('');try{
   const signed=await firebaseSignIn(email.trim(),password);const person=await apiRequest(signed.idToken,ep.perfil(signed.uid));
   if(!person||!Number.isSafeInteger(person.id)||person.id<=0||!['MOTORISTA','PASSAGEIRO','ALUNO'].includes(person.tipo))throw Error('Esta conta não tem um perfil operacional válido no backend.');
-  sessionRef.current=signed;profileRef.current=person;setSession(signed);setProfile(person);setPassword('');
+  tokenCoordinator.set(signed);sessionRef.current=signed;profileRef.current=person;setSession(signed);setProfile(person);setPassword('');
  }catch(err){setError(err.message);}finally{setBusy(false);}}
  async function resetPassword(){if(busy)return;setBusy(true);setError('');setNotice('');try{await firebasePasswordReset(email);setNotice('Se este e-mail estiver cadastrado e o serviço permitir, você receberá instruções para redefinir a senha. Confira também a pasta de spam.');}catch(e){setError(e.message);}finally{setBusy(false);}}
  if(!profile||!session)return <main id="conteudo" className="be-auth-screen">
@@ -116,7 +143,11 @@ export default function AuthEntry(){
     {tab==='gestao-excursoes'&&driver&&<GestaoExcursaoWeb api={api}/>}
     {tab==='editor-rotas'&&driver&&<RotasEditorWeb api={api} profile={profile}/>}
     {tab==='coleta'&&<ColetaPrivadaWeb api={api} profile={profile} driver={driver}/>}
-    {tab==='configuracoes'&&<ConfiguracoesWeb api={api} profile={profile} driver={driver}/>}
+    {tab==='configuracoes'&&<ConfiguracoesWeb api={api} profile={profile} driver={driver} session={session}
+     isCurrent={()=>isOwnSession(session.uid,profile.id)}
+     onSessionRotated={(signed,own)=>{if(!isOwnSession(session.uid,profile.id)||signed.uid!==session.uid||own.id!==profile.id)return;tokenCoordinator.set(signed);sessionRef.current=signed;profileRef.current=own;setSession(signed);setProfile(own);setEmail(own.email);}}
+     onDeletionPending={()=>{if(!isOwnSession(session.uid,profile.id))return;signOut();setPassword('');setEmail('');setNotice('Solicitação de exclusão recebida pelo servidor (HTTP 202). Sua sessão local foi encerrada. A exclusão no Firebase continua pendente de processamento autorizado.');}}
+    />}
    </div>
   </div>
  </main>;
