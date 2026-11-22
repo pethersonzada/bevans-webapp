@@ -25,7 +25,7 @@ export function NavegacaoPrincipal({itens,ativa,aoSelecionar,compacta=false}){
  </nav>;
 }
 
-export function MaisFerramentas({grupos,aoSelecionar,motorista}){
+export function MaisFerramentas({grupos,aoSelecionar,motorista,aoSair}){
  return <div className="be-tools">
   <div className="be-tools-intro"><p className="be-tools-eyebrow">{motorista?'ESPAÇO DO MOTORISTA':'ESPAÇO DO PASSAGEIRO'}</p><h2>Encontre o que precisa</h2><p>As ferramentas estão organizadas por assunto para deixar o dia a dia mais simples.</p></div>
   {grupos.map(grupo=><section className="be-tool-group" key={grupo.titulo} aria-label={grupo.titulo}>
@@ -36,5 +36,6 @@ export function MaisFerramentas({grupos,aoSelecionar,motorista}){
     <span className="be-tool-arrow" aria-hidden="true">→</span>
    </button>)}</div>
   </section>)}
+  <div className="be-tools-footer"><span>Sessão iniciada nesta conta.</span><button type="button" onClick={aoSair}>Sair da conta</button></div>
  </div>;
 }
