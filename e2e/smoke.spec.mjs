@@ -115,3 +115,55 @@ test('identidade do build é pública, sem cache e não divulga ambiente privado
  expect(['production','preview','development','unknown']).toContain(body.environment);
  if(body.commit!==null)expect(body.commit).toMatch(/^[a-f0-9]{40}$/);
 });
+
+test('motorista consulta histórico e corrige ausência somente com motivo e versão',async ({page})=>{
+ await mockedLogin(page);
+ const initial={id:15,alunoId:8,nome:'Passageiro de teste',estado:'NAO_EMBARCOU',versao:4};
+ let stored=initial;
+ const calls=[];
+ await page.route('https://api.bevans.invalid/rota/status-atual?turmaId=41',route=>respond(route,{status:'ATIVA',viagemId:77,sentido:'IDA'}));
+ await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77',route=>respond(route,{
+  referenciaId:77,tipo:'VIAGEM',sentido:'IDA',
+  contadores:{esperados:1,aguardando:stored.estado==='AGUARDANDO'?1:0,naVan:0,naoEmbarcaram:stored.estado==='NAO_EMBARCOU'?1:0,desembarcados:0},
+  registros:[stored]
+ }));
+ await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77/passageiros/15/historico',route=>respond(route,[{
+  id:9,anterior:'AGUARDANDO',novo:'NAO_EMBARCOU',versaoRegistro:4,criadoEm:'2026-11-21T10:00:00Z',correcao:false,
+ }]));
+ await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77/passageiros/15/estado',route=>{
+  const payload=route.request().postDataJSON();calls.push(payload);
+  stored={...stored,estado:payload.estado,versao:5};
+  return respond(route,stored);
+ });
+ page.on('dialog',d=>d.accept());
+ await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Operações'}).click();
+ await page.getByRole('combobox',{name:'Turma'}).selectOption('41');
+ await page.getByRole('button',{name:'Consultar estado oficial'}).click();
+ await expect(page.getByText('Passageiro de teste')).toBeVisible();
+ await page.getByRole('button',{name:'Histórico do registro'}).click();
+ await expect(page.getByRole('heading',{name:'Histórico do registro'})).toBeVisible();
+ await expect(page.getByText('Aguardando → Não embarcou')).toBeVisible();
+ await page.getByRole('button',{name:'Corrigir para aguardando'}).click();
+ await expect(page.getByRole('button',{name:'Confirmar correção'})).toBeDisabled();
+ await page.getByRole('textbox',{name:'Motivo da correção'}).fill('Ausência lançada por engano.');
+ await page.getByRole('button',{name:'Confirmar correção'}).click();
+ await expect(page.getByText('Alteração confirmada pelo servidor. Estado e contadores atualizados.')).toBeVisible();
+ expect(calls).toEqual([{estado:'AGUARDANDO',versao:4,correcao:true,motivo:'Ausência lançada por engano.'}]);
+ await expect(page.getByText('Estado: Aguardando · Versão: 5')).toBeVisible();
+});
+
+test('passageiro acessa somente o próprio registro e histórico da viagem',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ await page.route('https://api.bevans.invalid/turmas/usuario/8/todas',route=>respond(route,[{id:41,nome:'Turma QA'}]));
+ await page.route('https://api.bevans.invalid/rota/status-atual?turmaId=41',route=>respond(route,{status:'ATIVA',viagemId:77,sentido:'IDA'}));
+ await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77/minha',route=>respond(route,{id:15,alunoId:8,estado:'AGUARDANDO',versao:0}));
+ await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77/minha/historico',route=>respond(route,[]));
+ await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Operações'}).click();
+ await page.getByRole('combobox',{name:'Turma'}).selectOption('41');
+ await page.getByRole('button',{name:'Consultar estado oficial'}).click();
+ await expect(page.getByText('Meu estado:')).toBeVisible();
+ await expect(page.getByRole('button',{name:'Corrigir para aguardando'})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Histórico do registro'})).toHaveCount(0);
+ await page.getByRole('button',{name:'Meu histórico'}).click();
+ await expect(page.getByText('Nenhum evento registrado.')).toBeVisible();
+});

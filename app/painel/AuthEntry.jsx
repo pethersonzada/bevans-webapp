@@ -11,6 +11,7 @@ import GestaoExcursaoWeb from './GestaoExcursaoWeb';
 import RotasEditorWeb from './RotasEditorWeb';
 import ColetaPrivadaWeb from './ColetaPrivadaWeb';
 import ConfiguracoesWeb from './ConfiguracoesWeb';
+import OperacoesWeb from './OperacoesWeb';
 
 const statuses={PENDENTE:'Pendente',APROVADO:'Aprovado',REJEITADO:'Recusado',EMBARCADO:'Embarcado',AGUARDANDO:'Aguardando',DESEMBARCADO:'Desembarcado',NAO_EMBARCOU:'Não embarcou'};
 const display=v=>v==null?'Não informado':statuses[v]||String(v);
@@ -106,7 +107,7 @@ export default function AuthEntry(){
     {tab==='solicitacoes'&&<Solicitacoes api={api} profile={profile} driver={driver}/>}
     {tab==='excursoes'&&<Excursoes api={api} driver={driver}/>}
     {tab==='notificacoes'&&<Notificacoes api={api} onGo={setTab}/>}
-    {tab==='operacao'&&<Operacoes api={api} profile={profile} driver={driver}/>}
+    {tab==='operacao'&&<OperacoesWeb api={api} profile={profile} driver={driver}/>}
     {tab==='viagens'&&<ViagensWeb api={api} profile={profile} driver={driver}/>}
     {tab==='enderecos'&&<EnderecosWeb api={api} profile={profile} driver={driver}/>}
     {tab==='gestao-excursoes'&&driver&&<GestaoExcursaoWeb api={api}/>}
@@ -200,17 +201,4 @@ function Notificacoes({api,onGo}){
  const [error,setError]=useState(''),[busy,setBusy]=useState(false);
  async function read(id){if(busy)return;setBusy(true);setError('');try{await api(ep.notificacaoLida(id),{method:'PUT'});state.reload();}catch(e){setError(e.message)}finally{setBusy(false);}}
  return <section className="be-section"><div className="be-row"><h2>Central de notificações</h2><Button onClick={state.reload}>Atualizar</Button></div><Alert error={state.error||error}/><Panel title="Histórico recebido pelo servidor">{state.loading?<Empty>Consultando…</Empty>:!state.data?.length?<><Empty>Nenhuma notificação registrada para esta conta.</Empty><Button primary onClick={()=>onGo('solicitacoes')}>Ver solicitações diretamente</Button></>:<div className="be-list">{state.data.map(n=><div key={n.id} className="be-item"><div className="be-row"><strong>{n.titulo}</strong><span className="be-chip">{n.contextoTipo}</span></div><p>{n.mensagem}</p><p className="be-muted">{stamp(n.criadaEm)} · {n.lidaEm?'Lida':'Não lida'}</p><div className="be-actions"><Button onClick={()=>onGo('solicitacoes')}>Consultar solicitações</Button>{!n.lidaEm&&<Button disabled={busy} onClick={()=>read(n.id)}>Marcar como lida</Button>}</div></div>)}</div>}</Panel><p className="be-footnote">Avisos dependem do pipeline de eventos do backend. O navegador ainda não registra tokens FCM para push.</p></section>;
-}
-function Operacoes({api,profile,driver}){
- const turmas=useAsync(s=>api(driver?ep.turmasMotorista(profile.id):ep.turmasPassageiro(profile.id),{signal:s}).then(array),[driver,profile.id]);
- const [turma,setTurma]=useState(''),[viagem,setViagem]=useState(null),[painel,setPainel]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
- async function refresh(){if(!turma)return;setError('');setPainel(null);try{const r=await api(ep.estadoTurma(turma));if(!r||!['ATIVA','INATIVA'].includes(r.status))throw Error('Estado da viagem inválido.');setViagem(r);if(r.status==='ATIVA'&&r.viagemId){const p=await api(ep.operacao('VIAGEM',r.viagemId,driver));if(driver&&(!Array.isArray(p?.registros)||p.referenciaId!==r.viagemId))throw Error('Operação divergente.');setPainel(p);}}catch(e){setError(e.message);}}
- async function change(registro,novo){if(busy||!window.confirm(`Confirmar ${display(novo).toLowerCase()} para ${registro.nome||'o passageiro'}?`))return;setBusy(true);setError('');try{
-  const path=ep.estadoOperacional('VIAGEM',viagem.viagemId,registro.id,driver);
-  const r=await api(path,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({estado:novo,versao:registro.versao,correcao:false})});
-  if(r?.estado!==novo||r?.id!==registro.id)throw Error('A operação não foi confirmada.');await refresh();
- }catch(e){setError(e.message);await refresh();}finally{setBusy(false);}}
- return <section className="be-section"><h2>Controle operacional</h2><p className="be-muted">Exibe o estado oficial da viagem privada ou pública associada à turma. Nenhum início é inferido localmente.</p><Alert error={turmas.error||error}/><div className="be-fieldset"><label>Turma<select value={turma} onChange={e=>{setTurma(e.target.value);setViagem(null);setPainel(null);}}><option value="">Selecione uma turma</option>{turmas.data?.map(t=><option key={t.id} value={t.id}>{t.nome||`Turma ${t.id}`}</option>)}</select></label><Button disabled={!turma||busy} primary onClick={refresh}>Consultar estado oficial</Button></div>
- {viagem&&<Panel title="Estado atual"><p><strong>{display(viagem.status)}</strong> {viagem.sentido&&`· ${dir(viagem.sentido)}`} {viagem.modalidade&&`· ${viagem.modalidade}`}</p>{viagem.status==='INATIVA'?<Empty>Nenhuma viagem ativa nesta turma.</Empty>:!painel?<Empty>Aguardando painel operacional…</Empty>:driver?<><div className="be-kpis"><div className="be-kpi"><b>{painel.contadores?.esperados??'?'}</b>Esperados</div><div className="be-kpi"><b>{painel.contadores?.naVan??'?'}</b>Na van</div><div className="be-kpi"><b>{painel.contadores?.aguardando??'?'}</b>Aguardando</div></div><div className="be-list">{painel.registros.map(p=><div className="be-item" key={p.id}><strong>{p.nome}</strong><p>{display(p.estado)}</p><div className="be-actions">{p.estado==='AGUARDANDO'&&<><Button disabled={busy} primary onClick={()=>change(p,'EMBARCADO')}>Confirmar embarque</Button><Button disabled={busy} onClick={()=>change(p,'NAO_EMBARCOU')}>Registrar ausência</Button></>}{p.estado==='EMBARCADO'&&<Button disabled={busy} onClick={()=>change(p,'DESEMBARCADO')}>Confirmar desembarque</Button>}</div></div>)}</div></>:<><p><strong>Meu estado:</strong> {display(painel.estado)}</p>{painel.estado==='AGUARDANDO'&&<Button disabled={busy} primary onClick={()=>change(painel,'EMBARCADO')}>Confirmar que embarquei</Button>}</>}</Panel>}
- <p className="be-footnote">Iniciar/finalizar viagens e navegação GPS permanecem restritos ao Android nesta entrega. Não foram criadas ações sem os bloqueios de snapshot e roteiro.</p></section>;
 }
