@@ -25,21 +25,23 @@ export class ApiError extends Error {
 export async function apiRequest(token, path, options={}) {
   if (!token || typeof token !== 'string') throw new ApiError('Entre novamente para continuar.', 401, 'session');
   const url = apiBase() + rotaPermitida(path);
+  const {expectedStatus,timeoutMs,signal:external,...fetchOptions}=options;
+  if(expectedStatus!==undefined&&(!Number.isInteger(expectedStatus)||expectedStatus<200||expectedStatus>299))throw new ApiError('Status HTTP esperado inválido.',0,'contract');
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), options.timeoutMs || 16000);
-  const external = options.signal;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs || 16000);
   const abort = () => controller.abort();
   if (external?.aborted) controller.abort(); else external?.addEventListener('abort', abort, {once:true});
   try {
     const response = await fetch(url, {
-      ...options, signal:controller.signal, cache:'no-store',
-      headers:{...options.headers, Authorization:`Bearer ${token}`},
+      ...fetchOptions, signal:controller.signal, cache:'no-store',
+      headers:{...fetchOptions.headers, Authorization:`Bearer ${token}`},
     });
     if (!response.ok) {
       let message = `Falha na API (HTTP ${response.status}).`;
       try { const body = await response.text(); if (body) {const data=JSON.parse(body);message=data.message||data.mensagem||data.detail||message;} } catch {}
       throw new ApiError(message, response.status);
     }
+    if (expectedStatus!==undefined&&response.status!==expectedStatus)throw new ApiError('O servidor não confirmou o status esperado (HTTP '+response.status+'). Consulte o estado oficial antes de repetir.',response.status,'contract');
     if (response.status === 204) return null;
     const raw = await response.text();
     if (!raw.trim()) return null;
