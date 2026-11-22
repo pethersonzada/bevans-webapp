@@ -194,13 +194,24 @@ function Turmas({api,profile,driver}){
 function Rotas({api,driver}){
  const [filters,setFilters]=useState({cidade:'',destino:''}),[selected,setSelected]=useState(null),[route,setRoute]=useState(null),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false);
  const list=useAsync(s=>api(driver?ep.rotas:ep.catalogo(filters),{signal:s}).then(r=>driver?array(r):pagina(r)),[driver,filters.cidade,filters.destino]);
- const [details,setDetails]=useState(null);
- async function open(id){setFeedback('');setRoute(null);setSelected(id);try{const r=await api(ep.rota(id));if(r?.id!==id)throw Error('O servidor retornou outra rota.');setRoute(r);}catch(e){setFeedback(e.message);}}
+ const [loadingDetails,setLoadingDetails]=useState(false);
+ const routeRequest=useRef(0);
+ async function open(id){
+  const request=++routeRequest.current;
+  setFeedback('');setRoute(null);setSelected(id);setLoadingDetails(true);
+  try{
+   const r=await api(ep.rota(id));
+   if(r?.id!==id)throw Error('O servidor retornou outra rota.');
+   if(request===routeRequest.current)setRoute(r);
+  }catch(e){if(request===routeRequest.current)setFeedback(e instanceof Error?e.message:'Não foi possível consultar a rota.');}
+  finally{if(request===routeRequest.current)setLoadingDetails(false);}
+ }
  async function write(task){if(busy)return;setBusy(true);setFeedback('');try{await task();list.reload();if(selected)await open(selected);}catch(e){setFeedback(e.message);}finally{setBusy(false);}}
  return <section className="be-section"><div className="be-row"><h2>{driver?'Gerenciamento de rotas públicas':'Catálogo de rotas públicas'}</h2><Button onClick={list.reload}>Atualizar</Button></div><Alert error={list.error||feedback}/>
  {!driver&&<div className="be-fieldset"><label>Cidade<input value={filters.cidade} onChange={e=>setFilters(p=>({...p,cidade:e.target.value}))}/></label><label>Destino<input value={filters.destino} onChange={e=>setFilters(p=>({...p,destino:e.target.value}))}/></label></div>}
  {list.loading?<Empty>Consultando rotas…</Empty>:!list.data?.length?<Empty>Nenhuma rota disponível.</Empty>:<div className="be-grid">{list.data.map(r=><Panel key={r.id} title={r.nome}><p>{r.cidade} {r.modo?`· ${r.modo}`:''}</p><p className="be-muted">{r.destinoNome||r.destino||''}</p><p className="be-muted">{driver?(r.publicada?'Publicada':'Não publicada'):`Vagas: ${r.vagas?.disponiveis??'indisponível'}`}</p><div className="be-actions"><Button onClick={()=>open(r.id)}>Detalhes oficiais</Button>{!driver&&<Button disabled={busy} onClick={()=>write(async()=>{const response=await api(ep.favoritas(r.id),{method:r.favorita?'DELETE':'PUT'});return response;})}>{r.favorita?'Remover favorito':'Favoritar'}</Button>}</div></Panel>)}</div>}
- {selected&&!route&&<Empty>Carregando a rota selecionada…</Empty>}
+ {selected&&loadingDetails&&<p role="status" className="be-muted">Carregando a rota selecionada…</p>}
+ {selected&&!loadingDetails&&!route&&!feedback&&<Empty>Não foi possível apresentar os detalhes da rota.</Empty>}
  {route&&<Panel title={`Rota: ${route.nome}`}><p>{route.origemNome} → {route.destinoNome}</p><p>{route.modo} · {route.categoria} · IDA {route.horarioIda||'não configurada'} · VOLTA {route.horarioVolta||'não configurada'}</p><p className="be-muted">Dias: {route.dias?.join(', ')}</p><h3>Paradas</h3>{route.paradas?.length?<div className="be-list">{route.paradas.map((p,i)=><div key={p.id||i} className="be-item">{i+1}. {p.nome}</div>)}</div>:<Empty>Sem paradas cadastradas.</Empty>}
  {driver?<><p className="be-alert">A publicação altera o catálogo. Confira os dados e confirme conscientemente.</p><div className="be-actions"><Button disabled={busy} onClick={()=>write(async()=>{if(!window.confirm(`${route.publicada?'Despublicar':'Publicar'} a rota ${route.nome}?`))return;const r=await api(`/rotas-publicas/${idSeguro(route.id)}/publicacao`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({valor:!route.publicada})});if(!r||r.publicada===route.publicada)throw Error('O servidor não confirmou a publicação.');})}>{route.publicada?'Despublicar rota':'Publicar rota'}</Button></div></>:<EmbarquePublicoWeb key={route.id} api={api} rota={route} onChanged={list.reload}/>}
  </Panel>}</section>;
@@ -221,11 +232,18 @@ function Solicitacoes({api,profile,driver}){
 }
 function Excursoes({api,driver}){
  const state=useAsync(s=>driver?api(ep.excursoes,{signal:s}).then(pagina):Promise.resolve([]),[driver]);
- const [id,setId]=useState(null),[exec,setExec]=useState(null),[error,setError]=useState('');
- async function load(id){setId(id);setExec(null);setError('');try{const x=array(await api(ep.execucoes(id)));setExec(x);}catch(e){setError(e.message);}}
+ const [id,setId]=useState(null),[exec,setExec]=useState(null),[error,setError]=useState(''),[loadingExec,setLoadingExec]=useState(false);
+ const execRequest=useRef(0);
+ async function load(id){
+  const request=++execRequest.current;
+  setId(id);setExec(null);setError('');setLoadingExec(true);
+  try{const x=array(await api(ep.execucoes(id)));if(request===execRequest.current)setExec(x);}
+  catch(e){if(request===execRequest.current)setError(e instanceof Error?e.message:'Não foi possível consultar as execuções.');}
+  finally{if(request===execRequest.current)setLoadingExec(false);}
+ }
  if(!driver)return <Panel title="Excursões"><p>Inscrições de passageiros são feitas com convites individuais. O webapp não acessa recursos privados do motorista em nome do passageiro.</p><p className="be-muted">Para se inscrever, use o link de convite individual fornecido pelo organizador. A consulta aqui não disponibiliza execuções privadas do motorista.</p></Panel>;
  return <section className="be-section"><div className="be-row"><h2>Excursões</h2><Button onClick={state.reload}>Atualizar</Button></div><Alert error={state.error||error}/>{state.loading?<Empty>Carregando…</Empty>:!state.data?.length?<Empty>Nenhuma excursão encontrada.</Empty>:<div className="be-grid">{state.data.map(e=><Panel key={e.id} title={e.titulo}><p>{e.origemNome||'Origem'} → {e.destinoNome}</p><p>Partida: {stamp(e.partidaEm)}</p><p>Volta: {stamp(e.retornoEm)}</p><p className="be-muted">{display(e.estado)} · {e.capacidade} assentos</p><Button onClick={()=>load(e.id)}>Consultar execuções</Button></Panel>)}</div>}
- {id&&<section className="be-section"><Panel title={`Execuções da excursão #${id}`}><Button onClick={()=>load(id)}>Atualizar execuções</Button>{!exec?<Empty>Carregando execuções…</Empty>:!exec.length?<Empty>Não existe execução registrada. O início exige prévia, versão salva e validação dos participantes no aplicativo.</Empty>:<div className="be-list">{exec.map(v=><div className="be-item" key={v.id}><strong>Execução #{v.id} · {dir(v.sentido)} · {display(v.estado)}</strong><p>{v.pontos?.length||0} pontos no roteiro oficial</p></div>)}</div>}</Panel></section>}</section>;
+ {id&&<section className="be-section"><Panel title={`Execuções da excursão #${id}`}><Button onClick={()=>load(id)}>Atualizar execuções</Button>{loadingExec?<p role="status" className="be-muted">Carregando execuções…</p>:error?<Empty>Não foi possível apresentar as execuções. Tente atualizar.</Empty>:!exec?.length?<Empty>Não existe execução registrada. O início exige prévia, versão salva e validação dos participantes no aplicativo.</Empty>:<div className="be-list">{exec.map(v=><div className="be-item" key={v.id}><strong>Execução #{v.id} · {dir(v.sentido)} · {display(v.estado)}</strong><p>{v.pontos?.length||0} pontos no roteiro oficial</p></div>)}</div>}</Panel></section>}</section>;
 }
 function Notificacoes({api,onGo}){
  const state=useAsync(s=>api(ep.notificacoes,{signal:s}).then(v=>v?.content?array(v.content):pagina(v)),[]);
