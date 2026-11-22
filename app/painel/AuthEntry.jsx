@@ -134,7 +134,7 @@ export default function AuthEntry(){
   <div className="be-main-column">
    <header className="be-app-top"><div className="be-app-top-left"><Image src="/images/bevans-simbolo-oficial.png" alt="" width={30} height={30} className="be-top-mark be-brand-light"/><Image src="/images/vetor-tema-escuro.png" alt="" width={30} height={30} className="be-top-mark be-brand-dark"/><span>{driver?'Painel do motorista':'Painel do passageiro'}</span></div><div className="be-app-user"><span className="be-user-name">{profile.nome||'Minha conta'}</span><button type="button" className="be-header-account" aria-label="Abrir configurações da conta" onClick={()=>setTab('configuracoes')}><span className="be-top-avatar" aria-hidden="true">{firstName[0].toUpperCase()}</span></button></div></header>
    <NavegacaoPrincipal itens={menu.principal} ativa={abaPrincipal} aoSelecionar={setTab} compacta/>
-   <div className="be-main-content"><header className="be-page-heading"><div><p className="be-page-location">{driver?'Motorista':'Passageiro'} / {tituloAtual}</p><h1>{tab==='inicio'?`Olá, ${firstName}.`:tituloAtual}</h1><p>{tab==='inicio'?(driver?'Gerencie suas turmas, solicitações e viagens a partir deste painel.':'Acompanhe seus vínculos, pedidos e informações de viagem em um só lugar.'):(tab==='mais'?'Escolha uma área para continuar.':driver?'Consulte e gerencie as informações da sua operação.':'Consulte suas informações e solicitações com segurança.')}</p></div>{tab==='inicio'&&<div className="be-heading-date">{new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div>}</header>
+   <div className="be-main-content"><header className={`be-page-heading ${tab==='inicio'?'be-welcome-heading':''}`}><div><p className="be-page-location">{driver?'Motorista':'Passageiro'} / {tituloAtual}</p><h1>{tab==='inicio'?`Olá, ${firstName}.`:tituloAtual}</h1><p>{tab==='inicio'?(driver?'Gerencie suas turmas, solicitações e viagens a partir deste painel.':'Acompanhe seus vínculos, pedidos e informações de viagem em um só lugar.'):(tab==='mais'?'Escolha uma área para continuar.':driver?'Consulte e gerencie as informações da sua operação.':'Consulte suas informações e solicitações com segurança.')}</p></div>{tab==='inicio'&&<div className="be-welcome-actions"><div className="be-heading-date">{new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div><button className="be-welcome-primary" type="button" onClick={()=>setTab(driver?'viagens':'rotas')}>{driver?'Acompanhar viagens':'Encontrar minha rota'} <span aria-hidden="true">→</span></button></div>}</header>
     {tab==='inicio'&&<Overview api={api} profile={profile} driver={driver} onGo={setTab}/>}
     {tab==='mais'&&<MaisFerramentas grupos={menu.grupos} aoSelecionar={setTab} motorista={driver} aoSair={signOut}/>}
     {tab==='turmas'&&<Turmas api={api} profile={profile} driver={driver}/>}
@@ -170,7 +170,7 @@ function Overview({api,profile,driver,onGo}){
    unread:naoLidas.status==='fulfilled'?naoLidas.value:null,
   };
  },[profile.id,driver]);
- const latest=state.data?.turmas?.slice(0,4);
+ const latest=state.data?.turmas?.slice(0,3);
  return <div className="be-overview">
    <div className="be-overview-primary">
     <section className="be-overview-section"><div className="be-section-title"><div><h2>Suas turmas</h2><p>{driver?'Grupos que você administra.':'Turmas vinculadas à sua conta.'}</p></div><button type="button" className="be-text-action" onClick={()=>onGo('turmas')}>Ver todas →</button></div>
