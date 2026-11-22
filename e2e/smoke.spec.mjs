@@ -497,3 +497,20 @@ test('catálogo do passageiro aplica filtros do backend e navega por páginas se
  await expect(page.getByRole('heading',{name:'Rota inicial'})).toBeVisible();
  expect(consultas.some(x=>x.q===undefined&&x.pagina==='0')).toBeTruthy();
 });
+
+
+test('contato comercial sem canal configurado permite cópia manual sem simular envio',async ({page})=>{
+ await page.goto('/contato');
+ await expect(page.getByText('O canal de contato ainda não foi configurado.')).toBeVisible();
+ await expect(page.getByRole('button',{name:'Abrir mensagem no meu e-mail'})).toBeDisabled();
+ await page.getByRole('textbox',{name:'Seu nome'}).fill('Pessoa de teste');
+ await page.getByRole('textbox',{name:'Seu e-mail'}).fill('pessoa@example.invalid');
+ await page.getByRole('textbox',{name:'O que você precisa?'}).fill('Quero conhecer as funcionalidades disponíveis.');
+ await page.getByRole('button',{name:'Preparar e copiar mensagem'}).click();
+ const campo=page.getByRole('textbox',{name:'Mensagem pronta para cópia manual'});
+ await expect(campo).toBeVisible();
+ await expect(campo).toHaveValue(/Nome: Pessoa de teste/);
+ await expect(campo).toHaveValue(/Quero conhecer as funcionalidades disponíveis/);
+ await expect(page.getByRole('button',{name:'Abrir mensagem no meu e-mail'})).toBeDisabled();
+ await expect(page.locator('body')).not.toContainText('Mensagem enviada com sucesso');
+});

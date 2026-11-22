@@ -10,10 +10,8 @@ export function normalizeContactEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254 ? email : '';
 }
 
-export function buildContactMailto({ recipient, name, email, plan, message }) {
-  const destination = normalizeContactEmail(recipient);
-  if (!destination) throw new Error('Canal de contato indisponível.');
-
+/** Prepara texto localmente, mesmo quando o canal comercial ainda não foi definido. */
+export function buildContactMessage({ name, email, plan, message }) {
   const cleanName = String(name ?? '').trim();
   const cleanEmail = normalizeContactEmail(email);
   const cleanMessage = String(message ?? '').trim();
@@ -34,6 +32,18 @@ export function buildContactMailto({ recipient, name, email, plan, message }) {
     'Mensagem:',
     cleanMessage,
   ].join('\n');
+  return { subject, body };
+}
 
+export function buildContactCopy({ recipient, ...fields }) {
+  const { subject, body } = buildContactMessage(fields);
+  const destination = normalizeContactEmail(recipient);
+  return [destination ? 'Para: ' + destination : null,'Assunto: ' + subject,'',body].filter(line => line !== null).join('\n');
+}
+
+export function buildContactMailto({ recipient, ...fields }) {
+  const destination = normalizeContactEmail(recipient);
+  if (!destination) throw new Error('Canal de contato indisponível.');
+  const { subject, body } = buildContactMessage(fields);
   return 'mailto:' + destination + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
 }
