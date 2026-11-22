@@ -251,3 +251,31 @@ html[data-theme="dark"] .be-app .be-tool-copy small,html[data-theme="dark"] .be-
 html[data-theme="dark"] .be-auth-screen .be-auth-content{background:#17283c;border-color:#304864}
 html[data-theme="dark"] .be-auth-screen .be-login-form input{background:#122239;color:#ecf4ff;border-color:#42617d}
 @media(prefers-reduced-motion:reduce){.be-app .be-tool-link{transition:none}}
+
+
+/* Resumo inicial com prioridade visual e ação contextual. */
+.be-app .be-welcome-heading{position:relative;overflow:hidden;min-height:196px;padding:30px clamp(24px,3vw,37px);border:0;border-radius:19px;background:linear-gradient(115deg,#102b49 0%,#153b64 68%,#135ca0 100%);box-shadow:0 14px 26px #092c521a;align-items:center;gap:20px}
+.be-app .be-welcome-heading:after{content:"";position:absolute;width:260px;height:260px;right:-100px;top:-170px;border:45px solid #7ab9ff18;border-radius:50%;pointer-events:none}
+.be-app .be-welcome-heading>div{position:relative;z-index:1}
+.be-app .be-welcome-heading .be-page-location{color:#accdf0!important;font-weight:700}
+.be-app .be-welcome-heading h1{color:#fff!important;letter-spacing:-.055em;font-size:clamp(28px,3vw,39px)}
+.be-app .be-welcome-heading>div>p:last-child{color:#d4e5f8!important;font-size:14px;line-height:1.6;max-width:48ch}
+.be-app .be-welcome-actions{display:grid;justify-items:end;gap:18px;flex:none;align-self:stretch;align-content:center}
+.be-app .be-welcome-actions .be-heading-date{font-size:11px;color:#bbd5ee!important;text-transform:capitalize}
+.be-app .be-welcome-primary{display:inline-flex;align-items:center;justify-content:center;gap:13px;min-height:45px;padding:11px 15px;border:1px solid #80baff;border-radius:11px;background:#fff;color:#07539b;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer}
+.be-app .be-welcome-primary:hover{background:#eaf3ff}
+.be-app .be-welcome-primary:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.be-app .be-welcome-primary span{font-size:17px}
+.be-app .be-overview-section{min-width:0}
+.be-app .be-overview-row{padding:13px 0}
+.be-app .be-overview-section .be-section-title{margin-bottom:17px}
+.be-app .be-overview-row .be-list-monogram{border-radius:11px}
+@media(max-width:1050px){.be-app .be-welcome-heading{align-items:start;flex-direction:column}.be-app .be-welcome-actions{justify-items:start;align-content:start;gap:0}}
+@media(max-width:800px){
+ .be-app .be-welcome-heading{min-height:unset;padding:23px 20px;gap:18px;margin-bottom:23px}
+ .be-app .be-welcome-heading h1{font-size:clamp(27px,6vw,34px)}
+ .be-app .be-welcome-heading>div>p:last-child{font-size:12px}
+ .be-app .be-welcome-actions{width:100%}
+ .be-app .be-welcome-actions .be-heading-date{display:none}
+ .be-app .be-welcome-primary{width:100%;justify-content:space-between;min-height:44px;padding:10px 14px}
+}
