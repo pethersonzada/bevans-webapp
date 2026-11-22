@@ -1,0 +1,47 @@
+name: Deployment HTTP smoke (read only)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Production ou Preview protegido (sem autenticação)'
+        type: choice
+        default: production
+        options:
+          - production
+          - preview
+      base_url:
+        description: 'Origem HTTPS completa: domínio principal ou preview do próprio projeto'
+        required: false
+        type: string
+      expected_sha:
+        description: 'SHA de 40 caracteres (vazio usa o commit selecionado)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-http-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify deployed SHA, security headers, robots and private invitation
+        env:
+          BEVANS_DEPLOY_TARGET: ${{ inputs.target || 'production' }}
+          BEVANS_DEPLOY_BASE_URL: ${{ inputs.base_url || 'https://bevans-webapp.vercel.app/' }}
+          BEVANS_EXPECTED_SHA: ${{ inputs.expected_sha || github.sha }}
+        run: node scripts/deploy-readonly-web-smoke.mjs
