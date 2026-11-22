@@ -23,6 +23,12 @@ jobs:
           cache: npm
       - name: Prepare exact lockfile
         run: npm ci --ignore-scripts
+      - name: Resolve nonbreaking advisories into the lockfile
+        run: npm audit fix --package-lock-only --ignore-scripts --no-fund || true
+      - name: Print manifest and regenerated lockfile for versioned review
+        run: |
+          node -e 'const fs=require("node:fs");console.log("MANIFEST_BEGIN");process.stdout.write(fs.readFileSync("package.json","utf8"));console.log("\\nMANIFEST_END");'
+          node -e 'const fs=require("node:fs");console.log("LOCKFILE_BEGIN");process.stdout.write(fs.readFileSync("package-lock.json","utf8"));console.log("\\nLOCKFILE_END");'
       - name: npm audit, report package chains without failing inventory
         run: |
           npm audit --json --audit-level=low > /tmp/bevans-audit.json || true
