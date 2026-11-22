@@ -1,6 +1,8 @@
+import {ambientePrivado} from './lib/seo-visibility.mjs';
+
 export function robotsPolicy(env={}) {
   // Pré-visualizações na Vercel nunca devem expor o site de teste aos buscadores.
-  if(env.VERCEL_ENV==='preview'||env.VERCEL_ENV==='development'){
+  if(ambientePrivado(env)){
     return {rules:[{userAgent:'*',disallow:'/'}]};
   }
   const base=env.NEXT_PUBLIC_SITE_URL||'https://bevans-webapp.vercel.app';
