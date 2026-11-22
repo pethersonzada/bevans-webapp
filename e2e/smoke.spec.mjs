@@ -460,3 +460,39 @@ test('excursão sem execução não inventa ID operacional nem tenta enumerar vi
  await expect(page.getByText('Ainda não existe execução operacional disponível para esta inscrição.')).toBeVisible();
  expect(calls).toEqual(['/publico/excursoes/inscricao','/publico/excursoes/inscricao/execucoes']);
 });
+
+
+test('catálogo do passageiro aplica filtros do backend e navega por páginas sem dados de outras buscas',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ const consultas=[];
+ await page.route('https://api.bevans.invalid/rotas-publicas/catalogo?*',route=>{
+  const url=new URL(route.request().url());
+  consultas.push(Object.fromEntries(url.searchParams));
+  const filtrada=url.searchParams.get('q')==='Universidade';
+  const pagina=Number(url.searchParams.get('pagina')||'0');
+  if(!filtrada)return respond(route,{itens:[{id:8,nome:'Rota inicial',cidade:'Recife',destino:'Centro',vagas:{disponiveis:2}}],total:1,pagina:0,tamanho:20,totalPaginas:1});
+  if(pagina===0)return respond(route,{itens:[{id:17,nome:'Rota universitária A',cidade:'Recife',destino:'Campus',vagas:{disponiveis:3}}],total:21,pagina:0,tamanho:20,totalPaginas:2});
+  return respond(route,{itens:[{id:18,nome:'Rota universitária B',cidade:'Recife',destino:'Campus',vagas:{disponiveis:1}}],total:21,pagina:1,tamanho:20,totalPaginas:2});
+ });
+ await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Explorar rotas'}).click();
+ await expect(page.getByRole('heading',{name:'Rota inicial'})).toBeVisible();
+ const form=page.getByRole('form',{name:'Filtros de rotas'});
+ await form.getByRole('textbox',{name:'Buscar rotas'}).fill(' Universidade ');
+ await form.getByRole('combobox',{name:'Categoria'}).selectOption('UNIVERSITARIA');
+ await form.getByRole('combobox',{name:'Dia de operação'}).selectOption('MONDAY');
+ await form.getByRole('checkbox',{name:'Somente com vagas'}).check();
+ await form.getByRole('checkbox',{name:'Somente favoritas'}).check();
+ await expect(page.getByRole('heading',{name:'Rota inicial'})).toBeVisible();
+ await form.getByRole('button',{name:'Buscar rotas'}).click();
+ await expect(page.getByRole('heading',{name:'Rota universitária A'})).toBeVisible();
+ await expect(page.getByText('21 rotas encontradas · Página 1 de 2')).toBeVisible();
+ const filtros=consultas.find(x=>x.q==='Universidade'&&x.pagina==='0');
+ expect(filtros).toMatchObject({categoria:'UNIVERSITARIA',dia:'MONDAY',somenteComVagas:'true',somenteFavoritas:'true'});
+ await page.getByRole('navigation',{name:'Paginação do catálogo'}).getByRole('button',{name:'Próxima'}).click();
+ await expect(page.getByRole('heading',{name:'Rota universitária B'})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Rota universitária A'})).toHaveCount(0);
+ await expect(page.getByText('21 rotas encontradas · Página 2 de 2')).toBeVisible();
+ await form.getByRole('button',{name:'Limpar filtros'}).click();
+ await expect(page.getByRole('heading',{name:'Rota inicial'})).toBeVisible();
+ expect(consultas.some(x=>x.q===undefined&&x.pagina==='0')).toBeTruthy();
+});
