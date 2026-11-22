@@ -15,7 +15,8 @@ function baseApi(){
 }
 async function publico(path,headers,method='GET',body=undefined){
  const r=await fetch(baseApi()+path,{method,headers:{...headers,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store',referrerPolicy:'no-referrer'});
- if(!r.ok){if(r.status===404)throw Error(path.includes('/operacao')||path.includes('/inscricao/execucoes')?'Credencial ou operação indisponível para esta inscrição.':'Convite inválido, expirado ou indisponível.');if(r.status===429)throw Error('Muitas tentativas. Tente novamente mais tarde.');if(r.status===409)throw Error('Inscrição não aceita. Confira vagas e estado da excursão.');throw Error('Solicitação recusada (HTTP '+r.status+').');}
+ if(!r.ok){if(r.status===404)throw Error(path.includes('/operacao')||path.includes('/inscricao/execucoes')?'Credencial ou operação indisponível para esta inscrição.':'Convite inválido, expirado ou indisponível.');if(r.status===429)throw Error('Muitas tentativas. Tente novamente mais tarde.');if(r.status===409)throw Error(path.includes('/operacao')?'O estado mudou ou a execução foi encerrada. Atualize o registro antes de tentar novamente.':'Inscrição não aceita. Confira vagas e estado da excursão.');throw Error('Solicitação recusada (HTTP '+r.status+').');}
+ if(r.status===204)return null;
  return r.json();
 }
 export default function ConviteClient(){
@@ -88,7 +89,7 @@ export default function ConviteClient(){
  async function cancelar(){
   if(!credencial||!window.confirm('Cancelar esta inscrição? A vaga será liberada.'))return;
   setBusy(true);setErro('');
-  try{const r=await publico('/publico/excursoes/inscricao',{'X-Inscricao':credencial},'DELETE');setInscricao(r);}
+  try{const r=await publico('/publico/excursoes/inscricao',{'X-Inscricao':credencial},'DELETE');const confirmado=r||await publico('/publico/excursoes/inscricao',{'X-Inscricao':credencial});if(confirmado?.estado!=='CANCELADA')throw Error('O servidor não confirmou o cancelamento. Consulte a inscrição antes de repetir.');setInscricao(confirmado);}
   catch(e){setErro(text(e));}finally{setBusy(false);}
  }
  return <main id="conteudo" className="be-shell" style={{padding:'clamp(18px,4vw,48px)',minHeight:'100dvh'}}>
