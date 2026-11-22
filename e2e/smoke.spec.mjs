@@ -38,6 +38,23 @@ async function mockedLogin(page,role='MOTORISTA'){
  await expect(page.getByRole('navigation',{name:'Áreas do painel'})).toBeVisible();
 }
 
+// A barra principal exibe apenas as tarefas recorrentes. As outras ficam em Mais.
+async function abrirArea(page,rotulo){
+ const barraMovel=page.getByRole('navigation',{name:'Navegação do painel'});
+ const nav=await barraMovel.isVisible()?barraMovel:page.getByRole('navigation',{name:'Áreas do painel'});
+ const nomesPrimarios={'Mapa e viagens':'Viagens','Explorar rotas':'Rotas','Rotas públicas':'Rotas','Solicitações':'Pedidos'};
+ const principal=nomesPrimarios[rotulo]||rotulo;
+ if(await nav.getByRole('button',{name:principal,exact:true}).count()){
+  await nav.getByRole('button',{name:principal,exact:true}).click();return;
+ }
+ await nav.getByRole('button',{name:'Mais',exact:true}).click();
+ let secundario=rotulo;
+ if(rotulo==='Operações')secundario=await page.getByRole('button',{name:'Embarques e operações',exact:true}).count()
+  ?'Embarques e operações':'Meu embarque';
+ if(rotulo==='Turmas')secundario='Minhas turmas';
+ await page.getByRole('button',{name:secundario,exact:true}).click();
+}
+
 test('login exige autenticação e aplica política de geolocalização própria',async ({page})=>{
  const response=await page.goto('/painel');
  expect(response.status()).toBe(200);
@@ -53,8 +70,7 @@ test('mapa do motorista não quebra sem token Mapbox e operações permanecem pr
  const failures=[];
  page.on('pageerror',error=>failures.push(error.message));
  await mockedLogin(page);
- const nav=page.getByRole('navigation',{name:'Áreas do painel'});
- await nav.getByRole('button',{name:'Mapa e viagens'}).click();
+ await abrirArea(page,'Mapa e viagens');
  await page.getByRole('combobox',{name:'Turma'}).selectOption('41');
  await expect(page.getByRole('heading',{name:'Mapa da operação'})).toBeVisible();
  await expect(page.getByRole('alert').filter({hasText:'Configure NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN'})).toBeVisible();
@@ -64,10 +80,10 @@ test('mapa do motorista não quebra sem token Mapbox e operações permanecem pr
 
 test('passageiro não recebe controles exclusivos de motorista e perde sessão ao sair',async ({page})=>{
  await mockedLogin(page,'PASSAGEIRO');
- const nav=page.getByRole('navigation',{name:'Áreas do painel'});
- await expect(nav.getByRole('button',{name:'Editor de rotas'})).toHaveCount(0);
- await expect(nav.getByRole('button',{name:'Gestão de excursões'})).toHaveCount(0);
- await nav.getByRole('button',{name:'Configurações'}).click();
+ await abrirArea(page,'Mais');
+ await expect(page.getByRole('button',{name:'Editor de rotas',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Gestão de excursões',exact:true})).toHaveCount(0);
+ await abrirArea(page,'Configurações');
  await expect(page.getByRole('heading',{name:'Preferências de notificações'})).toBeVisible();
  await expect(page.getByRole('heading',{name:'Falar com motorista autorizado'})).toBeVisible();
  await page.getByRole('button',{name:'Sair da conta'}).click();
@@ -137,7 +153,7 @@ test('motorista consulta histórico e corrige ausência somente com motivo e ver
   return respond(route,stored);
  });
  page.on('dialog',d=>d.accept());
- await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Operações'}).click();
+ await abrirArea(page,'Operações');
  await page.getByRole('combobox',{name:'Turma'}).selectOption('41');
  await page.getByRole('button',{name:'Consultar estado oficial'}).click();
  await expect(page.getByText('Passageiro de teste')).toBeVisible();
@@ -159,7 +175,7 @@ test('passageiro acessa somente o próprio registro e histórico da viagem',asyn
  await page.route('https://api.bevans.invalid/rota/status-atual?turmaId=41',route=>respond(route,{status:'ATIVA',viagemId:77,sentido:'IDA'}));
  await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77/minha',route=>respond(route,{id:15,alunoId:8,estado:'AGUARDANDO',versao:0}));
  await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77/minha/historico',route=>respond(route,[]));
- await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Operações'}).click();
+ await abrirArea(page,'Operações');
  await page.getByRole('combobox',{name:'Turma'}).selectOption('41');
  await page.getByRole('button',{name:'Consultar estado oficial'}).click();
  await expect(page.getByText('Meu estado:')).toBeVisible();
@@ -185,8 +201,7 @@ test('passageiro solicita embarque em parada pública e cancela somente o penden
  await page.route('https://api.bevans.invalid/embarques/minhas',route=>respond(route,[{id:92,rotaId:41,status,dataOperacao:'2026-11-24',sentido:'IDA',paradaId:7,nomePonto:'Ponto 7'}]));
  await page.route('https://api.bevans.invalid/embarques/92',route=>{status='CANCELADO';return respond(route,{id:92,rotaId:41,status});});
  page.on('dialog',dialog=>dialog.accept());
- const nav=page.getByRole('navigation',{name:'Áreas do painel'});
- await nav.getByRole('button',{name:'Explorar rotas'}).click();
+ await abrirArea(page,'Explorar rotas');
  await page.getByRole('button',{name:'Detalhes oficiais'}).click();
  await expect(page.getByRole('combobox',{name:'Tipo de ponto'}).locator('option')).toHaveCount(2);
  await page.getByRole('combobox',{name:'Parada cadastrada'}).selectOption('7');
@@ -196,7 +211,7 @@ test('passageiro solicita embarque em parada pública e cancela somente o penden
  expect(requests[0].paradaId).toBe(7);
  expect(requests[0]).not.toHaveProperty('latitude');
  expect(requests[0]).not.toHaveProperty('alunoId');
- await nav.getByRole('button',{name:'Solicitações'}).click();
+ await abrirArea(page,'Solicitações');
  await expect(page.getByRole('button',{name:'Cancelar pedido pendente'})).toBeVisible();
  await page.getByRole('button',{name:'Cancelar pedido pendente'}).click();
  await expect(page.getByRole('button',{name:'Cancelar pedido pendente'})).toHaveCount(0);
@@ -208,7 +223,7 @@ test('rota FIXA sem exceção não oferece envio de pin particular',async ({page
    paradas:[{id:7,nome:'Ponto',latitude:-8.1,longitude:-35.1,ativa:true}]};
  await page.route('https://api.bevans.invalid/rotas-publicas/catalogo?*',route=>respond(route,{itens:[rota],total:1,pagina:0,tamanho:20,totalPaginas:1}));
  await page.route('https://api.bevans.invalid/rotas-publicas/41',route=>respond(route,rota));
- await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Explorar rotas'}).click();
+ await abrirArea(page,'Explorar rotas');
  await page.getByRole('button',{name:'Detalhes oficiais'}).click();
  const options=page.getByRole('combobox',{name:'Tipo de ponto'}).locator('option');
  await expect(options).toHaveCount(1);
@@ -226,7 +241,7 @@ test('navegação recusa snapshot do motorista com passageiros inconsistentes',a
  await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77',route=>respond(route,{
   tipo:'VIAGEM',referenciaId:77,sentido:'IDA',contadores:{esperados:1},registros:[{alunoId:15,paradaId:30,ordem:2}],
  }));
- await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Mapa e viagens'}).click();
+ await abrirArea(page,'Mapa e viagens');
  await page.getByRole('combobox',{name:'Turma'}).selectOption('41');
  await expect(page.getByRole('alert').filter({hasText:'roteiro não corresponde à operação atual'})).toBeVisible();
  await expect(page.getByRole('button',{name:'Traçar percurso rodoviário'})).toHaveCount(0);
@@ -244,7 +259,7 @@ test('navegação usa roteiro e snapshot oficiais sem omitir parada obrigatória
  await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77',route=>respond(route,{
   tipo:'VIAGEM',referenciaId:77,sentido:'IDA',contadores:{esperados:1},registros:[{alunoId:15,paradaId:30,ordem:1}],
  }));
- await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Mapa e viagens'}).click();
+ await abrirArea(page,'Mapa e viagens');
  await page.getByRole('combobox',{name:'Turma'}).selectOption('41');
  await expect(page.getByRole('button',{name:'Traçar percurso rodoviário'})).toBeVisible();
  await expect(page.locator('.be-map-stops li')).toHaveCount(3);
@@ -276,7 +291,7 @@ test('conta própria: reautentica, solicita verificação e sincroniza apenas em
   if(url.pathname==='/usuarios/por-uid/uid-homologacao')return respond(route,own);
   return respond(route,{},404);
  });
- await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Configurações'}).click();
+ await abrirArea(page,'Configurações');
  await expect(page.getByRole('heading',{name:'Meu perfil'})).toBeVisible();
  await expect(page.getByText('qa@exemplo.invalid')).toBeVisible();
  await page.getByRole('textbox',{name:'Novo e-mail'}).fill('novo@exemplo.invalid');
@@ -306,7 +321,7 @@ test('conta própria: conflito de exclusão preserva sessão e 202 encerra sem a
   return respond(route,{},404);
  });
  page.on('dialog',dialog=>dialog.accept());
- await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Configurações'}).click();
+ await abrirArea(page,'Configurações');
  await expect(page.getByRole('heading',{name:'Exclusão da conta'})).toBeVisible();
  await page.getByLabel('Digite EXCLUIR').fill('EXCLUIR');
  await page.getByLabel('Senha atual para solicitar a exclusão').fill('senha-test-only');
@@ -362,7 +377,7 @@ test('Firebase 503 não derruba o passageiro; três consultas simultâneas renov
  await expect(nav).toBeVisible();
  await expect(page.getByRole('heading',{name:'Olá, Passageiro.'})).toBeVisible();
  await expect.poll(()=>refreshCalls).toBe(1);
- await nav.getByRole('button',{name:'Turmas'}).click();
+ await abrirArea(page,'Turmas');
  await expect(page.getByRole('heading',{name:'Turmas vinculadas'})).toBeVisible();
  await expect.poll(()=>refreshCalls).toBe(2);
  await expect(nav).toBeVisible();
@@ -387,8 +402,7 @@ test('configurações exibem perfil e formulários sem rolagem horizontal em mob
  }));
  for(const width of [390,768,1280]){
   await page.setViewportSize({width,height:860});
-  const nav=width<=800?page.locator('.be-mobile-tabs'):page.locator('.be-sidebar-nav');
-  await nav.getByRole('button',{name:'Configurações'}).click();
+  await abrirArea(page,'Configurações');
   await expect(page.getByRole('heading',{name:'Meu perfil'})).toBeVisible();
   await expect(page.getByRole('heading',{name:'Alterar e-mail de acesso'})).toBeVisible();
   await expect(page.getByRole('heading',{name:'Exclusão da conta'})).toBeVisible();
@@ -475,7 +489,7 @@ test('catálogo do passageiro aplica filtros do backend e navega por páginas se
   if(pagina===0)return respond(route,{itens:[{id:17,nome:'Rota universitária A',cidade:'Recife',destino:'Campus',vagas:{disponiveis:3}}],total:21,pagina:0,tamanho:20,totalPaginas:2});
   return respond(route,{itens:[{id:18,nome:'Rota universitária B',cidade:'Recife',destino:'Campus',vagas:{disponiveis:1}}],total:21,pagina:1,tamanho:20,totalPaginas:2});
  });
- await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Explorar rotas'}).click();
+ await abrirArea(page,'Explorar rotas');
  await expect(page.getByRole('heading',{name:'Rota inicial'})).toBeVisible();
  const form=page.getByRole('form',{name:'Filtros de rotas'});
  await form.getByRole('textbox',{name:'Buscar rotas'}).fill(' Universidade ');
