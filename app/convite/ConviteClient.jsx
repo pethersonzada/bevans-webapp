@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import MapaWeb from '../painel/MapaWeb';
+import OperacaoInscricao from './OperacaoInscricao';
 import Link from 'next/link';
 const text=e=>e instanceof Error?e.message:'Não foi possível concluir a solicitação.';
 const valid=p=>p&&typeof p.latitude==='number'&&Number.isFinite(p.latitude)&&Math.abs(p.latitude)<=90&&typeof p.longitude==='number'&&Number.isFinite(p.longitude)&&Math.abs(p.longitude)<=180&&!(p.latitude===0&&p.longitude===0);
@@ -14,13 +15,15 @@ function baseApi(){
 }
 async function publico(path,headers,method='GET',body=undefined){
  const r=await fetch(baseApi()+path,{method,headers:{...headers,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store',referrerPolicy:'no-referrer'});
- if(!r.ok){if(r.status===404)throw Error('Convite inválido, expirado ou indisponível.');if(r.status===429)throw Error('Muitas tentativas. Tente novamente mais tarde.');if(r.status===409)throw Error('Inscrição não aceita. Confira vagas e estado da excursão.');throw Error('Solicitação recusada (HTTP '+r.status+').');}
+ if(!r.ok){if(r.status===404)throw Error(path.includes('/operacao')||path.includes('/inscricao/execucoes')?'Credencial ou operação indisponível para esta inscrição.':'Convite inválido, expirado ou indisponível.');if(r.status===429)throw Error('Muitas tentativas. Tente novamente mais tarde.');if(r.status===409)throw Error(path.includes('/operacao')?'O estado mudou ou a execução foi encerrada. Atualize o registro antes de tentar novamente.':'Inscrição não aceita. Confira vagas e estado da excursão.');throw Error('Solicitação recusada (HTTP '+r.status+').');}
+ if(r.status===204)return null;
  return r.json();
 }
 export default function ConviteClient(){
  const [convite,setConvite]=useState(''),[dados,setDados]=useState(null),[nome,setNome]=useState(''),[contato,setContato]=useState(''),[paradaId,setParadaId]=useState(''),[pontoNome,setPontoNome]=useState(''),[ponto,setPonto]=useState(null),[aceite,setAceite]=useState(false);
  const [credencial,setCredencial]=useState(''),[credencialDigitada,setCredencialDigitada]=useState(''),[inscricao,setInscricao]=useState(null),[notificacoes,setNotificacoes]=useState([]),[contatoMotorista,setContatoMotorista]=useState(null),[busy,setBusy]=useState(false),[erro,setErro]=useState(''),[loading,setLoading]=useState(true);
  const iniciado=useRef(false);
+ const [avisoCopia,setAvisoCopia]=useState(''),[mostrarCredencial,setMostrarCredencial]=useState(false);
  useEffect(()=>{
   if(iniciado.current)return;iniciado.current=true;
   Promise.resolve().then(()=>{
@@ -74,10 +77,19 @@ export default function ConviteClient(){
   setBusy(true);setErro('');
   try{const r=await publico('/publico/excursoes/inscricao/contato-motorista',{'X-Inscricao':credencial});if(!r?.waMe||!/^https:\/\/wa\.me\/[0-9]+$/.test(r.waMe))throw Error('Contato não autorizado.');setContatoMotorista(r);}catch(e){setErro(text(e));}finally{setBusy(false);}
  }
+ async function copiarCredencial(){
+  setAvisoCopia('');
+  if(!credencial)return;
+  try{
+   if(!navigator.clipboard?.writeText)throw Error('Clipboard indisponível.');
+   await navigator.clipboard.writeText(credencial);
+   setAvisoCopia('Credencial copiada. Guarde-a em local privado.');
+  }catch{setAvisoCopia('Não foi possível copiar automaticamente. Use a opção de mostrar para copiar manualmente.');}
+ }
  async function cancelar(){
   if(!credencial||!window.confirm('Cancelar esta inscrição? A vaga será liberada.'))return;
   setBusy(true);setErro('');
-  try{const r=await publico('/publico/excursoes/inscricao',{'X-Inscricao':credencial},'DELETE');setInscricao(r);}
+  try{const r=await publico('/publico/excursoes/inscricao',{'X-Inscricao':credencial},'DELETE');const confirmado=r||await publico('/publico/excursoes/inscricao',{'X-Inscricao':credencial});if(confirmado?.estado!=='CANCELADA')throw Error('O servidor não confirmou o cancelamento. Consulte a inscrição antes de repetir.');setInscricao(confirmado);}
   catch(e){setErro(text(e));}finally{setBusy(false);}
  }
  return <main id="conteudo" className="be-shell" style={{padding:'clamp(18px,4vw,48px)',minHeight:'100dvh'}}>
@@ -108,11 +120,14 @@ export default function ConviteClient(){
    </section>}
    {inscricao&&<section className="be-card be-section"><h2>Minha inscrição</h2><p><strong>{inscricao.nome||nome}</strong> · Estado: {inscricao.estado}</p>
     <p className="be-alert">Salve sua credencial em um local privado. Ela identifica sua inscrição e permite consultar ou cancelar depois. Este navegador não a armazena automaticamente.</p>
-    <div className="be-actions"><button type="button" className="be-btn" disabled={!credencial} onClick={()=>navigator.clipboard.writeText(credencial)}>Copiar credencial individual</button><button type="button" className="be-btn" disabled={busy} onClick={avisos}>Consultar notificações</button>{inscricao.estado==='CONFIRMADA'&&<button type="button" className="be-btn" disabled={busy} onClick={mostrarContato}>Contato do organizador</button>}</div>
+    <div className="be-actions"><button type="button" className="be-btn" disabled={!credencial} onClick={copiarCredencial}>Copiar credencial individual</button><button type="button" className="be-btn" disabled={!credencial} onClick={()=>setMostrarCredencial(v=>!v)}>{mostrarCredencial?'Ocultar credencial':'Mostrar para copiar manualmente'}</button><button type="button" className="be-btn" disabled={busy} onClick={avisos}>Consultar notificações</button>{inscricao.estado==='CONFIRMADA'&&<button type="button" className="be-btn" disabled={busy} onClick={mostrarContato}>Contato do organizador</button>}</div>
+    {avisoCopia&&<p role="status" className="be-muted">{avisoCopia}</p>}
+    {mostrarCredencial&&credencial&&<p className="be-muted">Credencial individual: <code style={{overflowWrap:'anywhere',userSelect:'text'}}>{credencial}</code> <button className="be-btn" type="button" onClick={()=>setMostrarCredencial(false)}>Ocultar</button></p>}
     {contatoMotorista&&<p><a className="be-btn primary" href={contatoMotorista.waMe} target="_blank" rel="noopener noreferrer">Abrir WhatsApp comercial autorizado</a></p>}
     {!!notificacoes.length&&<div className="be-list">{notificacoes.map(n=><div className="be-item" key={n.id}><strong>{n.titulo}</strong><p>{n.mensagem}</p></div>)}</div>}
     {inscricao.estado!=='CANCELADA'&&<button className="be-btn danger" disabled={busy} onClick={cancelar}>Cancelar minha inscrição</button>}
    </section>}
+   {inscricao?.estado==='CONFIRMADA'&&credencial&&<OperacaoInscricao key={inscricao.id} request={(path,method='GET',body)=>publico(path,{'X-Inscricao':credencial},method,body)}/>}
   </div>
  </main>;
 }

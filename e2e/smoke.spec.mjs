@@ -403,3 +403,60 @@ test('configurações exibem perfil e formulários sem rolagem horizontal em mob
   expect(screen.columns.trim().split(/\s+/)).toHaveLength(1);
  }
 });
+
+
+test('participante de excursão consulta somente a própria operação e confirma embarque com versão',async ({page})=>{
+ const token='A'.repeat(43),calls=[];
+ let registro={id:19,inscricaoId:5,estado:'AGUARDANDO',versao:0};
+ await page.route('https://api.bevans.invalid/**',async route=>{
+  const req=route.request();
+  if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:cors});
+  const url=new URL(req.url());
+  calls.push({path:url.pathname,method:req.method(),header:req.headers()['x-inscricao']});
+  if(url.pathname==='/publico/excursoes/inscricao')return respond(route,{id:5,nome:'Participante de teste',estado:'CONFIRMADA'});
+  if(url.pathname==='/publico/excursoes/inscricao/execucoes')return respond(route,[{id:71,sentido:'IDA',estado:'EM_ANDAMENTO',iniciadaEm:'2026-11-22T10:00:00Z'}]);
+  if(url.pathname==='/publico/excursoes/operacao/71/minha'&&req.method()==='GET')return respond(route,registro);
+  if(url.pathname==='/publico/excursoes/operacao/71/minha/historico')return respond(route,[{id:9,anterior:'AGUARDANDO',novo:'EMBARCADO',criadoEm:'2026-11-22T10:05:00Z'}]);
+  if(url.pathname==='/publico/excursoes/operacao/71/minha/estado'&&req.method()==='PUT'){
+   expect(req.postDataJSON()).toEqual({estado:'EMBARCADO',versao:0,correcao:false});
+   registro={...registro,estado:'EMBARCADO',versao:1};
+   return respond(route,registro);
+  }
+  return respond(route,{},404);
+ });
+ await page.goto('/convite');
+ await page.getByLabel('Credencial individual').fill(token);
+ await page.getByRole('button',{name:'Consultar minha inscrição'}).click();
+ await expect(page.getByRole('heading',{name:'Meu embarque e histórico'})).toBeVisible();
+ await page.getByRole('button',{name:'Consultar meu embarque'}).click();
+ await expect(page.getByText('Ida · Em andamento')).toBeVisible();
+ await page.getByRole('button',{name:'Consultar meu estado'}).click();
+ await expect(page.getByRole('heading',{name:'Meu estado: Aguardando'})).toBeVisible();
+ page.on('dialog',dialog=>dialog.accept());
+ await page.getByRole('button',{name:'Confirmar embarque'}).click();
+ await expect(page.getByRole('heading',{name:'Meu estado: Embarcado'})).toBeVisible();
+ await page.getByRole('button',{name:'Consultar meu histórico'}).click();
+ await expect(page.getByText('Aguardando → Embarcado')).toBeVisible();
+ expect(calls.every(x=>x.header===token)).toBeTruthy();
+ expect(calls.every(x=>!x.path.includes(token))).toBeTruthy();
+ expect(await page.evaluate(()=>JSON.stringify(Object.entries(localStorage)))).not.toContain(token);
+ await expect(page.locator('body')).not.toContainText(token);
+ await expect(page.locator('body')).not.toContainText('Outro passageiro');
+});
+
+test('excursão sem execução não inventa ID operacional nem tenta enumerar viagens',async ({page})=>{
+ const token='B'.repeat(43),calls=[];
+ await page.route('https://api.bevans.invalid/**',async route=>{
+  if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors});
+  const path=new URL(route.request().url()).pathname;calls.push(path);
+  if(path==='/publico/excursoes/inscricao')return respond(route,{id:5,nome:'Participante',estado:'CONFIRMADA'});
+  if(path==='/publico/excursoes/inscricao/execucoes')return respond(route,[]);
+  return respond(route,{},404);
+ });
+ await page.goto('/convite');
+ await page.getByLabel('Credencial individual').fill(token);
+ await page.getByRole('button',{name:'Consultar minha inscrição'}).click();
+ await page.getByRole('button',{name:'Consultar meu embarque'}).click();
+ await expect(page.getByText('Ainda não existe execução operacional disponível para esta inscrição.')).toBeVisible();
+ expect(calls).toEqual(['/publico/excursoes/inscricao','/publico/excursoes/inscricao/execucoes']);
+});
