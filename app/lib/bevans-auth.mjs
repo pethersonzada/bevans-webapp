@@ -62,7 +62,8 @@ export function criarCoordenadorSessao(refresh=firebaseRefresh){
    if(!currentSession)throw new FirebaseSessionExpiredError();
    const generation=version;
    if(!pending||pending.generation!==generation){
-    pending={generation,promise:Promise.resolve().then(()=>refresh(currentSession))};
+    const snapshot=currentSession;
+    pending={generation,promise:Promise.resolve().then(()=>refresh(snapshot))};
    }
    const job=pending;
    try{
