@@ -167,3 +167,49 @@ test('passageiro acessa somente o próprio registro e histórico da viagem',asyn
  await page.getByRole('button',{name:'Meu histórico'}).click();
  await expect(page.getByText('Nenhum evento registrado.')).toBeVisible();
 });
+
+test('passageiro solicita embarque em parada pública e cancela somente o pendente',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ const rota={id:41,nome:'Rota de teste',cidade:'Cidade exemplo',modo:'FIXA',publicada:true,ativa:true,permitePontoExcepcional:true,
+   origemNome:'Terminal',origemLatitude:-8.1,origemLongitude:-35.1,destinoNome:'Campus',destinoLatitude:-8.2,destinoLongitude:-35.2,
+   paradas:[{id:7,nome:'Ponto 7',latitude:-8.12,longitude:-35.12,ativa:true}],dias:['MONDAY']};
+ const requests=[];
+ let status='PENDENTE';
+ await page.route('https://api.bevans.invalid/rotas-publicas/catalogo?*',route=>respond(route,{itens:[rota]}));
+ await page.route('https://api.bevans.invalid/rotas-publicas/41',route=>respond(route,rota));
+ await page.route('https://api.bevans.invalid/rotas-publicas/41/embarques',route=>{
+  requests.push(route.request().postDataJSON());
+  return respond(route,{id:92,rotaId:41,status:'PENDENTE'});
+ });
+ await page.route('https://api.bevans.invalid/embarques/minhas',route=>respond(route,[{id:92,rotaId:41,status,dataOperacao:'2026-11-24',sentido:'IDA',paradaId:7,nomePonto:'Ponto 7'}]));
+ await page.route('https://api.bevans.invalid/embarques/92',route=>{status='CANCELADO';return respond(route,{id:92,rotaId:41,status});});
+ page.on('dialog',dialog=>dialog.accept());
+ const nav=page.getByRole('navigation',{name:'Áreas do painel'});
+ await nav.getByRole('button',{name:'Explorar rotas'}).click();
+ await page.getByRole('button',{name:'Detalhes oficiais'}).click();
+ await expect(page.getByRole('combobox',{name:'Tipo de ponto'}).locator('option')).toHaveCount(2);
+ await page.getByRole('combobox',{name:'Parada cadastrada'}).selectOption('7');
+ await page.getByRole('button',{name:'Solicitar embarque',exact:true}).click();
+ await expect(page.getByText(/Pedido registrado: PENDENTE/)).toBeVisible();
+ expect(requests).toHaveLength(1);
+ expect(requests[0].paradaId).toBe(7);
+ expect(requests[0]).not.toHaveProperty('latitude');
+ expect(requests[0]).not.toHaveProperty('alunoId');
+ await nav.getByRole('button',{name:'Solicitações'}).click();
+ await expect(page.getByRole('button',{name:'Cancelar pedido pendente'})).toBeVisible();
+ await page.getByRole('button',{name:'Cancelar pedido pendente'}).click();
+ await expect(page.getByRole('button',{name:'Cancelar pedido pendente'})).toHaveCount(0);
+});
+
+test('rota FIXA sem exceção não oferece envio de pin particular',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ const rota={id:41,nome:'Rota fixa',cidade:'Teste',modo:'FIXA',publicada:true,ativa:true,permitePontoExcepcional:false,
+   paradas:[{id:7,nome:'Ponto',latitude:-8.1,longitude:-35.1,ativa:true}]};
+ await page.route('https://api.bevans.invalid/rotas-publicas/catalogo?*',route=>respond(route,{itens:[rota]}));
+ await page.route('https://api.bevans.invalid/rotas-publicas/41',route=>respond(route,rota));
+ await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Explorar rotas'}).click();
+ await page.getByRole('button',{name:'Detalhes oficiais'}).click();
+ const options=page.getByRole('combobox',{name:'Tipo de ponto'}).locator('option');
+ await expect(options).toHaveCount(1);
+ await expect(options).toContainText(['Parada cadastrada']);
+});
