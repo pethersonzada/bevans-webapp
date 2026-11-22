@@ -21,7 +21,8 @@ Os testes simulados não enviam dados a terceiros nem executam `POST`, `PUT` ou 
    - `NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN` (token **público** Mapbox, restrito aos domínios de homologação e de produção adequados)
 4. Autorizar a origem exata do webapp no CORS do backend; aceitar o header `Authorization` e `Content-Type`. Para convites, permitir `X-Convite` e `X-Inscricao` somente nos endpoints correspondentes. Não usar CORS `*` com credenciais.
 5. Definir nas **GitHub Actions variables** `BEVANS_STAGING_WEB_URL` e `BEVANS_STAGING_API_URL`. O script recusa hosts que não tenham `staging`, `homolog`, `qa`, `preview` ou `-git-` no nome. Hosts de produção são recusados por precaução.
-6. Disparar manualmente o workflow `Staging security smoke (read only)`, que verifica cabeçalhos, CORS e retorno 401/403 para endpoints privados consultados sem autenticação. Não executa mutações.
+6. Disparar manualmente o workflow `Staging security smoke (read only)`, informando o `expected_sha` **com os 40 caracteres do commit implantado em Preview**. O script exige o endpoint `GET /api/build-info`, compara o SHA retornado, verifica ambiente `preview`, cabeçalhos, CORS e resposta 401/403 para consultas privadas sem autenticação. Um SHA diferente ou não informado bloqueia o aceite. O endpoint publica somente `commit` e `environment`, sem segredos. Não executa mutações.
+7. O retorno do endpoint identifica o **build**, mas não comprova status `READY` da Vercel ou E2E real. Conferir esses itens separadamente no painel da plataforma e na matriz de aceite.
 
 ## Roteiro de aceite funcional (contas de teste)
 
