@@ -68,3 +68,15 @@
 .be-app .be-section textarea{width:100%;min-height:72px;max-width:100%;font:inherit}
 .be-app .be-section button:focus-visible,.be-app .be-section select:focus-visible,.be-app .be-section textarea:focus-visible{outline:3px solid #176fd0;outline-offset:2px}
 @media(max-width:540px){.be-app .be-section>.be-fieldset{display:grid;grid-template-columns:1fr}.be-app .be-section>.be-fieldset label{min-width:0}}
+
+/* Conta: dados próprios, ação irreversível e navegação por teclado. */
+.be-app .be-account-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:16px 0}
+.be-app .be-account-details>div{min-width:0;border:1px solid var(--be-border,#d9e1e8);border-radius:10px;padding:12px}
+.be-app .be-account-details dt{font-size:.82rem;opacity:.75;margin-bottom:6px}
+.be-app .be-account-details dd{margin:0;overflow-wrap:anywhere;font-weight:600}
+.be-app .be-account-divider{margin:24px 0;border-top:1px solid var(--be-border,#d9e1e8)}
+.be-app .be-account-danger{border:1px solid #bb504f}
+.be-app .be-account-danger .be-btn.danger{border:1px solid #bb504f;background:#a92f30;color:#fff}
+.be-app .be-account-danger .be-btn.danger:disabled{opacity:.48;cursor:not-allowed}
+.be-app .be-account-danger .be-btn.danger:focus-visible{outline:3px solid #da5d5d;outline-offset:3px}
+@media(max-width:540px){.be-app .be-account-details{grid-template-columns:1fr}.be-app .be-account-danger .be-btn.danger{width:100%;white-space:normal}}
