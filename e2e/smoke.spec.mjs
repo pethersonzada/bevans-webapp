@@ -250,3 +250,75 @@ test('navegação usa roteiro e snapshot oficiais sem omitir parada obrigatória
  await page.getByRole('button',{name:'Traçar percurso rodoviário'}).click();
  await expect(page.getByRole('alert').filter({hasText:'Configure o token público Mapbox'})).toBeVisible();
 });
+
+test('conta própria: reautentica, solicita verificação e sincroniza apenas email verificado',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ const own={id:8,nome:'Passageiro Homologação',tipo:'PASSAGEIRO',email:'qa@exemplo.invalid',firebaseUid:'uid-homologacao',telefone:'999999999'};
+ const writes=[],oob=[];
+ await page.route('https://identitytoolkit.googleapis.com/**',route=>{
+  const url=route.request().url();
+  if(url.includes('signInWithPassword'))return respond(route,{idToken:'synthetic-test-token',refreshToken:'synthetic-refresh',localId:'uid-homologacao',expiresIn:'3600'});
+  if(url.includes('sendOobCode')){
+   oob.push(route.request().postDataJSON());
+   return respond(route,{email:'novo@exemplo.invalid'});
+  }
+  if(url.includes('lookup'))return respond(route,{users:[{localId:'uid-homologacao',email:'novo@exemplo.invalid',emailVerified:true}]});
+  return respond(route,{},404);
+ });
+ await page.route('https://api.bevans.invalid/usuarios/**',route=>{
+  const url=new URL(route.request().url());
+  if(url.pathname.endsWith('/email')){
+   writes.push(route.request().postDataJSON());
+   own.email='novo@exemplo.invalid';
+   return respond(route,own);
+  }
+  if(url.pathname==='/usuarios/por-uid/uid-homologacao')return respond(route,own);
+  return respond(route,{},404);
+ });
+ await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Configurações'}).click();
+ await expect(page.getByRole('heading',{name:'Meu perfil'})).toBeVisible();
+ await expect(page.getByText('qa@exemplo.invalid')).toBeVisible();
+ await page.getByRole('textbox',{name:'Novo e-mail'}).fill('novo@exemplo.invalid');
+ await page.getByLabel('Senha atual para solicitar a verificação').fill('senha-test-only');
+ await page.getByRole('button',{name:'Enviar verificação ao novo e-mail'}).click();
+ await expect(page.getByText(/Solicitação enviada/)).toBeVisible();
+ expect(oob).toEqual([{requestType:'VERIFY_AND_CHANGE_EMAIL',idToken:'synthetic-test-token',newEmail:'novo@exemplo.invalid'}]);
+ expect(writes).toHaveLength(0);
+ await page.getByLabel('Senha do e-mail verificado').fill('senha-test-only');
+ await page.getByRole('button',{name:'Conferir e sincronizar e-mail'}).click();
+ await expect(page.getByText(/Novo e-mail confirmado no Firebase e sincronizado/)).toBeVisible();
+ expect(writes).toEqual([{email:'novo@exemplo.invalid'}]);
+ await expect(page.getByText('novo@exemplo.invalid')).toBeVisible();
+});
+
+test('conta própria: conflito de exclusão preserva sessão e 202 encerra sem afirmar remoção Firebase',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ const own={id:8,nome:'Passageiro Homologação',tipo:'PASSAGEIRO',email:'qa@exemplo.invalid',firebaseUid:'uid-homologacao'};
+ let outcome=409,deletions=0;
+ await page.route('https://api.bevans.invalid/usuarios/**',route=>{
+  const url=new URL(route.request().url());
+  if(url.pathname==='/usuarios/por-uid/uid-homologacao')return respond(route,own);
+  if(url.pathname==='/usuarios/8'&&route.request().method()==='DELETE'){
+   deletions++;
+   return respond(route,outcome===409?{message:'Conflito de vínculos'}:{mensagem:'Fila de exclusão pendente'},outcome);
+  }
+  return respond(route,{},404);
+ });
+ page.on('dialog',dialog=>dialog.accept());
+ await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Configurações'}).click();
+ await expect(page.getByRole('heading',{name:'Exclusão da conta'})).toBeVisible();
+ await page.getByLabel('Digite EXCLUIR').fill('EXCLUIR');
+ await page.getByLabel('Senha atual para solicitar a exclusão').fill('senha-test-only');
+ await page.getByRole('button',{name:'Solicitar exclusão da minha conta'}).click();
+ await expect(page.getByRole('alert').filter({hasText:'Nenhum dado foi apagado'})).toBeVisible();
+ await expect(page.getByRole('navigation',{name:'Áreas do painel'})).toBeVisible();
+ expect(deletions).toBe(1);
+ outcome=202;
+ await page.getByLabel('Senha atual para solicitar a exclusão').fill('senha-test-only');
+ await page.getByRole('button',{name:'Solicitar exclusão da minha conta'}).click();
+ await expect(page.getByRole('heading',{name:'Acessar minha conta'})).toBeVisible();
+ await expect(page.getByText(/exclusão no Firebase continua pendente/)).toBeVisible();
+ expect(deletions).toBe(2);
+ const persisted=await page.evaluate(()=>JSON.stringify(Object.entries(localStorage)));
+ expect(persisted).not.toContain('synthetic-test-token');
+});
