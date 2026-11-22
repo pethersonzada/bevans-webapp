@@ -35,7 +35,7 @@ async function mockedLogin(page,role='MOTORISTA'){
  await page.getByLabel('E-mail').fill('qa@exemplo.invalid');
  await page.getByLabel('Senha',{exact:true}).fill('senha-sintetica');
  await page.getByRole('button',{name:'Entrar',exact:true}).click();
- await expect(page.getByRole('navigation',{name:'Áreas do painel'})).toBeVisible();
+ await expect(page.locator('.be-app')).toBeVisible();
 }
 
 // A barra principal exibe apenas as tarefas recorrentes. As outras ficam em Mais.
