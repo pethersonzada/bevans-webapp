@@ -124,13 +124,13 @@ export default function AuthEntry(){
  return <main className="be-app" id="conteudo">
   <aside className="be-sidebar" aria-label="Navegação da plataforma">
    <Link href="/" className="be-sidebar-brand" aria-label="BeVans, voltar ao site"><Image src="/images/vetor-com-nome-tema-claro.png" alt="BeVans" width={154} height={56} className="be-official-mark be-brand-light"/><Image src="/images/bevans-logo-oficial-branco.png" alt="" width={154} height={56} className="be-official-mark be-brand-dark"/></Link>
-   <div className="be-sidebar-group"><p className="be-nav-label">Navegação</p><nav className="be-sidebar-nav" aria-label="Áreas do painel">{tabs.map(([key,label])=><button type="button" key={key} onClick={()=>setTab(key)} aria-current={tab===key?'page':undefined}>{label}</button>)}</nav></div>
+   <div className="be-sidebar-group"><p className="be-nav-label">{driver?'Painel do motorista':'Painel do passageiro'}</p><nav className="be-sidebar-nav" aria-label="Áreas do painel">{tabs.map(([key,label])=><button type="button" key={key} onClick={()=>setTab(key)} aria-current={tab===key?'page':undefined}>{label}</button>)}</nav></div>
    <div className="be-sidebar-footer"><div className="be-account"><span className="be-avatar" aria-hidden="true">{firstName[0].toUpperCase()}</span><div><strong>{profile.nome||'Minha conta'}</strong><small>{driver?'Motorista':'Passageiro'}</small></div></div><button type="button" className="be-signout" onClick={signOut}>Sair da conta</button><Link href="/" className="be-site-link">Voltar ao site</Link></div>
   </aside>
   <div className="be-main-column">
    <header className="be-app-top"><div className="be-app-top-left"><Image src="/images/bevans-simbolo-oficial.png" alt="" width={30} height={30} className="be-top-mark be-brand-light"/><Image src="/images/vetor-tema-escuro.png" alt="" width={30} height={30} className="be-top-mark be-brand-dark"/><span>{driver?'Área do motorista':'Área do passageiro'}</span></div><div className="be-app-user"><span className="be-user-name">{profile.nome||'Minha conta'}</span><span className="be-top-avatar" aria-hidden="true">{firstName[0].toUpperCase()}</span><button type="button" className="be-mobile-signout" onClick={signOut}>Sair</button></div></header>
    <nav className="be-mobile-tabs" aria-label="Navegação do painel">{tabs.map(([key,label])=><button type="button" key={key} onClick={()=>setTab(key)} aria-current={tab===key?'page':undefined}>{label}</button>)}</nav>
-   <div className="be-main-content"><header className="be-page-heading"><div><p className="be-page-location">{driver?'Motorista':'Passageiro'} / {selected?.[1]||'Início'}</p><h1>{tab==='inicio'?`Olá, ${firstName}.`:selected?.[1]}</h1><p>{tab==='inicio'?'Aqui estão as informações da sua conta.':'Dados e ações disponíveis para o seu perfil.'}</p></div>{tab==='inicio'&&<div className="be-heading-date">{new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div>}</header>
+   <div className="be-main-content"><header className="be-page-heading"><div><p className="be-page-location">{driver?'Motorista':'Passageiro'} / {selected?.[1]||'Início'}</p><h1>{tab==='inicio'?`Olá, ${firstName}.`:selected?.[1]}</h1><p>{tab==='inicio'?(driver?'Gerencie suas turmas, solicitações e viagens a partir deste painel.':'Acompanhe seus vínculos, pedidos e informações de viagem em um só lugar.'):(driver?'Consulte e gerencie as informações da sua operação.':'Consulte suas informações e solicitações com segurança.')}</p></div>{tab==='inicio'&&<div className="be-heading-date">{new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div>}</header>
     {tab==='inicio'&&<Overview api={api} profile={profile} driver={driver} onGo={setTab}/>}
     {tab==='turmas'&&<Turmas api={api} profile={profile} driver={driver}/>}
     {tab==='rotas'&&<Rotas api={api} profile={profile} driver={driver}/>}
@@ -171,8 +171,8 @@ function Overview({api,profile,driver,onGo}){
     <section className="be-overview-section"><div className="be-section-title"><div><h2>Suas turmas</h2><p>{driver?'Grupos que você administra.':'Turmas vinculadas à sua conta.'}</p></div><button type="button" className="be-text-action" onClick={()=>onGo('turmas')}>Ver todas →</button></div>
      {state.loading?<Empty>Carregando turmas…</Empty>:state.data?.turmasError?<Alert error={state.data.turmasError}/>:!latest?.length?<div className="be-empty-line"><p>Nenhuma turma encontrada.</p><button type="button" className="be-text-action" onClick={()=>onGo('turmas')}>Abrir turmas →</button></div>:<div className="be-overview-list">{latest.map(t=><div className="be-overview-row" key={t.id}><div className="be-list-monogram" aria-hidden="true">{(t.nome||'T').trim()[0].toUpperCase()}</div><div><strong>{t.nome||`Turma ${t.id}`}</strong><small>{[t.turno,t.destinoNome].filter(Boolean).join(' · ')||'Informações da turma'}</small></div><span className="be-row-id">#{t.id}</span></div>)}</div>}
     </section>
-    <section className="be-overview-section"><div className="be-section-title"><div><h2>Acessar</h2><p>Escolha o que deseja consultar.</p></div></div><div className="be-shortcuts">
-     {[["solicitacoes","Solicitações","Pedidos de vínculo e embarque"],["rotas",driver?'Rotas públicas':'Explorar rotas',"Itinerários e horários"],["excursoes","Excursões","Viagens e participantes"],["operacao","Operações","Estado das viagens"]].map(([key,title,desc])=><button key={key} type="button" onClick={()=>onGo(key)}><span><strong>{title}</strong><small>{desc}</small></span><span aria-hidden="true">→</span></button>)}
+    <section className="be-overview-section be-overview-actions"><div className="be-section-title"><div><h2>{driver?'Gerenciar operação':'Sua jornada'}</h2><p>{driver?'Atalhos para as tarefas do motorista.':'Atalhos para acompanhar suas viagens.'}</p></div></div><div className="be-shortcuts">
+     {(driver?[["solicitacoes","Analisar solicitações","Vínculos e pedidos de embarque"],["viagens","Mapa e viagens","Operação e acompanhamento"],["editor-rotas","Editar rotas","Configurar itinerários"],["gestao-excursoes","Gerir excursões","Organizar saídas e participantes"]]:[["rotas","Encontrar rotas","Itinerários e horários disponíveis"],["solicitacoes","Minhas solicitações","Acompanhar pedidos e aprovações"],["viagens","Acompanhar viagens","Mapa e informações autorizadas"],["notificacoes","Ver notificações","Atualizações da sua conta"]]).map(([key,title,desc])=><button key={key} type="button" onClick={()=>onGo(key)}><span><strong>{title}</strong><small>{desc}</small></span><span aria-hidden="true">→</span></button>)}
     </div></section>
    </div>
    <aside className="be-overview-aside"><div className="be-section-title"><div><h2>Notificações</h2><p>Atualizações da sua conta</p></div></div>
@@ -194,13 +194,24 @@ function Turmas({api,profile,driver}){
 function Rotas({api,driver}){
  const [filters,setFilters]=useState({cidade:'',destino:''}),[selected,setSelected]=useState(null),[route,setRoute]=useState(null),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false);
  const list=useAsync(s=>api(driver?ep.rotas:ep.catalogo(filters),{signal:s}).then(r=>driver?array(r):pagina(r)),[driver,filters.cidade,filters.destino]);
- const [details,setDetails]=useState(null);
- async function open(id){setFeedback('');setRoute(null);setSelected(id);try{const r=await api(ep.rota(id));if(r?.id!==id)throw Error('O servidor retornou outra rota.');setRoute(r);}catch(e){setFeedback(e.message);}}
+ const [loadingDetails,setLoadingDetails]=useState(false);
+ const routeRequest=useRef(0);
+ async function open(id){
+  const request=++routeRequest.current;
+  setFeedback('');setRoute(null);setSelected(id);setLoadingDetails(true);
+  try{
+   const r=await api(ep.rota(id));
+   if(r?.id!==id)throw Error('O servidor retornou outra rota.');
+   if(request===routeRequest.current)setRoute(r);
+  }catch(e){if(request===routeRequest.current)setFeedback(e instanceof Error?e.message:'Não foi possível consultar a rota.');}
+  finally{if(request===routeRequest.current)setLoadingDetails(false);}
+ }
  async function write(task){if(busy)return;setBusy(true);setFeedback('');try{await task();list.reload();if(selected)await open(selected);}catch(e){setFeedback(e.message);}finally{setBusy(false);}}
  return <section className="be-section"><div className="be-row"><h2>{driver?'Gerenciamento de rotas públicas':'Catálogo de rotas públicas'}</h2><Button onClick={list.reload}>Atualizar</Button></div><Alert error={list.error||feedback}/>
  {!driver&&<div className="be-fieldset"><label>Cidade<input value={filters.cidade} onChange={e=>setFilters(p=>({...p,cidade:e.target.value}))}/></label><label>Destino<input value={filters.destino} onChange={e=>setFilters(p=>({...p,destino:e.target.value}))}/></label></div>}
  {list.loading?<Empty>Consultando rotas…</Empty>:!list.data?.length?<Empty>Nenhuma rota disponível.</Empty>:<div className="be-grid">{list.data.map(r=><Panel key={r.id} title={r.nome}><p>{r.cidade} {r.modo?`· ${r.modo}`:''}</p><p className="be-muted">{r.destinoNome||r.destino||''}</p><p className="be-muted">{driver?(r.publicada?'Publicada':'Não publicada'):`Vagas: ${r.vagas?.disponiveis??'indisponível'}`}</p><div className="be-actions"><Button onClick={()=>open(r.id)}>Detalhes oficiais</Button>{!driver&&<Button disabled={busy} onClick={()=>write(async()=>{const response=await api(ep.favoritas(r.id),{method:r.favorita?'DELETE':'PUT'});return response;})}>{r.favorita?'Remover favorito':'Favoritar'}</Button>}</div></Panel>)}</div>}
- {selected&&!route&&<Empty>Carregando a rota selecionada…</Empty>}
+ {selected&&loadingDetails&&<p role="status" className="be-muted">Carregando a rota selecionada…</p>}
+ {selected&&!loadingDetails&&!route&&!feedback&&<Empty>Não foi possível apresentar os detalhes da rota.</Empty>}
  {route&&<Panel title={`Rota: ${route.nome}`}><p>{route.origemNome} → {route.destinoNome}</p><p>{route.modo} · {route.categoria} · IDA {route.horarioIda||'não configurada'} · VOLTA {route.horarioVolta||'não configurada'}</p><p className="be-muted">Dias: {route.dias?.join(', ')}</p><h3>Paradas</h3>{route.paradas?.length?<div className="be-list">{route.paradas.map((p,i)=><div key={p.id||i} className="be-item">{i+1}. {p.nome}</div>)}</div>:<Empty>Sem paradas cadastradas.</Empty>}
  {driver?<><p className="be-alert">A publicação altera o catálogo. Confira os dados e confirme conscientemente.</p><div className="be-actions"><Button disabled={busy} onClick={()=>write(async()=>{if(!window.confirm(`${route.publicada?'Despublicar':'Publicar'} a rota ${route.nome}?`))return;const r=await api(`/rotas-publicas/${idSeguro(route.id)}/publicacao`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({valor:!route.publicada})});if(!r||r.publicada===route.publicada)throw Error('O servidor não confirmou a publicação.');})}>{route.publicada?'Despublicar rota':'Publicar rota'}</Button></div></>:<EmbarquePublicoWeb key={route.id} api={api} rota={route} onChanged={list.reload}/>}
  </Panel>}</section>;
@@ -221,11 +232,18 @@ function Solicitacoes({api,profile,driver}){
 }
 function Excursoes({api,driver}){
  const state=useAsync(s=>driver?api(ep.excursoes,{signal:s}).then(pagina):Promise.resolve([]),[driver]);
- const [id,setId]=useState(null),[exec,setExec]=useState(null),[error,setError]=useState('');
- async function load(id){setId(id);setExec(null);setError('');try{const x=array(await api(ep.execucoes(id)));setExec(x);}catch(e){setError(e.message);}}
- if(!driver)return <Panel title="Excursões"><p>Inscrições de passageiros são feitas com convites individuais. O webapp não acessa recursos privados do motorista em nome do passageiro.</p><Empty>O fluxo de inscrição com convite será integrado separadamente.</Empty></Panel>;
+ const [id,setId]=useState(null),[exec,setExec]=useState(null),[error,setError]=useState(''),[loadingExec,setLoadingExec]=useState(false);
+ const execRequest=useRef(0);
+ async function load(id){
+  const request=++execRequest.current;
+  setId(id);setExec(null);setError('');setLoadingExec(true);
+  try{const x=array(await api(ep.execucoes(id)));if(request===execRequest.current)setExec(x);}
+  catch(e){if(request===execRequest.current)setError(e instanceof Error?e.message:'Não foi possível consultar as execuções.');}
+  finally{if(request===execRequest.current)setLoadingExec(false);}
+ }
+ if(!driver)return <Panel title="Excursões"><p>Inscrições de passageiros são feitas com convites individuais. O webapp não acessa recursos privados do motorista em nome do passageiro.</p><p className="be-muted">Para se inscrever, use o link de convite individual fornecido pelo organizador. A consulta aqui não disponibiliza execuções privadas do motorista.</p></Panel>;
  return <section className="be-section"><div className="be-row"><h2>Excursões</h2><Button onClick={state.reload}>Atualizar</Button></div><Alert error={state.error||error}/>{state.loading?<Empty>Carregando…</Empty>:!state.data?.length?<Empty>Nenhuma excursão encontrada.</Empty>:<div className="be-grid">{state.data.map(e=><Panel key={e.id} title={e.titulo}><p>{e.origemNome||'Origem'} → {e.destinoNome}</p><p>Partida: {stamp(e.partidaEm)}</p><p>Volta: {stamp(e.retornoEm)}</p><p className="be-muted">{display(e.estado)} · {e.capacidade} assentos</p><Button onClick={()=>load(e.id)}>Consultar execuções</Button></Panel>)}</div>}
- {id&&<section className="be-section"><Panel title={`Execuções da excursão #${id}`}><Button onClick={()=>load(id)}>Atualizar execuções</Button>{!exec?<Empty>Carregando execuções…</Empty>:!exec.length?<Empty>Não existe execução registrada. O início exige prévia, versão salva e validação dos participantes no aplicativo.</Empty>:<div className="be-list">{exec.map(v=><div className="be-item" key={v.id}><strong>Execução #{v.id} · {dir(v.sentido)} · {display(v.estado)}</strong><p>{v.pontos?.length||0} pontos no roteiro oficial</p></div>)}</div>}</Panel></section>}</section>;
+ {id&&<section className="be-section"><Panel title={`Execuções da excursão #${id}`}><Button onClick={()=>load(id)}>Atualizar execuções</Button>{loadingExec?<p role="status" className="be-muted">Carregando execuções…</p>:error?<Empty>Não foi possível apresentar as execuções. Tente atualizar.</Empty>:!exec?.length?<Empty>Não existe execução registrada. O início exige prévia, versão salva e validação dos participantes no aplicativo.</Empty>:<div className="be-list">{exec.map(v=><div className="be-item" key={v.id}><strong>Execução #{v.id} · {dir(v.sentido)} · {display(v.estado)}</strong><p>{v.pontos?.length||0} pontos no roteiro oficial</p></div>)}</div>}</Panel></section>}</section>;
 }
 function Notificacoes({api,onGo}){
  const state=useAsync(s=>api(ep.notificacoes,{signal:s}).then(v=>v?.content?array(v.content):pagina(v)),[]);
