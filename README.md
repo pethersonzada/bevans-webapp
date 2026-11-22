@@ -15,7 +15,7 @@ Site institucional e painel web do **BeVans**, plataforma para organização de 
 
 ## Stack
 
-- **Next.js 16.3.3** com App Router e **React 19.2.8**.
+- **Next.js 16.4.6** com App Router e **React 19.2.8**.
 - **Tailwind CSS 4**, CSS do site e do painel, design responsivo e temas claro/escuro.
 - Autenticação via **Firebase Identity Toolkit REST**.
 - Integração com **API BeVans** usando token Firebase no cabeçalho `Authorization: Bearer <token>`.
@@ -176,3 +176,12 @@ O repositório usa a hospedagem de referência `https://bevans-webapp.vercel.app
 Consulte o arquivo `LICENSE` deste repositório para conhecer as condições vigentes de uso e distribuição do código.
 
 Projeto **BeVans**. Documentação atualizada a partir da estrutura existente no repositório em novembro de 2026.
+
+
+### Verificação de implantação e homologação
+
+A `main` conta com um workflow `Deployment HTTP smoke (read only)` que verifica o SHA publicado em `https://bevans-webapp.vercel.app/api/build-info`, os cabeçalhos de segurança, `robots.txt` e a página de convite. São apenas requisições GET sem autenticação; não valida Firebase, API ou GPS.
+
+O workflow `Staging security smoke (read only)` é manual e exige duas origens **isoladas** (web e API) e um SHA esperado. Antes de usá-lo, siga [docs/staging-setup-web.md](docs/staging-setup-web.md). Previews Vercel são protegidos por SSO; testes não devem desabilitar essa proteção por conveniência.
+
+Um deploy `READY` significa que a versão foi construída e disponibilizada, não que o fluxo completo foi homologado.
