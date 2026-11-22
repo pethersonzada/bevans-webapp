@@ -146,3 +146,108 @@
 .be-app .be-catalogo-pagination p{margin:0}
 .be-app .be-catalogo-pagination .be-actions{margin:0}
 @media(max-width:540px){.be-app .be-catalogo-form{padding:16px 14px}.be-app .be-catalogo-fields{grid-template-columns:1fr}.be-app .be-catalogo-actions .be-btn{flex:1 1 130px}.be-app .be-catalogo-pagination{align-items:flex-start}.be-app .be-catalogo-pagination .be-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Navegação por tarefas: cinco opções principais, ferramentas secundárias agrupadas. */
+.be-app{min-width:0}
+.be-app .be-sidebar{width:100%;min-width:0}
+.be-app .be-sidebar-group{padding:30px 14px}
+.be-app .be-nav-label{letter-spacing:.13em;font-size:10px;font-weight:800;color:#647990;margin:0 0 18px 14px}
+.be-app .be-primary-navigation{display:grid;gap:7px}
+.be-app .be-primary-navigation button{display:flex;align-items:center;gap:13px;padding:13px 15px;min-height:51px;border:0;border-radius:12px;color:#4a6079;font-size:13px;font-weight:650;line-height:1.3;text-align:left}
+.be-app .be-primary-navigation button[aria-current="page"]{background:#e9f2ff;color:#064f9c;box-shadow:inset 3px 0 0 #007bff}
+.be-app .be-primary-navigation button:focus-visible,.be-app .be-bottom-navigation button:focus-visible,.be-app .be-tool-link:focus-visible,.be-app .be-header-account:focus-visible,.be-app .be-tools-footer button:focus-visible{outline:3px solid #176bd1;outline-offset:2px}
+.be-app .be-navigation-icon{width:20px;height:20px;flex:none;stroke-width:1.8}
+.be-app .be-sidebar-hint{font-size:12px;line-height:1.6;color:#7d8da0;margin:20px 12px 0;max-width:19ch}
+.be-app .be-header-account{display:inline-flex;align-items:center;justify-content:center;padding:3px;border:0;border-radius:50%;background:transparent;cursor:pointer}
+.be-app .be-header-account:hover .be-top-avatar{background:#dcecff}
+.be-app .be-app-top{height:72px}
+.be-app .be-app-top-left>span{font-weight:700;color:var(--be-navy,#14253a)}
+.be-app .be-page-heading h1{letter-spacing:-.055em}
+.be-app .be-main-content{min-width:0}
+.be-app .be-overview-row>div:nth-child(2){min-width:0;flex:1 1 auto}
+.be-app .be-overview-row strong{display:block;max-width:100%;overflow-wrap:anywhere}
+.be-app .be-overview-row small{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.be-app .be-overview-row .be-row-id{flex:none}
+.be-app .be-shortcuts button{min-width:0}
+.be-app .be-shortcuts strong,.be-app .be-shortcuts small{overflow-wrap:anywhere}
+.be-app .be-bottom-navigation{display:none}
+
+/* Ferramentas por assunto, acessíveis sem uma lista interminável de abas. */
+.be-app .be-tools{display:grid;gap:25px;max-width:1100px}
+.be-app .be-tools-intro{border-radius:17px;padding:27px 29px;background:linear-gradient(112deg,#eaf3ff,#f5f9ff);border:1px solid #d9e7f6}
+.be-app .be-tools-eyebrow{margin:0 0 10px;color:#005ab1;letter-spacing:.14em;font-size:10px;font-weight:800}
+.be-app .be-tools-intro h2{font-size:clamp(22px,2.1vw,28px);letter-spacing:-.045em;color:var(--be-navy,#14253a);margin:0 0 7px}
+.be-app .be-tools-intro p:last-child{margin:0;color:#5b718a;font-size:13px;line-height:1.6}
+.be-app .be-tool-group{min-width:0}
+.be-app .be-tool-group-heading{margin:0 0 13px}
+.be-app .be-tool-group-heading h3{font-size:16px;color:var(--be-navy,#14253a);margin:0 0 5px;font-weight:750}
+.be-app .be-tool-group-heading p{margin:0;color:#788aa0;font-size:12px;line-height:1.55}
+.be-app .be-tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.be-app .be-tool-link{display:flex;text-align:left;align-items:center;gap:14px;min-width:0;min-height:88px;padding:16px 18px;background:var(--be-surface,#fff);border:1px solid var(--be-border,#e1e8f2);border-radius:14px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.be-app .be-tool-link:hover{border-color:#8cb9e9;box-shadow:0 6px 20px #183b6212}
+.be-app .be-tool-icon{display:grid;place-items:center;flex:none;width:39px;height:39px;background:#edf5ff;border-radius:11px;color:#1260b7}
+.be-app .be-tool-copy{display:grid;gap:5px;flex:1;min-width:0}
+.be-app .be-tool-copy strong{font-size:13px;font-weight:750;line-height:1.4;color:var(--be-navy,#14253a)}
+.be-app .be-tool-copy small{font-size:11px;line-height:1.5;color:#72849a}
+.be-app .be-tool-arrow{font-size:19px;color:#6d93c1;flex:none}
+.be-app .be-tools-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;border-top:1px solid var(--be-border,#e1e8f2);padding:24px 0 7px;color:#7c8da1;font-size:12px}
+.be-app .be-tools-footer button{padding:11px 16px;background:transparent;border:1px solid #cbd8e8;border-radius:10px;color:#315577;font-weight:700;cursor:pointer}
+
+/* Entrada: leitura focada e formulário destacado, sem excesso de elementos. */
+.be-auth-screen .be-auth-story{background:radial-gradient(circle at 18% 20%,#20496c 0,transparent 42%),linear-gradient(155deg,#0d2136,#152f4b);position:relative}
+.be-auth-screen .be-auth-content{max-width:425px}
+.be-auth-screen .be-auth-eyebrow{font-size:11px;letter-spacing:.15em;color:#1369bc;font-weight:800;margin:0 0 13px}
+.be-auth-screen .be-auth-content h2{font-size:clamp(29px,3vw,38px);letter-spacing:-.045em;line-height:1.16;margin-bottom:13px}
+.be-auth-screen .be-auth-description{font-size:14px;line-height:1.7;max-width:35ch;margin-bottom:28px}
+.be-auth-screen .be-login-form input{background:#fff;border-color:#c6d4e3}
+.be-auth-screen .be-login-submit{box-shadow:0 5px 13px #076cc329}
+.be-auth-screen .be-auth-help{margin-top:24px;border-top:1px solid #e5ebf2;padding-top:17px}
+
+/* Em telas pequenas a barra inferior é fixa, sem rolagem lateral. */
+@media(max-width:800px){
+ .be-app{display:block;padding-bottom:0}
+ .be-app .be-app-top{height:61px;padding:0 18px}
+ .be-app .be-app-top-left{gap:10px;font-size:12px}
+ .be-app .be-app-top-left>span{font-size:13px}
+ .be-app .be-bottom-navigation{position:fixed;top:auto;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;overflow:visible;overflow-x:visible;scroll-snap-type:none;overscroll-behavior:auto;min-height:68px;padding:6px 7px calc(5px + env(safe-area-inset-bottom,0px));background:#fff;border-top:1px solid #dce5ef;border-bottom:0;box-shadow:0 -6px 28px #14253a13}
+ .be-app .be-bottom-navigation button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:54px;padding:6px 1px 5px;border:0;border-radius:10px;color:#667a90;font-size:10.5px;font-weight:700;line-height:1.2;text-align:center;white-space:normal}
+ .be-app .be-bottom-navigation button .be-navigation-icon{width:21px;height:21px}
+ .be-app .be-bottom-navigation button[aria-current="page"]{border:0;background:#eaf3ff;color:#055aaf}
+ .be-app .be-main-content{padding:23px 18px calc(113px + env(safe-area-inset-bottom,0px));max-width:720px}
+ .be-app .be-page-heading{padding-bottom:19px;margin-bottom:20px}
+ .be-app .be-page-location{margin-bottom:7px!important}
+ .be-app .be-page-heading h1{font-size:clamp(23px,5.8vw,31px);line-height:1.2}
+ .be-app .be-page-heading>div>p:last-child{font-size:12px;line-height:1.6}
+ .be-app .be-overview{gap:18px}
+ .be-app .be-overview-section,.be-app .be-overview-aside{padding:20px;border-radius:15px}
+ .be-app .be-overview-list{min-width:0}
+ .be-app .be-overview-row{gap:10px}
+ .be-app .be-overview-row .be-row-id{display:none}
+ .be-app .be-tool-grid{grid-template-columns:1fr}
+ .be-auth-screen .be-auth-area{min-height:100dvh;padding:22px 20px 28px;background:#f4f7fb}
+ .be-auth-screen .be-auth-content{width:min(100%,450px);max-width:none;margin:auto;min-width:0;background:#fff;border:1px solid #e2eaf4;border-radius:18px;box-shadow:0 14px 32px #132b4b0a;padding:25px}
+ .be-auth-screen .be-mobile-wordmark{margin-bottom:18px}
+ .be-auth-screen .be-auth-bottom{margin-top:19px;padding:0}
+}
+@media(max-width:540px){
+ .be-app .be-app-top{padding:0 16px}
+ .be-app .be-main-content{padding:19px 14px calc(115px + env(safe-area-inset-bottom,0px))}
+ .be-app .be-overview-section,.be-app .be-overview-aside{padding:19px 16px}
+ .be-app .be-shortcuts button{min-height:76px}
+ .be-app .be-overview-row .be-list-monogram{width:38px;height:38px}
+ .be-app .be-tool-link{padding:14px 13px;min-height:80px}
+ .be-app .be-tool-icon{width:36px;height:36px}
+ .be-app .be-tools-intro{padding:22px 20px}
+ .be-app .be-tools-footer{align-items:stretch;flex-direction:column}
+ .be-auth-screen .be-auth-area{padding:18px 14px 22px}
+ .be-auth-screen .be-auth-content{padding:23px 20px;border-radius:16px}
+ .be-auth-screen .be-auth-content h2{font-size:29px}
+}
+html[data-theme="dark"] .be-app .be-tool-link,html[data-theme="dark"] .be-app .be-tools-intro,html[data-theme="dark"] .be-app .be-bottom-navigation{background:#17283c;color:#e4eefb;border-color:#304864}
+html[data-theme="dark"] .be-app .be-tool-icon,html[data-theme="dark"] .be-app .be-bottom-navigation button[aria-current="page"]{background:#234769;color:#bedfff}
+html[data-theme="dark"] .be-app .be-tool-copy strong,html[data-theme="dark"] .be-app .be-tool-group-heading h3,html[data-theme="dark"] .be-app .be-tools-intro h2{color:#eef5ff}
+html[data-theme="dark"] .be-app .be-tool-copy small,html[data-theme="dark"] .be-app .be-tool-group-heading p,html[data-theme="dark"] .be-app .be-tools-intro p:last-child{color:#acbfd3}
+html[data-theme="dark"] .be-auth-screen .be-auth-content{background:#17283c;border-color:#304864}
+html[data-theme="dark"] .be-auth-screen .be-login-form input{background:#122239;color:#ecf4ff;border-color:#42617d}
+@media(prefers-reduced-motion:reduce){.be-app .be-tool-link{transition:none}}
