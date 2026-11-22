@@ -60,6 +60,7 @@ export default function AuthEntry(){
   catch(e){signOut();throw e;}
  },[signOut]);
  const api=useCallback(async(path,options)=>apiRequest(await getToken(),path,options),[getToken]);
+ const isOwnSession=useCallback((uid,id)=>sessionRef.current?.uid===uid&&profileRef.current?.id===id,[]);
  async function onSubmit(e){e.preventDefault();if(busy)return;setBusy(true);setError('');setNotice('');try{
   const signed=await firebaseSignIn(email.trim(),password);const person=await apiRequest(signed.idToken,ep.perfil(signed.uid));
   if(!person||!Number.isSafeInteger(person.id)||person.id<=0||!['MOTORISTA','PASSAGEIRO','ALUNO'].includes(person.tipo))throw Error('Esta conta não tem um perfil operacional válido no backend.');
@@ -116,7 +117,11 @@ export default function AuthEntry(){
     {tab==='gestao-excursoes'&&driver&&<GestaoExcursaoWeb api={api}/>}
     {tab==='editor-rotas'&&driver&&<RotasEditorWeb api={api} profile={profile}/>}
     {tab==='coleta'&&<ColetaPrivadaWeb api={api} profile={profile} driver={driver}/>}
-    {tab==='configuracoes'&&<ConfiguracoesWeb api={api} profile={profile} driver={driver}/>}
+    {tab==='configuracoes'&&<ConfiguracoesWeb api={api} profile={profile} driver={driver} session={session}
+     isCurrent={()=>isOwnSession(session.uid,profile.id)}
+     onSessionRotated={(signed,own)=>{if(!isOwnSession(session.uid,profile.id)||signed.uid!==session.uid||own.id!==profile.id)return;sessionRef.current=signed;profileRef.current=own;setSession(signed);setProfile(own);setEmail(own.email);}}
+     onDeletionPending={()=>{if(!isOwnSession(session.uid,profile.id))return;signOut();setPassword('');setEmail('');setNotice('Solicitação de exclusão recebida pelo servidor (HTTP 202). Sua sessão local foi encerrada. A exclusão no Firebase continua pendente de processamento autorizado.');}}
+    />}
    </div>
   </div>
  </main>;
