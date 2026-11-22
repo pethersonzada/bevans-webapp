@@ -2,6 +2,11 @@ name: Staging security smoke (read only)
 
 on:
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: 'Commit completo (40 caracteres) que deve estar publicado no staging'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -13,6 +18,7 @@ jobs:
     env:
       BEVANS_STAGING_WEB_URL: ${{ vars.BEVANS_STAGING_WEB_URL }}
       BEVANS_STAGING_API_URL: ${{ vars.BEVANS_STAGING_API_URL }}
+      BEVANS_STAGING_EXPECTED_SHA: ${{ inputs.expected_sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,5 +26,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify staging URLs, CORS and anonymous access without mutations
+      - name: Verify deployed commit, CORS and anonymous access without mutations
         run: node scripts/staging-readonly-smoke.mjs

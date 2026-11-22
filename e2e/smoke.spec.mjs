@@ -105,6 +105,17 @@ test('login permanece utilizável em largura mobile',async ({page})=>{
  expect(scrollWidth).toBeLessThanOrEqual(viewportWidth+4);
 });
 
+test('identidade do build é pública, sem cache e não divulga ambiente privado',async ({request})=>{
+ const r=await request.get('/api/build-info');
+ expect(r.status()).toBe(200);
+ expect(r.headers()['cache-control']).toContain('no-store');
+ expect(r.headers()['x-robots-tag']).toContain('noindex');
+ const body=await r.json();
+ expect(Object.keys(body).sort()).toEqual(['commit','environment']);
+ expect(['production','preview','development','unknown']).toContain(body.environment);
+ if(body.commit!==null)expect(body.commit).toMatch(/^[a-f0-9]{40}$/);
+});
+
 test('motorista consulta histórico e corrige ausência somente com motivo e versão',async ({page})=>{
  await mockedLogin(page);
  const initial={id:15,alunoId:8,nome:'Passageiro de teste',estado:'NAO_EMBARCOU',versao:4};
