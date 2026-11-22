@@ -213,3 +213,40 @@ test('rota FIXA sem exceção não oferece envio de pin particular',async ({page
  await expect(options).toHaveCount(1);
  await expect(options).toContainText(['Parada cadastrada']);
 });
+
+test('navegação recusa snapshot do motorista com passageiros inconsistentes',async ({page})=>{
+ await mockedLogin(page);
+ await page.route('https://api.bevans.invalid/rota/status-atual?*',route=>respond(route,{status:'ATIVA',estado:'EM_ANDAMENTO',viagemId:77,sentido:'IDA'}));
+ await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77/roteiro',route=>respond(route,[
+  {tipo:'ORIGEM',paradaId:null,nome:'Terminal',latitude:-8.1,longitude:-35.1,passageiros:[]},
+  {tipo:'PARADA',paradaId:30,nome:'Parada A',latitude:-8.11,longitude:-35.11,passageiros:[{id:15,nome:'Pessoa teste',latitude:-8.11,longitude:-35.11}]},
+  {tipo:'DESTINO',paradaId:null,nome:'Campus',latitude:-8.2,longitude:-35.2,passageiros:[]},
+ ]));
+ await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77',route=>respond(route,{
+  tipo:'VIAGEM',referenciaId:77,sentido:'IDA',contadores:{esperados:1},registros:[{alunoId:15,paradaId:30,ordem:2}],
+ }));
+ await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Mapa e viagens'}).click();
+ await page.getByRole('combobox',{name:'Turma'}).selectOption('41');
+ await expect(page.getByRole('alert').filter({hasText:'roteiro não corresponde à operação atual'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Traçar percurso rodoviário'})).toHaveCount(0);
+ await expect(page.getByText('Parada A')).toHaveCount(0);
+});
+
+test('navegação usa roteiro e snapshot oficiais sem omitir parada obrigatória',async ({page})=>{
+ await mockedLogin(page);
+ await page.route('https://api.bevans.invalid/rota/status-atual?*',route=>respond(route,{status:'ATIVA',estado:'EM_ANDAMENTO',viagemId:77,sentido:'IDA'}));
+ await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77/roteiro',route=>respond(route,[
+  {tipo:'ORIGEM',paradaId:null,nome:'Terminal',latitude:-8.1,longitude:-35.1,passageiros:[]},
+  {tipo:'PARADA',paradaId:30,nome:'Parada A',latitude:-8.11,longitude:-35.11,passageiros:[{id:15,nome:'Pessoa teste',latitude:-8.11,longitude:-35.11}]},
+  {tipo:'DESTINO',paradaId:null,nome:'Campus',latitude:-8.2,longitude:-35.2,passageiros:[]},
+ ]));
+ await page.route('https://api.bevans.invalid/operacoes/VIAGEM/77',route=>respond(route,{
+  tipo:'VIAGEM',referenciaId:77,sentido:'IDA',contadores:{esperados:1},registros:[{alunoId:15,paradaId:30,ordem:1}],
+ }));
+ await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Mapa e viagens'}).click();
+ await page.getByRole('combobox',{name:'Turma'}).selectOption('41');
+ await expect(page.getByRole('button',{name:'Traçar percurso rodoviário'})).toBeVisible();
+ await expect(page.locator('.be-map-stops li')).toHaveCount(3);
+ await page.getByRole('button',{name:'Traçar percurso rodoviário'}).click();
+ await expect(page.getByRole('alert').filter({hasText:'Configure o token público Mapbox'})).toBeVisible();
+});

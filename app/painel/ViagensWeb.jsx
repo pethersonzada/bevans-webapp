@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import MapaWeb,{coordenadaValida,normalizarPontos} from './MapaWeb';
 import {gpsRecente,caminhoPosicao,validarRotaDirecoes} from '../lib/mapa-web.mjs';
+import {validarRoteiroOperacional,conferirSnapshotRoteiro,assinaturaRoteiroWeb,conferirContextoRoteiro} from '../lib/roteiro-operacional-web.mjs';
 
 const err=e=>e instanceof Error?e.message:'Não foi possível concluir a operação.';
 const id=v=>{if(!/^[1-9][0-9]*$/.test(String(v))||!Number.isSafeInteger(Number(v)))throw Error('Identificador inválido.');return Number(v);};
@@ -17,28 +18,40 @@ export default function ViagensWeb({api,profile,driver}){
  const [sentido,setSentido]=useState('IDA'),[presenca,setPresenca]=useState(''),[ida,setIda]=useState(''),[volta,setVolta]=useState('');
  const [erro,setErro]=useState(''),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false),[sharing,setSharing]=useState(false);
  const [load,setLoad]=useState(false);
+ const [roteiroCompleto,setRoteiroCompleto]=useState([]),[roteiroSelo,setRoteiroSelo]=useState('');
  const watch=useRef(null),lastSend=useRef(0),working=useRef(false);
- const mounted=useRef(true),refreshRef=useRef(null);
+ const mounted=useRef(true),refreshRef=useRef(null),refreshRequest=useRef(0);
  const chosenTurma=turmas.find(t=>String(t.id)===turmaId);
- const active=tipo==='VIAGEM'?(estado?.status==='ATIVA'?estado.viagemId:null):execucaoId;
+ const active=estado?.status==='ATIVA'?(tipo==='VIAGEM'?estado.viagemId:execucaoId):null;
  const activeType=tipo;
  const clearLocation=()=>{setPosicao(null);setTrace(null);setInstrucoes([]);setManobra(0);};
  const refresh=async()=>{
   if(!turmaId&&tipo==='VIAGEM')return;
-  setLoad(true);setErro('');
+  const request=++refreshRequest.current;
+  setLoad(true);setErro('');setRoteiroCompleto([]);setRoteiroSelo('');setPontos([]);clearLocation();
   try{
    if(tipo==='VIAGEM'){
     const turma=id(turmaId),status=await api('/rota/status-atual?turmaId='+turma);
+    if(request!==refreshRequest.current)return;
     if(!status||!['ATIVA','INATIVA'].includes(status.status))throw Error('O servidor não confirmou a situação da turma.');
-    setEstado(status);if(status.status!=='ATIVA')setSharing(false);
+    if(status.status!=='ATIVA')setSharing(false);
     if(driver){
      const list=await api('/turmas/'+turma+'/passageiros');
+     if(request!==refreshRequest.current)return;
      if(!Array.isArray(list))throw Error('Lista de passageiros inválida.');
      setPassageiros(list);
      if(status.status==='ATIVA'&&id(status.viagemId)){
-      const route=await api('/operacoes/VIAGEM/'+id(status.viagemId)+'/roteiro');
-      if(!Array.isArray(route)||route.length<2||route.some(p=>!coordenadaValida(p)))throw Error('Roteiro operacional incompleto. Atualize antes de navegar.');
-      setPontos(normalizarPontos(route));
+      const viagemId=id(status.viagemId);
+      const [route,operacao]=await Promise.all([
+       api('/operacoes/VIAGEM/'+viagemId+'/roteiro'),
+       api('/operacoes/VIAGEM/'+viagemId)
+      ]);
+      if(request!==refreshRequest.current)return;
+      const completo=validarRoteiroOperacional(route);
+      conferirSnapshotRoteiro(completo,operacao,viagemId,status.sentido);
+      setRoteiroCompleto(completo);
+      setRoteiroSelo(assinaturaRoteiroWeb({usuarioId:id(profile.id),turmaId:turma,viagemId,sentido:status.sentido},completo));
+      setPontos(normalizarPontos(completo));
      }else setPontos(normalizarPontos([
       {nome:chosenTurma?.origemNome||'Origem',latitude:chosenTurma?.origemLatitude,longitude:chosenTurma?.origemLongitude},
       {nome:chosenTurma?.destinoNome||'Destino',latitude:chosenTurma?.destinoLatitude,longitude:chosenTurma?.destinoLongitude}
@@ -50,23 +63,26 @@ export default function ViagensWeb({api,profile,driver}){
       api('/turmas/'+turma+'/coleta/IDA'),
       api('/turmas/'+turma+'/coleta/VOLTA')
      ]);
+     if(request!==refreshRequest.current)return;
      setColetaIda(idaConfig);setColetaVolta(voltaConfig);
      setConfirmacao(mine);setPresenca(mine?.status||'');setIda(String(mine?.enderecoIda?.id||''));setVolta(String(mine?.enderecoVolta?.id||''));
      setEnderecos(Array.isArray(addresses)?addresses:[]);
      // Passageiros não recebem o roteiro completo nem os endereços de terceiros.
      setPontos([]);
     }
+    setEstado(status);
    }else if(excursaoId){
     const data=await api('/excursoes/'+id(excursaoId)+'/execucoes');
+    if(request!==refreshRequest.current)return;
     if(!Array.isArray(data))throw Error('Lista de execuções inválida.');
     const running=data.find(x=>x.estado==='EM_ANDAMENTO');
     const selected=data.find(x=>String(x.id)===execucaoId);
     const current=selected||running||null;
     setExecucaoId(current?String(current.id):'');
-    setEstado(current?{status:'ATIVA',sentido:current.sentido,viagemId:current.id}:null);
+    setEstado(current?{status:current.estado==='EM_ANDAMENTO'?'ATIVA':'INATIVA',sentido:current.sentido,viagemId:current.id}:null);
     setPontos(current?normalizarPontos(current.pontos):[]);
    }
-  }catch(e){setErro(err(e));}finally{setLoad(false);}
+  }catch(e){if(request===refreshRequest.current){setEstado(null);setPontos([]);setRoteiroCompleto([]);setRoteiroSelo('');setErro(err(e));}}finally{if(request===refreshRequest.current)setLoad(false);}
  };
  useEffect(()=>{refreshRef.current=refresh;});
  useEffect(()=>{mounted.current=true;const controller=new AbortController();
@@ -78,7 +94,7 @@ export default function ViagensWeb({api,profile,driver}){
   }).catch(e=>{if(!controller.signal.aborted)setErro(err(e));});
   return()=>{mounted.current=false;controller.abort();};
  },[api,driver,profile.id]);
- function resetSelection(){setEstado(null);setPontos([]);clearLocation();setErro('');setSharing(false);}
+ function resetSelection(){refreshRequest.current++;setEstado(null);setPontos([]);setRoteiroCompleto([]);setRoteiroSelo('');clearLocation();setErro('');setSharing(false);}
  useEffect(()=>{if(turmaId||tipo==='EXCURSAO'&&excursaoId)Promise.resolve().then(()=>refreshRef.current?.());},[turmaId,tipo,excursaoId]);
  useEffect(()=>{
   if(!active)return;
@@ -160,6 +176,14 @@ export default function ViagensWeb({api,profile,driver}){
  }
  async function directions(){
   setErro('');
+  if(!active||!driver)return setErro('Navegação operacional disponível apenas para execução ativa do motorista.');
+  if(tipo==='VIAGEM'){
+   const contexto={usuarioId:id(profile.id),turmaId:id(turmaId),viagemId:id(active),sentido:estado?.sentido};
+   if(!roteiroCompleto.length||!conferirContextoRoteiro(roteiroSelo,contexto,roteiroCompleto)||
+      pontos.length!==roteiroCompleto.length||
+      pontos.some((p,i)=>p.latitude!==roteiroCompleto[i].latitude||p.longitude!==roteiroCompleto[i].longitude))
+      return setErro('Snapshot da viagem mudou. Atualize o roteiro antes de navegar.');
+  }
   const token=process.env.NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN;
   if(!token)return setErro('Configure o token público Mapbox.');
   if(pontos.length<2)return setErro('Roteiro com menos de dois pontos.');
@@ -194,7 +218,7 @@ export default function ViagensWeb({api,profile,driver}){
      {driver&&tipo==='VIAGEM'&&estado?.status!=='ATIVA'&&<button className="be-btn primary" disabled={busy} onClick={start}>Iniciar {sentido==='IDA'?'ida':'volta'}</button>}
      {driver&&tipo==='VIAGEM'&&estado?.status==='ATIVA'&&<button className="be-btn danger" disabled={busy} onClick={finish}>Encerrar viagem</button>}
      {driver&&active&&<button className={'be-btn '+(sharing?'danger':'primary')} onClick={()=>{setErro('');if(!navigator.geolocation){setErro('Geolocalização não disponível neste navegador.');return;}setSharing(x=>!x);}}>{sharing?'Parar compartilhamento GPS':'Compartilhar GPS nesta aba'}</button>}
-     {driver&&pontos.length>=2&&<button type="button" className="be-btn" onClick={directions}>Traçar percurso rodoviário</button>}
+     {driver&&active&&pontos.length>=2&&<button type="button" className="be-btn" onClick={directions}>Traçar percurso rodoviário</button>}
     </div>
     <p className="be-muted">GPS: {posicao?'posição recente ('+formatPonto(posicao)+')':'sem localização atual (aguardando ou expirada)'}. Consulta a cada 10 segundos com a aba visível.</p>
     {driver&&sharing&&<p className="be-alert">Seu GPS está sendo enviado durante esta viagem. A transmissão para ao fechar, ocultar a aba ou clicar em parar. O navegador não fornece rastreamento confiável em segundo plano.</p>}
