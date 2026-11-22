@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildContactMailto, normalizeContactEmail, normalizePlan } from '../app/lib/contact.mjs';
+import { buildContactMailto, buildContactCopy, normalizeContactEmail, normalizePlan } from '../app/lib/contact.mjs';
 
 const valid = {
   recipient: 'contato@example.com',
@@ -43,4 +43,21 @@ test('rejeita campos vazios ou textos excessivos', () => {
 test('ignora nomes de planos manipulados', () => {
   const url = new URL(buildContactMailto({ ...valid, plan: 'Premium Fake' }));
   assert.match(url.searchParams.get('body'), /Ainda não sei/);
+});
+
+
+test('cópia manual prepara texto sem destinatário inventado nem envio',()=>{
+ const texto=buildContactCopy({...valid,recipient:''});
+ assert.match(texto,/Assunto: Contato comercial BeVans - Frota/);
+ assert.match(texto,/Nome: Ana Silva/);
+ assert.match(texto,/E-mail: ana@example.com/);
+ assert.match(texto,/quatro vans/);
+ assert.doesNotMatch(texto,/^Para:/m);
+ assert.doesNotMatch(texto,/mailto:/);
+});
+
+test('cópia inclui destinatário somente quando um e-mail oficial válido foi configurado',()=>{
+ const texto=buildContactCopy(valid);
+ assert.match(texto,/^Para: contato@example.com$/m);
+ assert.throws(()=>buildContactCopy({...valid,message:'curta'}),/Confira os campos/);
 });
