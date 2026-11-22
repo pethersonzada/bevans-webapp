@@ -1,4 +1,5 @@
 import {checkExpectedRelease} from '../app/lib/release-info.mjs';
+import {stagingBaseUrl} from '../app/lib/staging-url.mjs';
 
 // Verificações não destrutivas para um ambiente explicitamente de homologação.
 // Não usa identidades, tokens, GPS nem acessa dados privados de contas reais.
@@ -12,7 +13,6 @@ function readStagingURL(name){
   throw Error(name+' precisa ser URL HTTPS simples, sem credenciais ou parâmetros.');
  if(!STAGING_MARKER.test(url.hostname)||url.hostname==='bevans-webapp.vercel.app')
   throw Error(name+' não identifica explicitamente um ambiente de homologação.');
- url.pathname=url.pathname.replace(/\/$/,'');
  return url;
 }
 
@@ -32,7 +32,8 @@ async function run(){
  const web=readStagingURL('BEVANS_STAGING_WEB_URL');
  const api=readStagingURL('BEVANS_STAGING_API_URL');
  if(web.origin===api.origin)throw Error('Use origens web e API separadas para testar CORS corretamente.');
- const page=await check(web.origin+web.pathname+'/painel');
+ const webBase=stagingBaseUrl(web),apiBase=stagingBaseUrl(api);
+ const page=await check(webBase+'/painel');
  expectStatus(page,[200],'Página de login');
  const policy=page.headers.get('permissions-policy')||'';
  if(!policy.includes('geolocation=(self)')||!policy.includes('camera=()')||!policy.includes('microphone=()'))
@@ -40,7 +41,7 @@ async function run(){
  if(page.headers.get('x-content-type-options')!=='nosniff')throw Error('Cabeçalho nosniff ausente.');
  console.log('OK: página da web de homologação e cabeçalhos de proteção.');
 
- const release=await fetch(web.origin+web.pathname+'/api/build-info',{
+ const release=await fetch(webBase+'/api/build-info',{
   method:'GET',cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(12000),
  });
  expectStatus(release,[200],'Identidade do build');
@@ -51,12 +52,12 @@ async function run(){
  console.log('OK: ambiente preview executa o SHA esperado ('+expected.slice(0,9)+').');
 
  for(const path of ['/notificacoes','/notificacoes/preferencias','/motorista/contato','/rotas-publicas/minhas']){
-  const r=await check(api.origin+api.pathname+path);
+  const r=await check(apiBase+path);
   expectStatus(r,[401,403],path+' sem autenticação');
   console.log('OK: '+path+' recusou acesso anônimo ('+r.status+').');
  }
 
- const preflight=await check(api.origin+api.pathname+'/notificacoes',{
+ const preflight=await check(apiBase+'/notificacoes',{
   method:'OPTIONS',
   headers:{'Origin':web.origin,'Access-Control-Request-Method':'GET','Access-Control-Request-Headers':'authorization'},
  });
