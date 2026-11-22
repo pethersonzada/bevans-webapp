@@ -61,3 +61,10 @@
 .be-live-card .be-alert{margin:12px 0}
 @media(min-width:1100px){.be-live-stack{grid-template-columns:repeat(2,minmax(0,1fr))}.be-live-stack>.be-card:nth-child(2){grid-row:span 2}}
 @media(max-width:720px){.be-map-canvas{min-height:280px!important;height:350px!important}.be-live .be-fieldset{display:grid;grid-template-columns:1fr}.be-live .be-fieldset select{max-width:100%;width:100%}}
+
+/* Embarques: confirmação explícita do pin e leitura acessível no celular. */
+.be-app .be-inline-check{display:flex;align-items:flex-start;gap:10px;max-width:640px;line-height:1.55}
+.be-app .be-inline-check input[type=checkbox]{flex:none;width:17px;height:17px;margin:3px 0 0}
+.be-app .be-section textarea{width:100%;min-height:72px;max-width:100%;font:inherit}
+.be-app .be-section button:focus-visible,.be-app .be-section select:focus-visible,.be-app .be-section textarea:focus-visible{outline:3px solid #176fd0;outline-offset:2px}
+@media(max-width:540px){.be-app .be-section>.be-fieldset{display:grid;grid-template-columns:1fr}.be-app .be-section>.be-fieldset label{min-width:0}}
