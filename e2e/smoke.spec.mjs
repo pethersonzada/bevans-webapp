@@ -528,3 +528,50 @@ test('contato comercial sem canal configurado permite cópia manual sem simular 
  await expect(page.getByRole('button',{name:'Abrir mensagem no meu e-mail'})).toBeDisabled();
  await expect(page.locator('body')).not.toContainText('Mensagem enviada com sucesso');
 });
+
+
+test('navegação móvel do motorista tem cinco opções fixas e ferramentas acessíveis em Mais',async ({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await mockedLogin(page);
+ const mobile=page.getByRole('navigation',{name:'Navegação do painel'});
+ await expect(mobile).toBeVisible();
+ await expect(mobile.getByRole('button')).toHaveCount(5);
+ await expect(mobile.getByRole('button')).toHaveText(['Início','Turmas','Viagens','Rotas','Mais']);
+ await expect(page.getByRole('navigation',{name:'Áreas do painel'})).toBeHidden();
+ const initial=await page.evaluate(()=>({viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,bottom:document.querySelector('.be-bottom-navigation').getBoundingClientRect().bottom,height:innerHeight}));
+ expect(initial.scrollWidth).toBeLessThanOrEqual(initial.viewport+2);
+ expect(Math.abs(initial.bottom-initial.height)).toBeLessThanOrEqual(2);
+ await mobile.getByRole('button',{name:'Mais'}).click();
+ await expect(page.getByRole('heading',{name:'Encontre o que precisa'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Embarques e operações',exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Notificações',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Notificações',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Notificações',exact:true})).toBeVisible();
+ await expect(mobile.getByRole('button',{name:'Mais'})).toHaveAttribute('aria-current','page');
+});
+
+test('passageiro no celular vê pedidos e rotas, sem ferramentas exclusivas de motorista',async ({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await mockedLogin(page,'PASSAGEIRO');
+ const mobile=page.getByRole('navigation',{name:'Navegação do painel'});
+ await expect(mobile.getByRole('button')).toHaveText(['Início','Rotas','Pedidos','Viagens','Mais']);
+ await mobile.getByRole('button',{name:'Mais'}).click();
+ await expect(page.getByRole('button',{name:'Meu embarque',exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Editor de rotas',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Gestão de excursões',exact:true})).toHaveCount(0);
+ await page.getByRole('button',{name:'Minhas turmas',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Turmas vinculadas'})).toBeVisible();
+ await expect(mobile.getByRole('button',{name:'Mais'})).toHaveAttribute('aria-current','page');
+});
+
+test('login atualizado é legível no celular sem rolagem lateral',async ({page})=>{
+ await page.setViewportSize({width:360,height:780});
+ await page.goto('/login');
+ await expect(page.getByRole('heading',{name:'Acessar minha conta'})).toBeVisible();
+ await expect(page.getByText('ACESSO AO PAINEL')).toBeVisible();
+ await expect(page.getByLabel('E-mail')).toBeVisible();
+ await expect(page.getByLabel('Senha',{exact:true})).toBeVisible();
+ const bounds=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,card:document.querySelector('.be-auth-content').getBoundingClientRect().width}));
+ expect(bounds.scrollWidth).toBeLessThanOrEqual(bounds.width+2);
+ expect(bounds.card).toBeLessThan(bounds.width);
+});
