@@ -27,7 +27,8 @@ async function mockedLogin(page,role='MOTORISTA'){
   if(path==='/rota/status-atual')return respond(route,{status:'INATIVA'});
   if(path==='/notificacoes/preferencias')return respond(route,{pushOperacional:true,pushInformativo:true});
   if(path==='/notificacoes/nao-lidas')return respond(route,0);
-  if(path==='/excursoes'||path==='/rotas-publicas/catalogo'||path==='/notificacoes')return respond(route,{itens:[],content:[]});
+  if(path==='/rotas-publicas/catalogo')return respond(route,{itens:[],total:0,pagina:0,tamanho:20,totalPaginas:0});
+  if(path==='/excursoes'||path==='/notificacoes')return respond(route,{itens:[],content:[]});
   return respond(route,[]);
  });
  await page.goto('/painel');
@@ -175,7 +176,7 @@ test('passageiro solicita embarque em parada pública e cancela somente o penden
    paradas:[{id:7,nome:'Ponto 7',latitude:-8.12,longitude:-35.12,ativa:true}],dias:['MONDAY']};
  const requests=[];
  let status='PENDENTE';
- await page.route('https://api.bevans.invalid/rotas-publicas/catalogo?*',route=>respond(route,{itens:[rota]}));
+ await page.route('https://api.bevans.invalid/rotas-publicas/catalogo?*',route=>respond(route,{itens:[rota],total:1,pagina:0,tamanho:20,totalPaginas:1}));
  await page.route('https://api.bevans.invalid/rotas-publicas/41',route=>respond(route,rota));
  await page.route('https://api.bevans.invalid/rotas-publicas/41/embarques',route=>{
   requests.push(route.request().postDataJSON());
@@ -205,7 +206,7 @@ test('rota FIXA sem exceção não oferece envio de pin particular',async ({page
  await mockedLogin(page,'PASSAGEIRO');
  const rota={id:41,nome:'Rota fixa',cidade:'Teste',modo:'FIXA',publicada:true,ativa:true,permitePontoExcepcional:false,
    paradas:[{id:7,nome:'Ponto',latitude:-8.1,longitude:-35.1,ativa:true}]};
- await page.route('https://api.bevans.invalid/rotas-publicas/catalogo?*',route=>respond(route,{itens:[rota]}));
+ await page.route('https://api.bevans.invalid/rotas-publicas/catalogo?*',route=>respond(route,{itens:[rota],total:1,pagina:0,tamanho:20,totalPaginas:1}));
  await page.route('https://api.bevans.invalid/rotas-publicas/41',route=>respond(route,rota));
  await page.getByRole('navigation',{name:'Áreas do painel'}).getByRole('button',{name:'Explorar rotas'}).click();
  await page.getByRole('button',{name:'Detalhes oficiais'}).click();
