@@ -279,3 +279,10 @@ html[data-theme="dark"] .be-auth-screen .be-login-form input{background:#122239;
  .be-app .be-welcome-actions .be-heading-date{display:none}
  .be-app .be-welcome-primary{width:100%;justify-content:space-between;min-height:44px;padding:10px 14px}
 }
+
+
+/* O controle global de tema não pode encobrir a barra inferior do painel. */
+@media(max-width:800px){
+ body:has(.be-app) .bev-theme-toggle{top:10px;right:63px;bottom:auto;min-width:40px;height:40px;padding:0 10px;z-index:65}
+ body:has(.be-app) .bev-theme-toggle span{display:none}
+}
