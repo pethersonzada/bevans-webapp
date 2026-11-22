@@ -19,7 +19,8 @@ export default function OperacoesWeb({api,profile,driver}){
  const [error,setError]=useState(''),[message,setMessage]=useState('');
  const sequence=useRef(0),writing=useRef(false),live=useRef(true);
  const selection=tipo+'|'+turmaId+'|'+excursaoId+'|'+execucaoId+'|'+profile.id;
- const activeKey=useRef(selection);activeKey.current=selection;
+ const activeKey=useRef(selection);
+ useEffect(()=>{activeKey.current=selection;},[selection]);
 
  useEffect(()=>{
   live.current=true;
@@ -32,7 +33,7 @@ export default function OperacoesWeb({api,profile,driver}){
    setTurmas(array(groups,'turmas'));
    if(driver)setExcursoes(pagina(trips));
   }).catch(e=>{if(!controller.signal.aborted)setError(erro(e));});
-  return()=>{live.current=false;controller.abort();sequence.current++;};
+  return()=>{live.current=false;controller.abort();};
  },[api,driver,profile.id]);
 
  function invalidate(){
