@@ -20,21 +20,24 @@ export default function ViagensWeb({api,profile,driver}){
  const [load,setLoad]=useState(false);
  const [roteiroCompleto,setRoteiroCompleto]=useState([]),[roteiroSelo,setRoteiroSelo]=useState('');
  const watch=useRef(null),lastSend=useRef(0),working=useRef(false);
- const mounted=useRef(true),refreshRef=useRef(null);
+ const mounted=useRef(true),refreshRef=useRef(null),refreshRequest=useRef(0);
  const chosenTurma=turmas.find(t=>String(t.id)===turmaId);
  const active=estado?.status==='ATIVA'?(tipo==='VIAGEM'?estado.viagemId:execucaoId):null;
  const activeType=tipo;
  const clearLocation=()=>{setPosicao(null);setTrace(null);setInstrucoes([]);setManobra(0);};
  const refresh=async()=>{
   if(!turmaId&&tipo==='VIAGEM')return;
+  const request=++refreshRequest.current;
   setLoad(true);setErro('');setRoteiroCompleto([]);setRoteiroSelo('');setPontos([]);clearLocation();
   try{
    if(tipo==='VIAGEM'){
     const turma=id(turmaId),status=await api('/rota/status-atual?turmaId='+turma);
+    if(request!==refreshRequest.current)return;
     if(!status||!['ATIVA','INATIVA'].includes(status.status))throw Error('O servidor não confirmou a situação da turma.');
     if(status.status!=='ATIVA')setSharing(false);
     if(driver){
      const list=await api('/turmas/'+turma+'/passageiros');
+     if(request!==refreshRequest.current)return;
      if(!Array.isArray(list))throw Error('Lista de passageiros inválida.');
      setPassageiros(list);
      if(status.status==='ATIVA'&&id(status.viagemId)){
@@ -43,6 +46,7 @@ export default function ViagensWeb({api,profile,driver}){
        api('/operacoes/VIAGEM/'+viagemId+'/roteiro'),
        api('/operacoes/VIAGEM/'+viagemId)
       ]);
+      if(request!==refreshRequest.current)return;
       const completo=validarRoteiroOperacional(route);
       conferirSnapshotRoteiro(completo,operacao,viagemId,status.sentido);
       setRoteiroCompleto(completo);
@@ -59,6 +63,7 @@ export default function ViagensWeb({api,profile,driver}){
       api('/turmas/'+turma+'/coleta/IDA'),
       api('/turmas/'+turma+'/coleta/VOLTA')
      ]);
+     if(request!==refreshRequest.current)return;
      setColetaIda(idaConfig);setColetaVolta(voltaConfig);
      setConfirmacao(mine);setPresenca(mine?.status||'');setIda(String(mine?.enderecoIda?.id||''));setVolta(String(mine?.enderecoVolta?.id||''));
      setEnderecos(Array.isArray(addresses)?addresses:[]);
@@ -68,6 +73,7 @@ export default function ViagensWeb({api,profile,driver}){
     setEstado(status);
    }else if(excursaoId){
     const data=await api('/excursoes/'+id(excursaoId)+'/execucoes');
+    if(request!==refreshRequest.current)return;
     if(!Array.isArray(data))throw Error('Lista de execuções inválida.');
     const running=data.find(x=>x.estado==='EM_ANDAMENTO');
     const selected=data.find(x=>String(x.id)===execucaoId);
@@ -76,7 +82,7 @@ export default function ViagensWeb({api,profile,driver}){
     setEstado(current?{status:current.estado==='EM_ANDAMENTO'?'ATIVA':'INATIVA',sentido:current.sentido,viagemId:current.id}:null);
     setPontos(current?normalizarPontos(current.pontos):[]);
    }
-  }catch(e){setEstado(null);setPontos([]);setRoteiroCompleto([]);setRoteiroSelo('');setErro(err(e));}finally{setLoad(false);}
+  }catch(e){if(request===refreshRequest.current){setEstado(null);setPontos([]);setRoteiroCompleto([]);setRoteiroSelo('');setErro(err(e));}}finally{if(request===refreshRequest.current)setLoad(false);}
  };
  useEffect(()=>{refreshRef.current=refresh;});
  useEffect(()=>{mounted.current=true;const controller=new AbortController();
@@ -88,7 +94,7 @@ export default function ViagensWeb({api,profile,driver}){
   }).catch(e=>{if(!controller.signal.aborted)setErro(err(e));});
   return()=>{mounted.current=false;controller.abort();};
  },[api,driver,profile.id]);
- function resetSelection(){setEstado(null);setPontos([]);setRoteiroCompleto([]);setRoteiroSelo('');clearLocation();setErro('');setSharing(false);}
+ function resetSelection(){refreshRequest.current++;setEstado(null);setPontos([]);setRoteiroCompleto([]);setRoteiroSelo('');clearLocation();setErro('');setSharing(false);}
  useEffect(()=>{if(turmaId||tipo==='EXCURSAO'&&excursaoId)Promise.resolve().then(()=>refreshRef.current?.());},[turmaId,tipo,excursaoId]);
  useEffect(()=>{
   if(!active)return;
