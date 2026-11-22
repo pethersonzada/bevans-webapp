@@ -65,14 +65,14 @@ export default function ContactForm() {
       <form className="contact-form" onSubmit={handleSubmit} noValidate={false}>
         <label htmlFor="contact-name">Seu nome
           <input id="contact-name" autoComplete="name" name="name" required minLength={2} maxLength={100}
-            placeholder="Como podemos chamar você?" value={name} onChange={event => {setName(event.target.value);setCopyText('');}} />
+            placeholder="Como podemos chamar você?" value={name} onChange={event => {setName(event.target.value);setCopyText('');setCopyNotice('');}} />
         </label>
         <label htmlFor="contact-email">Seu e-mail
           <input id="contact-email" type="email" autoComplete="email" name="email" required maxLength={160}
-            placeholder="voce@exemplo.com" value={sender} onChange={event => {setSender(event.target.value);setCopyText('');}} />
+            placeholder="voce@exemplo.com" value={sender} onChange={event => {setSender(event.target.value);setCopyText('');setCopyNotice('');}} />
         </label>
         <label htmlFor="contact-plan">Plano de interesse
-          <select id="contact-plan" name="plan" value={plan} onChange={event => {setPlan(event.target.value);setCopyText('');}}>
+          <select id="contact-plan" name="plan" value={plan} onChange={event => {setPlan(event.target.value);setCopyText('');setCopyNotice('');}}>
             <option value="">Ainda não sei</option>
             {PLANOS.map(item => <option key={item} value={item}>{item}</option>)}
           </select>
@@ -80,7 +80,7 @@ export default function ContactForm() {
         <label htmlFor="contact-message">O que você precisa?
           <textarea id="contact-message" name="message" maxLength={1200} required minLength={10}
             placeholder="Conte quantas vans você tem e o que gostaria de melhorar..."
-            value={message} onChange={event => {setMessage(event.target.value);setCopyText('');}} />
+            value={message} onChange={event => {setMessage(event.target.value);setCopyText('');setCopyNotice('');}} />
         </label>
         {error && <p className="contact-warning" role="alert">{error}</p>}
         <button className="button button-yellow" type="submit" disabled={!commercialEmail}>
