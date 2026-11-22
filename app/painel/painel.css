@@ -80,3 +80,26 @@
 .be-app .be-account-danger .be-btn.danger:disabled{opacity:.48;cursor:not-allowed}
 .be-app .be-account-danger .be-btn.danger:focus-visible{outline:3px solid #da5d5d;outline-offset:3px}
 @media(max-width:540px){.be-app .be-account-details{grid-template-columns:1fr}.be-app .be-account-danger .be-btn.danger{width:100%;white-space:normal}}
+
+/* Configurações exigem largura de leitura própria, sem o grid operacional aninhado. */
+.be-app .be-settings-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;max-width:920px;min-width:0}
+.be-app .be-settings-layout>.be-live-stack{display:grid;grid-template-columns:minmax(0,1fr);margin-top:0;min-width:0}
+.be-app .be-settings-layout>.be-live-stack>.be-card:nth-child(2){grid-row:auto}
+.be-app .be-settings-layout>.be-card{min-width:0}
+.be-app .be-settings-layout .be-form{max-width:520px}
+.be-app .be-settings-layout .be-form input{min-width:0}
+.be-app .be-sidebar-nav button:focus-visible,.be-app .be-mobile-tabs button:focus-visible,
+.be-app .be-mobile-signout:focus-visible,.be-app .be-signout:focus-visible,
+.be-app .be-text-action:focus-visible,.be-auth-screen .be-link-button:focus-visible{
+ outline:3px solid #1166bb;outline-offset:2px;position:relative;z-index:1;
+}
+.be-app .be-mobile-tabs button{min-height:44px}
+@media(max-width:800px){
+ .be-app .be-mobile-tabs{scroll-snap-type:x proximity;overscroll-behavior-inline:contain}
+ .be-app .be-mobile-tabs button{scroll-snap-align:start}
+}
+@media(max-width:540px){
+ .be-app .be-settings-layout{gap:16px}
+ .be-app .be-settings-layout .be-card{padding:18px}
+ .be-app .be-settings-layout .be-form{max-width:100%}
+}

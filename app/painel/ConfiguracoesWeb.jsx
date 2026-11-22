@@ -62,7 +62,7 @@ export default function ConfiguracoesWeb({api,profile,driver,session,isCurrent,o
   <div className="be-row"><h2>Configurações da conta</h2><button className="be-btn" type="button" onClick={load}>Atualizar</button></div>
   <p className="be-muted">Preferências associadas à sua conta autenticada. O recebimento de notificações push no navegador depende de implementação específica e de autorização do navegador.</p>
   {error&&<p className="be-error" role="alert">{error}</p>}{notice&&<p role="status" className="be-alert">{notice}</p>}
-  <div className="be-live-stack">
+  <div className="be-settings-layout">
    <ContaWeb key={profile.id} api={api} session={session} profile={profile} isCurrent={isCurrent} onSessionRotated={onSessionRotated} onDeletionPending={onDeletionPending}/>
    <section className="be-card"><h3>Preferências de notificações</h3>
     {preferencias?<><div className="be-form"><label style={{display:'flex',flexDirection:'row',alignItems:'center',gap:10}}><input type="checkbox" checked={preferencias.pushOperacional} onChange={e=>setPreferencias(p=>({...p,pushOperacional:e.target.checked}))} style={{width:18}}/>Avisos operacionais</label>

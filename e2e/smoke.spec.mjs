@@ -377,3 +377,29 @@ test('refresh token revogado encerra sessão e retira dados de navegação priva
  await expect(page.getByRole('navigation',{name:'Áreas do painel'})).toHaveCount(0);
  await expect(page.getByRole('heading',{name:'Turmas vinculadas'})).toHaveCount(0);
 });
+
+test('configurações exibem perfil e formulários sem rolagem horizontal em mobile e desktop',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ await page.route('https://api.bevans.invalid/usuarios/por-uid/uid-homologacao',route=>respond(route,{
+  id:8,nome:'Passageiro Homologação',tipo:'PASSAGEIRO',firebaseUid:'uid-homologacao',
+  email:'qa@exemplo.invalid',telefone:'5581999999999',
+ }));
+ for(const width of [390,768,1280]){
+  await page.setViewportSize({width,height:860});
+  const nav=width<=800?page.locator('.be-mobile-tabs'):page.locator('.be-sidebar-nav');
+  await nav.getByRole('button',{name:'Configurações'}).click();
+  await expect(page.getByRole('heading',{name:'Meu perfil'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Alterar e-mail de acesso'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Exclusão da conta'})).toBeVisible();
+  const screen=await page.evaluate(()=>({
+   viewport:window.innerWidth,scrollWidth:document.documentElement.scrollWidth,
+   layout:document.querySelector('.be-settings-layout').getBoundingClientRect().width,
+   account:document.querySelector('.be-settings-layout>.be-live-stack').getBoundingClientRect().width,
+   columns:getComputedStyle(document.querySelector('.be-settings-layout>.be-live-stack')).gridTemplateColumns,
+  }));
+  expect(screen.scrollWidth).toBeLessThanOrEqual(screen.viewport+4);
+  expect(screen.layout).toBeLessThanOrEqual(screen.viewport);
+  expect(screen.account).toBeLessThanOrEqual(screen.layout+1);
+  expect(screen.columns.trim().split(/\s+/)).toHaveLength(1);
+ }
+});
