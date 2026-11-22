@@ -28,7 +28,7 @@ function expectStatus(result,accepted,label){
 
 async function run(){
  const expected=process.env.BEVANS_STAGING_EXPECTED_SHA;
- if(!/^[a-f0-9]{40}$/i.test(expected||''))throw Error('Defina BEVANS_STAGING_EXPECTED_SHA com os 40 caracteres do commit de homologação.');
+ if(typeof expected!=='string'||expected.length!==40||!/^[a-f0-9]{40}$/i.test(expected))throw Error('Defina BEVANS_STAGING_EXPECTED_SHA com os 40 caracteres do commit de homologação.');
  const web=readStagingURL('BEVANS_STAGING_WEB_URL');
  const api=readStagingURL('BEVANS_STAGING_API_URL');
  if(web.origin===api.origin)throw Error('Use origens web e API separadas para testar CORS corretamente.');
