@@ -1,5 +1,6 @@
 'use client';
 import {useCallback,useEffect,useRef,useState} from 'react';
+import {filtrosCatalogoIniciais,normalizarFiltrosCatalogo,lerPaginaCatalogo} from '../lib/catalogo-rotas.mjs';
 import Link from 'next/link';
 import Image from 'next/image';
 import {firebaseSignIn,firebasePasswordReset,FirebaseSessionExpiredError,criarCoordenadorSessao} from '../lib/bevans-auth.mjs';
@@ -192,10 +193,45 @@ function Turmas({api,profile,driver}){
  {data.loading?<Empty>Carregando…</Empty>:!data.data?.length?<Empty>Nenhuma turma disponível para esta conta.</Empty>:<div className="be-grid">{data.data.map(t=><Panel key={t.id} title={t.nome||`Turma ${t.id}`}><p>{t.turno}</p><p className="be-muted">Turma #{t.id} · Capacidade: {t.capacidade??'não configurada'}</p><p className="be-muted">Origem: {t.origemNome||'Não cadastrada'}</p><p className="be-muted">Destino: {t.destinoNome||'Não cadastrado'}</p>{driver&&t.codigoConvite&&<p>Código de convite: <strong>{t.codigoConvite}</strong></p>}</Panel>)}</div>}</section>;
 }
 function Rotas({api,driver}){
- const [filters,setFilters]=useState({cidade:'',destino:''}),[selected,setSelected]=useState(null),[route,setRoute]=useState(null),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false);
- const list=useAsync(s=>api(driver?ep.rotas:ep.catalogo(filters),{signal:s}).then(r=>driver?array(r):pagina(r)),[driver,filters.cidade,filters.destino]);
+ const [filtros,setFiltros]=useState(()=>({...filtrosCatalogoIniciais}));
+ const [aplicados,setAplicados]=useState(()=>({}));
+ const [paginaAtual,setPaginaAtual]=useState(0);
+ const [selected,setSelected]=useState(null),[route,setRoute]=useState(null),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false);
+ const list=useAsync(async s=>{
+  const resposta=await api(driver?ep.rotas:ep.catalogo({...aplicados,pagina:String(paginaAtual)}),{signal:s});
+  const page=driver?{itens:array(resposta),total:resposta.length,pagina:0,totalPaginas:1}:lerPaginaCatalogo(resposta);
+  if(!driver&&page.pagina!==paginaAtual)throw Error('A API retornou outra página de resultados.');
+  return page;
+ },[driver,aplicados,paginaAtual]);
+ const resultados=list.data?.itens;
  const [loadingDetails,setLoadingDetails]=useState(false);
  const routeRequest=useRef(0);
+ function limparDetalhes(){
+  routeRequest.current++;
+  setSelected(null);setRoute(null);setLoadingDetails(false);setFeedback('');
+ }
+ function pesquisar(e){
+  e.preventDefault();
+  try{
+   const novos=normalizarFiltrosCatalogo(filtros);
+   limparDetalhes();
+   setPaginaAtual(0);
+   setAplicados(novos);
+   if(JSON.stringify(novos)===JSON.stringify(aplicados)&&paginaAtual===0)list.reload();
+  }catch(error){setFeedback(error instanceof Error?error.message:'Filtros inválidos.');}
+ }
+ function limparFiltros(){
+  limparDetalhes();
+  setFiltros({...filtrosCatalogoIniciais});
+  setAplicados({});
+  setPaginaAtual(0);
+  if(!Object.keys(aplicados).length&&paginaAtual===0)list.reload();
+ }
+ function mudarPagina(nova){
+  if(!Number.isSafeInteger(nova)||nova<0||nova>=(list.data?.totalPaginas??0))return;
+  limparDetalhes();
+  setPaginaAtual(nova);
+ }
  async function open(id){
   const request=++routeRequest.current;
   setFeedback('');setRoute(null);setSelected(id);setLoadingDetails(true);
@@ -208,8 +244,36 @@ function Rotas({api,driver}){
  }
  async function write(task){if(busy)return;setBusy(true);setFeedback('');try{await task();list.reload();if(selected)await open(selected);}catch(e){setFeedback(e.message);}finally{setBusy(false);}}
  return <section className="be-section"><div className="be-row"><h2>{driver?'Gerenciamento de rotas públicas':'Catálogo de rotas públicas'}</h2><Button onClick={list.reload}>Atualizar</Button></div><Alert error={list.error||feedback}/>
- {!driver&&<div className="be-fieldset"><label>Cidade<input value={filters.cidade} onChange={e=>setFilters(p=>({...p,cidade:e.target.value}))}/></label><label>Destino<input value={filters.destino} onChange={e=>setFilters(p=>({...p,destino:e.target.value}))}/></label></div>}
- {list.loading?<Empty>Consultando rotas…</Empty>:!list.data?.length?<Empty>Nenhuma rota disponível.</Empty>:<div className="be-grid">{list.data.map(r=><Panel key={r.id} title={r.nome}><p>{r.cidade} {r.modo?`· ${r.modo}`:''}</p><p className="be-muted">{r.destinoNome||r.destino||''}</p><p className="be-muted">{driver?(r.publicada?'Publicada':'Não publicada'):`Vagas: ${r.vagas?.disponiveis??'indisponível'}`}</p><div className="be-actions"><Button onClick={()=>open(r.id)}>Detalhes oficiais</Button>{!driver&&<Button disabled={busy} onClick={()=>write(async()=>{const response=await api(ep.favoritas(r.id),{method:r.favorita?'DELETE':'PUT'});return response;})}>{r.favorita?'Remover favorito':'Favoritar'}</Button>}</div></Panel>)}</div>}
+ {!driver&&<form className="be-catalogo-form" onSubmit={pesquisar} aria-label="Filtros de rotas">
+  <div className="be-catalogo-fields">
+   <label>Buscar rotas<input maxLength={160} placeholder="Nome, destino, campus ou região" value={filtros.q} onChange={e=>setFiltros(p=>({...p,q:e.target.value}))}/></label>
+   <label>Cidade de operação<input maxLength={160} placeholder="Ex.: Recife" value={filtros.cidade} onChange={e=>setFiltros(p=>({...p,cidade:e.target.value}))}/></label>
+   <label>Destino<input maxLength={160} placeholder="Destino da rota" value={filtros.destino} onChange={e=>setFiltros(p=>({...p,destino:e.target.value}))}/></label>
+   <label>Turno<input maxLength={160} placeholder="Ex.: Manhã" value={filtros.turno} onChange={e=>setFiltros(p=>({...p,turno:e.target.value}))}/></label>
+   <label>Categoria<select value={filtros.categoria} onChange={e=>setFiltros(p=>({...p,categoria:e.target.value}))}>
+    <option value="">Todas as categorias</option><option value="UNIVERSITARIA">Universitária</option><option value="ESCOLAR">Escolar</option><option value="OUTROS">Outras</option>
+   </select></label>
+   <label>Dia de operação<select value={filtros.dia} onChange={e=>setFiltros(p=>({...p,dia:e.target.value}))}>
+    <option value="">Todos os dias</option>
+    {[['MONDAY','Segunda-feira'],['TUESDAY','Terça-feira'],['WEDNESDAY','Quarta-feira'],['THURSDAY','Quinta-feira'],['FRIDAY','Sexta-feira'],['SATURDAY','Sábado'],['SUNDAY','Domingo']].map(([v,n])=><option key={v} value={v}>{n}</option>)}
+   </select></label>
+  </div>
+  <div className="be-catalogo-actions">
+   <label className="be-catalogo-check"><input type="checkbox" checked={filtros.somenteComVagas} onChange={e=>setFiltros(p=>({...p,somenteComVagas:e.target.checked}))}/>Somente com vagas</label>
+   <label className="be-catalogo-check"><input type="checkbox" checked={filtros.somenteFavoritas} onChange={e=>setFiltros(p=>({...p,somenteFavoritas:e.target.checked}))}/>Somente favoritas</label>
+   <button type="submit" className="be-btn primary" disabled={busy||list.loading}>Buscar rotas</button>
+   <button type="button" className="be-btn" onClick={limparFiltros} disabled={busy}>Limpar filtros</button>
+  </div>
+  <p className="be-muted">Os filtros são aplicados ao selecionar “Buscar rotas”. Os resultados exibem apenas informações públicas autorizadas.</p>
+ </form>}
+ {list.loading?<Empty>Consultando rotas…</Empty>:!resultados?.length?<Empty>{list.error?'Não foi possível carregar as rotas. Tente atualizar.':'Nenhuma rota encontrada para os filtros informados.'}</Empty>:<div className="be-grid">{resultados.map(r=><Panel key={r.id} title={r.nome}><p>{r.cidade} {r.modo?`· ${r.modo}`:''}</p><p className="be-muted">{r.destinoNome||r.destino||''}</p><p className="be-muted">{driver?(r.publicada?'Publicada':'Não publicada'):`Vagas: ${r.vagas?.disponiveis??'indisponível'}`}</p><div className="be-actions"><Button onClick={()=>open(r.id)}>Detalhes oficiais</Button>{!driver&&<Button disabled={busy} onClick={()=>write(async()=>{const response=await api(ep.favoritas(r.id),{method:r.favorita?'DELETE':'PUT'});return response;})}>{r.favorita?'Remover favorito':'Favoritar'}</Button>}</div></Panel>)}</div>}
+ {!driver&&!list.loading&&!list.error&&list.data&&<nav className="be-catalogo-pagination" aria-label="Paginação do catálogo">
+   <p role="status" className="be-muted">{list.data.total} {list.data.total===1?'rota encontrada':'rotas encontradas'}{list.data.totalPaginas>0?` · Página ${list.data.pagina+1} de ${list.data.totalPaginas}`:''}</p>
+   {list.data.totalPaginas>1&&<div className="be-actions">
+    <button className="be-btn" type="button" disabled={busy||paginaAtual===0} onClick={()=>mudarPagina(paginaAtual-1)}>Anterior</button>
+    <button className="be-btn" type="button" disabled={busy||paginaAtual>=list.data.totalPaginas-1} onClick={()=>mudarPagina(paginaAtual+1)}>Próxima</button>
+   </div>}
+  </nav>}
  {selected&&loadingDetails&&<p role="status" className="be-muted">Carregando a rota selecionada…</p>}
  {selected&&!loadingDetails&&!route&&!feedback&&<Empty>Não foi possível apresentar os detalhes da rota.</Empty>}
  {route&&<Panel title={`Rota: ${route.nome}`}><p>{route.origemNome} → {route.destinoNome}</p><p>{route.modo} · {route.categoria} · IDA {route.horarioIda||'não configurada'} · VOLTA {route.horarioVolta||'não configurada'}</p><p className="be-muted">Dias: {route.dias?.join(', ')}</p><h3>Paradas</h3>{route.paradas?.length?<div className="be-list">{route.paradas.map((p,i)=><div key={p.id||i} className="be-item">{i+1}. {p.nome}</div>)}</div>:<Empty>Sem paradas cadastradas.</Empty>}

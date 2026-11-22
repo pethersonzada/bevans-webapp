@@ -131,3 +131,18 @@
 @media(max-width:800px){.be-app .be-mobile-tabs{position:sticky;top:0;z-index:30;box-shadow:0 3px 12px #14253a0a}.be-app .be-page-heading{margin-bottom:22px}.be-app .be-shortcuts{gap:10px}}
 @media(max-width:540px){.be-app .be-shortcuts{grid-template-columns:1fr}.be-app .be-shortcuts button{min-height:76px;padding:14px}.be-app .be-overview-section,.be-app .be-overview-aside{border-radius:14px}.be-app .be-page-heading h1{overflow-wrap:anywhere}}
 @media(prefers-reduced-motion:reduce){.be-app .be-shortcuts button:hover{transform:none}}
+
+/* Catálogo de rotas: filtros completos, estados e paginação acessível. */
+.be-app .be-catalogo-form{padding:18px 20px;background:var(--be-surface,#fff);border:1px solid var(--be-border,#dce6f2);border-radius:14px;margin:16px 0 24px;min-width:0}
+.be-app .be-catalogo-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:14px}
+.be-app .be-catalogo-fields label{display:grid;gap:7px;min-width:0;color:var(--be-text,#172b46);font-size:13px;font-weight:650}
+.be-app .be-catalogo-fields input,.be-app .be-catalogo-fields select{width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid #becbda;border-radius:9px;background:#fff;color:#172b46;font:inherit;font-weight:450}
+.be-app .be-catalogo-fields input:focus-visible,.be-app .be-catalogo-fields select:focus-visible,.be-app .be-catalogo-actions input:focus-visible,.be-app .be-catalogo-pagination button:focus-visible{outline:3px solid #1268c5;outline-offset:2px}
+.be-app .be-catalogo-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px}
+.be-app .be-catalogo-check{display:inline-flex;align-items:center;gap:8px;font-size:13px;line-height:1.4;min-height:44px}
+.be-app .be-catalogo-check input{width:17px;height:17px;flex:none}
+.be-app .be-catalogo-form>.be-muted{margin:10px 0 0;line-height:1.5}
+.be-app .be-catalogo-pagination{margin:18px 0;padding:14px 0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--be-border,#dce6f2)}
+.be-app .be-catalogo-pagination p{margin:0}
+.be-app .be-catalogo-pagination .be-actions{margin:0}
+@media(max-width:540px){.be-app .be-catalogo-form{padding:16px 14px}.be-app .be-catalogo-fields{grid-template-columns:1fr}.be-app .be-catalogo-actions .be-btn{flex:1 1 130px}.be-app .be-catalogo-pagination{align-items:flex-start}.be-app .be-catalogo-pagination .be-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
