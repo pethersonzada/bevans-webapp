@@ -58,6 +58,7 @@ export function criarCoordenadorSessao(refresh=firebaseRefresh){
   },
   clear(){currentSession=null;version++;pending=null;},
   current(){return currentSession;},
+  version(){return version;},
   async token(){
    if(!currentSession)throw new FirebaseSessionExpiredError();
    const generation=version;
