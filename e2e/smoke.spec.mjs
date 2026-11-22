@@ -345,6 +345,6 @@ test('configurações exibem perfil e formulários sem rolagem horizontal em mob
   expect(screen.scrollWidth).toBeLessThanOrEqual(screen.viewport+4);
   expect(screen.layout).toBeLessThanOrEqual(screen.viewport);
   expect(screen.account).toBeLessThanOrEqual(screen.layout+1);
-  expect(screen.columns.trim().split(/\\s+/)).toHaveLength(1);
+  expect(screen.columns.trim().split(/\s+/)).toHaveLength(1);
  }
 });
