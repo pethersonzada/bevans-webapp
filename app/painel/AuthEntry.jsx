@@ -75,9 +75,14 @@ export default function AuthEntry(){
  },[signOut,tokenCoordinator]);
  const api=useCallback(async(path,options)=>{
   const generation=tokenCoordinator.version();
-  try{return await apiRequest(await getToken(),path,options);}
-  catch(e){
-   if(e instanceof ApiError&&e.status===401&&tokenCoordinator.version()===generation)signOut();
+  let sentToken=null;
+  try{
+   sentToken=await getToken();
+   return await apiRequest(sentToken,path,options);
+  }catch(e){
+   // Uma resposta antiga 401 não pode encerrar uma sessão que já renovou o token.
+   if(e instanceof ApiError&&e.status===401&&tokenCoordinator.version()===generation&&
+      sentToken===tokenCoordinator.current()?.idToken)signOut();
    throw e;
   }
  },[getToken,signOut,tokenCoordinator]);
