@@ -38,6 +38,7 @@ export default function OperacoesWeb({api,profile,driver}){
  function invalidate(){
   sequence.current++;
   setEstado(null);setPainel(null);setHistoria(null);setCorrecao(null);
+  setLoading(false);setHistLoading(false);
   setError('');setMessage('');
  }
 
