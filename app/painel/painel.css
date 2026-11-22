@@ -103,3 +103,31 @@
  .be-app .be-settings-layout .be-card{padding:18px}
  .be-app .be-settings-layout .be-form{max-width:100%}
 }
+
+/* UX por perfil: hierarquia de ações, leitura e estados de interação. */
+.be-app{background:#f6f8fc}
+.be-app .be-sidebar{box-shadow:4px 0 24px rgba(20,37,58,.025)}
+.be-app .be-sidebar-nav{gap:5px}
+.be-app .be-sidebar-nav button{border-left-width:0;border-radius:10px;padding:12px 14px;transition:background-color .16s,color .16s}
+.be-app .be-sidebar-nav button[aria-current="page"]{background:#eaf3ff;box-shadow:inset 3px 0 0 #007bff}
+.be-app .be-page-heading{padding-bottom:22px;border-bottom:1px solid #e4ebf3}
+.be-app .be-page-heading h1{font-weight:800;letter-spacing:-.045em}
+.be-app .be-page-heading>div>p:last-child{max-width:62ch;line-height:1.65}
+.be-app .be-overview-section,.be-app .be-overview-aside,.be-app .be-card{border-radius:16px;border-color:#e0e8f2;box-shadow:0 4px 18px rgba(20,37,58,.035)}
+.be-app .be-overview-actions{background:linear-gradient(145deg,#fff 65%,#f4f9ff)}
+.be-app .be-shortcuts{gap:12px}
+.be-app .be-shortcuts button{background:#fff;border:1px solid #e1eaf4;border-radius:12px;min-height:96px;padding:16px;transition:border-color .18s,background-color .18s,transform .18s}
+.be-app .be-shortcuts button:hover{background:#f4f9ff;border-color:#95c7fc;transform:translateY(-2px)}
+.be-app .be-shortcuts button:focus-visible{outline:3px solid #1268c5;outline-offset:3px}
+.be-app .be-shortcuts strong{font-size:14px;line-height:1.45}
+.be-app .be-shortcuts small{font-size:12px;line-height:1.5;white-space:normal}
+.be-app .be-overview-row{min-width:0}
+.be-app .be-overview-row strong,.be-app .be-overview-row small{overflow-wrap:anywhere}
+.be-app .be-btn{transition:background-color .18s,border-color .18s,box-shadow .18s}
+.be-app .be-btn:not(:disabled):hover{box-shadow:0 3px 10px #14253a14}
+.be-app .be-btn:disabled{cursor:not-allowed}
+.be-app .be-form input,.be-app .be-form select,.be-app .be-form textarea,.be-app .be-fieldset input,.be-app .be-fieldset select{min-height:42px;max-width:100%;border-color:#cbd8e8}
+.be-app .be-form input:focus-visible,.be-app .be-form select:focus-visible,.be-app .be-form textarea:focus-visible,.be-app .be-fieldset input:focus-visible,.be-app .be-fieldset select:focus-visible{outline:3px solid #1268c5;outline-offset:2px}
+@media(max-width:800px){.be-app .be-mobile-tabs{position:sticky;top:0;z-index:30;box-shadow:0 3px 12px #14253a0a}.be-app .be-page-heading{margin-bottom:22px}.be-app .be-shortcuts{gap:10px}}
+@media(max-width:540px){.be-app .be-shortcuts{grid-template-columns:1fr}.be-app .be-shortcuts button{min-height:76px;padding:14px}.be-app .be-overview-section,.be-app .be-overview-aside{border-radius:14px}.be-app .be-page-heading h1{overflow-wrap:anywhere}}
+@media(prefers-reduced-motion:reduce){.be-app .be-shortcuts button:hover{transform:none}}
