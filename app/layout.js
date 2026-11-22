@@ -3,6 +3,7 @@ import './globals.css';
 import './globals-access.css';
 import './theme.css';
 import ThemeToggle from './components/ThemeToggle';
+import {metadadosRobots} from './lib/seo-visibility.mjs';
 
 const geist = Geist({ variable: '--font-geist', subsets: ['latin'], display: 'swap' });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bevans-webapp.vercel.app';
@@ -20,7 +21,7 @@ export const metadata = {
     ],
     apple: '/images/vetor-tema-claro.png',
   },
-  robots: { index: true, follow: true },
+  robots: metadadosRobots(process.env),
   openGraph: { title: 'BeVans | Rotas e transporte mais organizados', description: 'Turmas, confirmação de presença e navegação no app. Conheça o projeto BeVans.', siteName: 'BeVans', locale: 'pt_BR', type: 'website', url: '/' },
   twitter: { card: 'summary', title: 'BeVans | Rotas e transporte mais organizados', description: 'Conheça as funcionalidades atuais e futuras do BeVans.' },
 };

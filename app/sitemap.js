@@ -1,6 +1,8 @@
+import {ambientePrivado} from './lib/seo-visibility.mjs';
+
 export function sitemapPolicy(env={}) {
   // Não publicar URLs de testes, mesmo que o Preview esteja protegido por login.
-  if(env.VERCEL_ENV==='preview'||env.VERCEL_ENV==='development')return [];
+  if(ambientePrivado(env))return [];
   const base=env.NEXT_PUBLIC_SITE_URL||'https://bevans-webapp.vercel.app';
   return [
     {url:new URL('/',base).toString(),changeFrequency:'monthly',priority:1},
