@@ -322,3 +322,58 @@ test('conta própria: conflito de exclusão preserva sessão e 202 encerra sem a
  const persisted=await page.evaluate(()=>JSON.stringify(Object.entries(localStorage)));
  expect(persisted).not.toContain('synthetic-test-token');
 });
+
+async function loginComTokenPertoDoVencimento(page){
+ await page.route('https://identitytoolkit.googleapis.com/**',route=>{
+  const url=route.request().url();
+  if(url.includes('signInWithPassword'))return respond(route,{
+   idToken:'short-lived-token',refreshToken:'refresh-only-test',localId:'uid-sessao-teste',expiresIn:'30',
+  });
+  return respond(route,{},404);
+ });
+ await page.route('https://api.bevans.invalid/**',route=>{
+  const req=route.request(),path=new URL(req.url()).pathname;
+  if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:cors});
+  if(!['Bearer short-lived-token','Bearer renewed-token'].includes(req.headers().authorization))
+   return respond(route,{message:'Sem sessão'},401);
+  if(path==='/usuarios/por-uid/uid-sessao-teste')
+   return respond(route,{id:8,nome:'Passageiro de ensaio',tipo:'PASSAGEIRO',firebaseUid:'uid-sessao-teste',email:'qa@exemplo.invalid'});
+  if(path==='/turmas/usuario/8/todas')return respond(route,[]);
+  if(path==='/notificacoes/nao-lidas')return respond(route,0);
+  if(path==='/notificacoes')return respond(route,{itens:[],content:[]});
+  return respond(route,{});
+ });
+ await page.goto('/painel');
+ await page.getByLabel('E-mail').fill('qa@exemplo.invalid');
+ await page.getByLabel('Senha',{exact:true}).fill('senha-sintetica');
+ await page.getByRole('button',{name:'Entrar',exact:true}).click();
+}
+
+test('Firebase 503 não derruba o passageiro; três consultas simultâneas renovam token uma vez',async ({page})=>{
+ let refreshCalls=0;
+ await page.route('https://securetoken.googleapis.com/**',route=>{
+  refreshCalls++;
+  if(refreshCalls===1)return respond(route,{error:{message:'SERVICE_UNAVAILABLE'}},503);
+  return respond(route,{id_token:'renewed-token',refresh_token:'refresh-renovado',expires_in:'3600',user_id:'uid-sessao-teste'});
+ });
+ await loginComTokenPertoDoVencimento(page);
+ const nav=page.getByRole('navigation',{name:'Áreas do painel'});
+ await expect(nav).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Olá, Passageiro.'})).toBeVisible();
+ await expect.poll(()=>refreshCalls).toBe(1);
+ await nav.getByRole('button',{name:'Turmas'}).click();
+ await expect(page.getByRole('heading',{name:'Turmas vinculadas'})).toBeVisible();
+ await expect.poll(()=>refreshCalls).toBe(2);
+ await expect(nav).toBeVisible();
+ const stored=await page.evaluate(()=>JSON.stringify(Object.entries(localStorage)));
+ expect(stored).not.toContain('refresh-renovado');
+ expect(stored).not.toContain('renewed-token');
+});
+
+test('refresh token revogado encerra sessão e retira dados de navegação privada',async ({page})=>{
+ await page.route('https://securetoken.googleapis.com/**',route=>respond(route,{error:{message:'INVALID_REFRESH_TOKEN'}},400));
+ await loginComTokenPertoDoVencimento(page);
+ await expect(page.getByRole('heading',{name:'Acessar minha conta'})).toBeVisible();
+ await expect(page.getByRole('navigation',{name:'Áreas do painel'})).toHaveCount(0);
+ await expect(page.getByRole('heading',{name:'Turmas vinculadas'})).toHaveCount(0);
+});
