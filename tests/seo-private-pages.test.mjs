@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import robots from '../app/robots.js';
-import sitemap from '../app/sitemap.js';
+import robots,{robotsPolicy} from '../app/robots.js';
+import sitemap,{sitemapPolicy} from '../app/sitemap.js';
 import config from '../next.config.mjs';
 
 test('robots não permite indexação das rotas com dados operacionais/convites',()=>{
@@ -26,4 +26,16 @@ test('convite tem headers noindex e no-referrer independentes de metadados HTML'
  assert.equal(values['referrer-policy'],'no-referrer');
  assert.match(values['x-robots-tag'],/noindex/);
  assert.match(values['x-robots-tag'],/noarchive/);
+});
+
+test('Preview nunca é indexado, independentemente do domínio e do sitemap de produção',()=>{
+ const preview={VERCEL_ENV:'preview',NEXT_PUBLIC_SITE_URL:'https://bevans-webapp.vercel.app'};
+ assert.deepEqual(robotsPolicy(preview),{rules:[{userAgent:'*',disallow:'/'}]});
+ assert.deepEqual(sitemapPolicy(preview),[]);
+ const dev={VERCEL_ENV:'development'};
+ assert.deepEqual(robotsPolicy(dev),{rules:[{userAgent:'*',disallow:'/'}]});
+ assert.deepEqual(sitemapPolicy(dev),[]);
+ const production={VERCEL_ENV:'production'};
+ assert.ok(robotsPolicy(production).rules[0].disallow.includes('/convite'));
+ assert.ok(sitemapPolicy(production).some(x=>new URL(x.url).pathname==='/'));
 });
