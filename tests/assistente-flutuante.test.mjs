@@ -1,32 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {URL_ASSISTENTE,URL_ASSISTENTE_EMBUTIDO} from '../app/lib/assistente.mjs';
 
 const ler=caminho=>readFileSync(new URL('../'+caminho,import.meta.url),'utf8');
 
-test('assistente global é montado no layout raiz e usa o Streamlit oficial',()=>{
+test('assistente nativo é montado no layout raiz e responde pelo próprio site',()=>{
  const layout=ler('app/layout.js');
  const componente=ler('app/components/AssistenteFlutuante.jsx');
  assert.match(layout,/import AssistenteFlutuante/);
  assert.match(layout,/<AssistenteFlutuante\s*\/>/);
- assert.match(componente,/URL_ASSISTENTE_EMBUTIDO/);
- assert.equal(new URL(URL_ASSISTENTE_EMBUTIDO).origin,new URL(URL_ASSISTENTE).origin);
- assert.match(componente,/referrerPolicy="no-referrer"/);
- assert.match(componente,/sandbox="allow-scripts allow-same-origin allow-forms/);
- assert.doesNotMatch(componente,/OPENAI_API_KEY|firebase_uid|Bearer\s|localStorage|sessionStorage/);
+ assert.match(componente,/fetch\('\/api\/assistente'/);
+ assert.doesNotMatch(componente,/iframe|Streamlit|OPENAI_API_KEY|firebase_uid|Bearer\s|localStorage|sessionStorage/);
 });
 
-test('iframe somente nasce após abertura e permanece entre fechamentos',()=>{
+test('janela abre por botão e página /assistente, com histórico até nova conversa',()=>{
  const componente=ler('app/components/AssistenteFlutuante.jsx');
  assert.match(componente,/setIniciado\(true\)/);
  assert.match(componente,/\{iniciado&&<section/);
  assert.match(componente,/hidden=\{!aberto\}/);
+ assert.match(componente,/bevans:abrir-assistente/);
  assert.match(componente,/aria-label=\{aberto\?'Fechar assistente BeVans':'Abrir assistente BeVans'\}/);
  assert.match(componente,/key==='Escape'/);
  assert.match(componente,/document\.body\.style\.overflow/);
  assert.match(componente,/role="dialog"/);
- assert.match(componente,/Abrir no Streamlit/);
+ assert.match(componente,/Nova conversa/);
+ assert.match(componente,/onSubmit=\{aoEnviar\}/);
 });
 
 test('tema claro e escuro, acessibilidade e versão móvel possuem estilos independentes',()=>{
