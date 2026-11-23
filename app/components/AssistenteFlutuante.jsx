@@ -49,13 +49,13 @@ function Conversa(){
     body:JSON.stringify({pergunta:valor,historico}),
     signal:controller.signal,cache:'no-store',
    });
-   const dados=await response.json();
+   const dados=await response.json().catch(()=>({}));
    if(!response.ok||typeof dados.resposta!=='string')
     throw Error(dados.erro||'Não foi possível consultar o assistente.');
    setMensagens(atual=>[...atual,{id:++sequencia.current,role:'assistant',content:dados.resposta,modo:dados.modo}]);
    if(dados.aviso)setErro(dados.aviso);
   }catch(e){
-   if(e.name!=='AbortError')setErro(e.message||'Falha de conexão. Tente novamente.');
+   if(e.name!=='AbortError')setErro(e instanceof TypeError?'Falha de conexão. Tente novamente.':e.message||'Não foi possível consultar o assistente.');
   }finally{
    if(envioRef.current===controller){envioRef.current=null;setOcupado(false);}
   }

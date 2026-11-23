@@ -19,7 +19,7 @@ export default defineConfig({
  },
  projects:[{name:'chromium',use:{...devices['Desktop Chrome']}}],
  webServer:{
-  command:'npm run start -- -p 4173',
+  command:'npm run start -- -H 127.0.0.1 -p 4173',
   url:'http://127.0.0.1:4173/painel',
   reuseExistingServer:!process.env.CI,
   timeout:90000,

@@ -1,4 +1,7 @@
-import {test,expect} from '@playwright/test';
+import {test,expect,chromium} from '@playwright/test';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 
 const cors={
  'Access-Control-Allow-Origin':'*',
@@ -375,12 +378,12 @@ async function loginComTokenPertoDoVencimento(page){
  await abrirArea(page,'Turmas');
 }
 
-test('Firebase 503 não derruba o passageiro; três consultas simultâneas renovam token uma vez',async ({page})=>{
+test('Firebase 503 preserva o passageiro e permite renovar na próxima consulta',async ({page})=>{
  let refreshCalls=0;
  await page.route('https://securetoken.googleapis.com/**',route=>{
   refreshCalls++;
   if(refreshCalls===1)return respond(route,{error:{message:'SERVICE_UNAVAILABLE'}},503);
-  return respond(route,{id_token:'renewed-token',refresh_token:'refresh-renovado',expires_in:'3600',user_id:'uid-sessao-teste'});
+  return respond(route,{access_token:'renewed-token',id_token:'renewed-token',refresh_token:'refresh-renovado',expires_in:'3600',user_id:'uid-sessao-teste'});
  });
  await loginComTokenPertoDoVencimento(page);
  const nav=page.getByRole('navigation',{name:'Áreas do painel'});
@@ -761,30 +764,36 @@ test('botão flutuante está presente nas demais rotas sem criar iframe ou abrir
  }
 });
 
-test('sessão acompanha navegação, refresh, reabertura e logout',async ({page,browser})=>{
- await mockedLogin(page);
- await page.getByRole('link',{name:'Voltar ao site',exact:true}).click();
- await page.getByRole('link',{name:'Abrir meu painel BeVans'}).click();
- await expect(page).toHaveURL(/\/painel$/);
- await expect(page.getByText('Painel do motorista',{exact:true})).toBeVisible();
- await page.reload();
- await expect(page.locator('.be-app')).toBeVisible();
- const dados=await page.context().storageState({indexedDB:true});
- const reaberto=await browser.newContext({baseURL:new URL(page.url()).origin,storageState:dados});
+test('sessão acompanha navegação, F5, reinício do navegador e logout em outra aba',async ({baseURL})=>{
+ const diretorio=await mkdtemp(join(tmpdir(),'bevans-chromium-'));
+ let contexto;
  try{
-  const nova=await reaberto.newPage();
+  contexto=await chromium.launchPersistentContext(diretorio,{baseURL});
+  const page=await contexto.newPage();
+  await mockedLogin(page);
+  await page.getByRole('link',{name:'Voltar ao site',exact:true}).click();
+  await page.getByRole('link',{name:'Abrir meu painel BeVans'}).click();
+  await expect(page).toHaveURL(/\/painel$/);
+  await page.reload();
+  await expect(page.getByText('Painel do motorista',{exact:true})).toBeVisible();
+  await contexto.close();
+  contexto=await chromium.launchPersistentContext(diretorio,{baseURL});
+  const nova=await contexto.newPage();
   await mockConta(nova);
   await nova.goto('/login');
   await expect(nova).toHaveURL(/\/painel$/);
   await expect(nova.getByText('Painel do motorista',{exact:true})).toBeVisible();
-  await nova.getByRole('button',{name:'Sair da conta',exact:true}).click();
+  const outra=await contexto.newPage();
+  await mockConta(outra);
+  await outra.goto('/painel');
+  await outra.getByRole('button',{name:'Sair da conta',exact:true}).click();
   await expect(nova.getByLabel('E-mail')).toBeVisible();
   await nova.reload();
   await expect(nova.getByLabel('E-mail')).toBeVisible();
   await mockedLogin(nova,'PASSAGEIRO','uid-passageiro');
   await expect(nova.getByText('Painel do passageiro',{exact:true})).toBeVisible();
   await expect(nova.getByText('Condutor Homologação')).toHaveCount(0);
- }finally{await reaberto.close();}
+ }finally{await contexto?.close();await rm(diretorio,{recursive:true,force:true});}
 });
 
 test('senha inválida mantém os dados privados fora da tela',async ({page})=>{
@@ -793,6 +802,50 @@ test('senha inválida mantém os dados privados fora da tela',async ({page})=>{
  await page.getByLabel('E-mail').fill('qa@exemplo.invalid');
  await page.getByLabel('Senha',{exact:true}).fill('senha-incorreta');
  await page.getByRole('button',{name:'Entrar',exact:true}).click();
- await expect(page.getByRole('alert')).toContainText('Confira o e-mail e a senha');
+ await expect(page.getByRole('main').getByRole('alert')).toContainText('Confira o e-mail e a senha');
  await expect(page.locator('.be-app')).toHaveCount(0);
+});
+
+test('motorista cria turma e passageiro solicita entrada com convite',async ({page})=>{
+ await mockedLogin(page);
+ let turma;
+ await page.route('https://api.bevans.invalid/turmas',route=>{
+  const pedido=route.request().postDataJSON();
+  expect(pedido).toEqual({nome:'Turma de ensaio',turno:'Noite',motorista:{id:7},capacidade:12});
+  turma={...pedido,id:99};
+  return respond(route,turma,201);
+ });
+ await page.route('https://api.bevans.invalid/turmas/motorista/7',route=>respond(route,turma?[turma]:[]));
+ await abrirArea(page,'Turmas');
+ await page.getByRole('button',{name:'Nova turma'}).click();
+ await page.getByLabel('Nome',{exact:true}).fill('Turma de ensaio');
+ await page.getByLabel('Turno',{exact:true}).fill('Noite');
+ await page.getByLabel('Assentos').fill('12');
+ await page.getByRole('button',{name:'Criar turma'}).click();
+ await expect(page.getByRole('heading',{name:'Turma de ensaio'})).toBeVisible();
+ await page.getByRole('button',{name:'Sair da conta'}).click();
+ await expect(page.getByLabel('E-mail')).toBeVisible();
+ await mockedLogin(page,'PASSAGEIRO','uid-passageiro');
+ await page.route('https://api.bevans.invalid/turmas/entrar/8?codigo=DEMO',route=>{
+  expect(route.request().method()).toBe('POST');
+  return route.fulfill({status:200,headers:cors,contentType:'text/plain',body:'Solicitação enviada. Aguarde aprovação.'});
+ });
+ await abrirArea(page,'Turmas');
+ await page.getByRole('button',{name:'Entrar com convite'}).click();
+ await page.getByLabel('Código da turma').fill('DEMO');
+ await page.getByRole('button',{name:'Enviar solicitação'}).click();
+ await expect(page.getByRole('status')).toContainText('Aguarde a aprovação');
+});
+
+test('assistente informa indisponibilidade e aceita nova pergunta',async ({page})=>{
+ await page.goto('/assistente');
+ await page.getByRole('button',{name:'Abrir assistente BeVans'}).click();
+ const chat=page.getByRole('dialog');
+ await page.route('**/api/assistente',route=>route.abort());
+ await chat.getByRole('button',{name:'Como entrar em uma turma?'}).click();
+ await expect(chat.getByRole('alert')).toHaveText('Falha de conexão. Tente novamente.');
+ await page.unroute('**/api/assistente');
+ await chat.getByLabel('Sua mensagem').fill('Como entrar em uma turma?');
+ await chat.getByRole('button',{name:'Enviar mensagem'}).click();
+ await expect(chat.getByText('Orientação do FAQ')).toBeVisible();
 });

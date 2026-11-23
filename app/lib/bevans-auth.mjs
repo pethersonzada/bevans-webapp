@@ -1,4 +1,4 @@
-// Firebase Identity Toolkit. Tokens ficam exclusivamente em memória desta aba.
+// Reautenticação isolada para operações de conta. O SDK gerencia o login persistente.
 export const firebaseApiKey = () => process.env.NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY || '';
 export async function firebaseSignIn(email,password) {
   if (!firebaseApiKey()) throw new Error('Configure NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY.');
@@ -7,81 +7,8 @@ export async function firebaseSignIn(email,password) {
   });
   const result=await response.json().catch(()=>({}));
   if (!response.ok || !result.idToken || !result.localId) throw new Error('Falha na autenticação. Confira e-mail, senha e configuração Firebase.');
-  return {idToken:result.idToken,refreshToken:result.refreshToken,uid:result.localId,expiresAt:Date.now()+(Number(result.expiresIn)||3600)*1000};
+  return {idToken:result.idToken,uid:result.localId};
 }
-export class FirebaseSessionExpiredError extends Error{
- constructor(){super('Sua sessão expirou ou foi revogada. Entre novamente.');this.name='FirebaseSessionExpiredError';}
-}
-export class FirebaseUnavailableError extends Error{
- constructor(){super('Não foi possível renovar a sessão agora. Confira a conexão e tente novamente.');this.name='FirebaseUnavailableError';}
-}
-const refreshInvalidCodes=new Set([
- 'INVALID_REFRESH_TOKEN','TOKEN_EXPIRED','USER_DISABLED','USER_NOT_FOUND',
- 'INVALID_GRANT','MISSING_REFRESH_TOKEN','CREDENTIAL_TOO_OLD_LOGIN_AGAIN',
-]);
-
-export async function firebaseRefresh(session) {
- if(!session?.uid||!session.idToken)throw new FirebaseSessionExpiredError();
- if(Date.now()<session.expiresAt-60000)return session;
- if(!session.refreshToken)throw new FirebaseSessionExpiredError();
- const key=firebaseApiKey();
- if(!key)throw new FirebaseUnavailableError();
- let response;
- try{
-  response=await fetch('https://securetoken.googleapis.com/v1/token?key='+encodeURIComponent(key),{
-   method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
-   body:new URLSearchParams({grant_type:'refresh_token',refresh_token:session.refreshToken}),
-   cache:'no-store',signal:AbortSignal.timeout(12000),
-  });
- }catch{throw new FirebaseUnavailableError();}
- const data=await response.json().catch(()=>null);
- if(!response.ok){
-  const code=typeof data?.error?.message==='string'?data.error.message.toUpperCase():'';
-  if(refreshInvalidCodes.has(code))throw new FirebaseSessionExpiredError();
-  throw new FirebaseUnavailableError();
- }
- if(!data?.id_token||!Number.isFinite(Number(data.expires_in))||Number(data.expires_in)<=0)
-  throw new FirebaseUnavailableError();
- if(data.user_id&&data.user_id!==session.uid)throw new FirebaseSessionExpiredError();
- return {...session,idToken:data.id_token,refreshToken:data.refresh_token||session.refreshToken,
-  expiresAt:Date.now()+Number(data.expires_in)*1000};
-}
-
-// Uma única renovação por sessão. Logout, login e troca de credencial invalidam
-// todas as respostas assíncronas anteriores, mesmo quando o UID é o mesmo.
-export function criarCoordenadorSessao(refresh=firebaseRefresh){
- let currentSession=null,version=0,pending=null;
- return {
-  set(value){
-   if(!value?.uid||!value?.idToken)throw new FirebaseSessionExpiredError();
-   currentSession=value;version++;pending=null;
-  },
-  clear(){currentSession=null;version++;pending=null;},
-  current(){return currentSession;},
-  version(){return version;},
-  async token(){
-   if(!currentSession)throw new FirebaseSessionExpiredError();
-   const generation=version;
-   if(!pending||pending.generation!==generation){
-    const snapshot=currentSession;
-    pending={generation,promise:Promise.resolve().then(()=>refresh(snapshot))};
-   }
-   const job=pending;
-   try{
-    const updated=await job.promise;
-    if(version!==generation)throw Error('A sessão mudou. Entre novamente.');
-    if(!updated?.idToken||updated.uid!==currentSession?.uid)throw new FirebaseSessionExpiredError();
-    if(pending===job){currentSession=updated;pending=null;}
-    return currentSession.idToken;
-   }catch(e){
-    if(pending===job)pending=null;
-    if(version!==generation)throw Error('A sessão mudou. Entre novamente.');
-    throw e;
-   }
-  },
- };
-}
-
 export async function firebasePasswordReset(email){
  if(!firebaseApiKey())throw new Error('Configure NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY.');
  if(typeof email!=='string'||!/^\S+@\S+\.\S+$/.test(email.trim()))throw new Error('Informe um e-mail válido para recuperar o acesso.');
