@@ -33,15 +33,17 @@ jobs:
           cache: npm
       - name: Install project dependencies
         run: npm ci
-      - name: Install isolated pinned Playwright runner
-        # O runner é temporário. Não reavaliar peers do ESLint fora do lockfile do app.
-        run: npm install --no-save --package-lock=false --ignore-scripts --legacy-peer-deps @playwright/test@1.56.1
+      - name: Install pinned Playwright without changing app dependencies
+        run: |
+          mkdir -p "$RUNNER_TEMP/bevans-playwright" node_modules/@playwright
+          npm install --prefix "$RUNNER_TEMP/bevans-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @playwright/test@1.56.1
+          ln -s "$RUNNER_TEMP/bevans-playwright/node_modules/@playwright/test" node_modules/@playwright/test
       - name: Install Chromium and OS dependencies
-        run: npx playwright install --with-deps chromium
+        run: "$RUNNER_TEMP/bevans-playwright/node_modules/.bin/playwright" install --with-deps chromium
       - name: Build with synthetic public configuration
         run: npm run build
       - name: Run browser smoke tests (no real credentials or backend mutations)
-        run: npx playwright test --config=e2e/playwright.config.mjs
+        run: "$RUNNER_TEMP/bevans-playwright/node_modules/.bin/playwright" test --config=e2e/playwright.config.mjs
       - name: Upload browser report on failure
         if: failure()
         uses: actions/upload-artifact@v4
