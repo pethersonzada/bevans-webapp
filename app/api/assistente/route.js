@@ -33,8 +33,11 @@ export async function POST(request){
   try{
    const recebido=new URL(origem);
    const host=request.headers.get('host')||new URL(request.url).host;
-   autorizado=(recebido.host===host||recebido.origin===new URL(request.url).origin)&&
-    (recebido.protocol==='https:'||['localhost','127.0.0.1'].includes(recebido.hostname));
+   const destino=new URL(recebido.protocol+'//'+host);
+   const locais=['localhost','127.0.0.1'];
+   const mesmoLoopback=locais.includes(recebido.hostname)&&locais.includes(destino.hostname)&&recebido.port===destino.port;
+   autorizado=(recebido.host===host||recebido.origin===new URL(request.url).origin||mesmoLoopback)&&
+    (recebido.protocol==='https:'||locais.includes(recebido.hostname));
   }catch{}
   if(!autorizado)return responder({erro:'Origem da solicitação não autorizada.'},403);
  }
