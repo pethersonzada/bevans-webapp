@@ -9,6 +9,7 @@ const CENARIOS=[
  'menu_e_logout_motorista',
  'login_passageiro_real_mobile',
  'isolamento_e_logout_passageiro',
+ 'negacao_cruzada_perfis_e_turmas',
 ];
 
 export function validarStagingReal({webUrl,apiUrl,expectedSha}){
