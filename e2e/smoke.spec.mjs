@@ -872,7 +872,7 @@ test('configurações deixam de mostrar carregamento após erro e permitem nova 
   respond(route,{mensagem:'Serviço de preferências temporariamente indisponível.'},503));
  await abrirArea(page,'Configurações');
  await expect(page.getByText('Preferências indisponíveis. Tente atualizar novamente.')).toBeVisible();
- await expect(page.getByRole('alert')).toContainText('Serviço de preferências temporariamente indisponível.');
+ await expect(page.getByRole('alert').filter({hasText:'Serviço de preferências temporariamente indisponível.'})).toBeVisible();
  await page.unroute('https://api.bevans.invalid/notificacoes/preferencias');
  await page.getByRole('button',{name:'Atualizar'}).click();
  await expect(page.getByRole('button',{name:'Salvar preferências'})).toBeVisible();
