@@ -199,3 +199,10 @@ A rota pública [`/assistente`](https://bevans-webapp.vercel.app/assistente) inc
 - O CSS e a moldura estão em `app/assistente/assistente.css`. `next.config.mjs` não contém regra `frame-src` que impeça este domínio; qualquer nova política CSP deve permitir **somente** a origem `https://bevans-suporte.streamlit.app` para o iframe.
 
 Os testes Playwright usam uma resposta **simulada** para o iframe, portanto comprovam navegação, composição e alternativa externa, não a geração de respostas da OpenAI nem a disponibilidade permanente do Streamlit.
+
+
+### Verificação pública do assistente
+
+O workflow [Assistente público (somente leitura)](.github/workflows/assistente-publico.yml) consulta as páginas públicas da Vercel e do Streamlit sem sessão ou perguntas à OpenAI. Ele verifica HTTP 200, origem HTTPS permitida, tipo HTML, ausência de bloqueios explícitos de `X-Frame-Options`/`frame-ancestors` e a existência de iframe e link alternativo na página. O arquivo de evidência `disponibilidade-assistente` contém somente o resultado técnico, sem dados pessoais. Executa automaticamente quando os arquivos da integração mudam e também pode ser acionado manualmente no GitHub Actions.
+
+**Limite da prova:** resposta HTTP e cabeçalhos compatíveis não demonstram que uma pergunta foi respondida. Para concluir o aceite da issue #57, abrir `/assistente` em navegador desktop e móvel, fazer uma pergunta não sensível do FAQ e verificar a resposta real do serviço. Testar também a alternativa **Abrir assistente em nova aba**. O Streamlit pode suspender a instância e exige sua própria configuração de Secrets; nenhum segredo deve ser transferido para a Vercel.
