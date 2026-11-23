@@ -20,7 +20,8 @@ test('excursões não aparecem como modalidade em desenvolvimento',()=>{
 });
 test('cadastro público não é anunciado no rodapé e FAQ distingue canais',()=>{
  assert.doesNotMatch(read('app/components/Footer.js'),/href="\/cadastro"/);
- assert.match(read('app/components/Faq.js'),/cadastro público permanece fechado/);
+ assert.match(read('app/components/Faq.js'),/FAQ_PUBLICO/);
+ assert.match(read('app/lib/conhecimento-bevans.mjs'),/cadastro público permanece fechado/);
 });
 
 test('modalidades usam rótulos sem faixas de status duplicadas',()=>{
