@@ -1,7 +1,8 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import MapaWeb,{coordenadaValida,normalizarPontos} from './MapaWeb';
-import {gpsRecente,caminhoPosicao,validarRotaDirecoes} from '../lib/mapa-web.mjs';
+import {gpsRecente,caminhoPosicao} from '../lib/mapa-web.mjs';
+import {calcularPercursoCompleto} from '../lib/percurso-segmentado.mjs';
 import {validarRoteiroOperacional,conferirSnapshotRoteiro,assinaturaRoteiroWeb,conferirContextoRoteiro} from '../lib/roteiro-operacional-web.mjs';
 
 const err=e=>e instanceof Error?e.message:'Não foi possível concluir a operação.';
@@ -20,11 +21,12 @@ export default function ViagensWeb({api,profile,driver}){
  const [load,setLoad]=useState(false);
  const [roteiroCompleto,setRoteiroCompleto]=useState([]),[roteiroSelo,setRoteiroSelo]=useState('');
  const watch=useRef(null),lastSend=useRef(0),working=useRef(false);
+ const consultaPercurso=useRef(0);
  const mounted=useRef(true),refreshRef=useRef(null),refreshRequest=useRef(0);
  const chosenTurma=turmas.find(t=>String(t.id)===turmaId);
  const active=estado?.status==='ATIVA'?(tipo==='VIAGEM'?estado.viagemId:execucaoId):null;
  const activeType=tipo;
- const clearLocation=()=>{setPosicao(null);setTrace(null);setInstrucoes([]);setManobra(0);};
+ const clearLocation=()=>{consultaPercurso.current++;setPosicao(null);setTrace(null);setInstrucoes([]);setManobra(0);};
  const refresh=async()=>{
   if(!turmaId&&tipo==='VIAGEM')return;
   const request=++refreshRequest.current;
@@ -175,7 +177,8 @@ export default function ViagensWeb({api,profile,driver}){
   await write(()=>api('/rota/confirmar?'+params,{method:'POST'}),'Confirmação atualizada.');
  }
  async function directions(){
-  setErro('');
+  const requisicao=++consultaPercurso.current;
+  setErro('');setFeedback('');setTrace(null);setInstrucoes([]);setManobra(0);
   if(!active||!driver)return setErro('Navegação operacional disponível apenas para execução ativa do motorista.');
   if(tipo==='VIAGEM'){
    const contexto={usuarioId:id(profile.id),turmaId:id(turmaId),viagemId:id(active),sentido:estado?.sentido};
@@ -187,19 +190,19 @@ export default function ViagensWeb({api,profile,driver}){
   const token=process.env.NEXT_PUBLIC_BEVANS_MAPBOX_TOKEN;
   if(!token)return setErro('Configure o token público Mapbox.');
   if(pontos.length<2)return setErro('Roteiro com menos de dois pontos.');
-  if(pontos.length>25)return setErro('Roteiro excede o limite de 25 coordenadas da API Directions. Nenhuma parada será omitida.');
   try{
-   const coordinates=pontos.map(p=>p.longitude+','+p.latitude).join(';');
-   const url='https://api.mapbox.com/directions/v5/mapbox/driving/'+coordinates+'?geometries=geojson&overview=full&steps=true&access_token='+encodeURIComponent(token);
-   const response=await fetch(url,{cache:'no-store'});
-   const result=await response.json();
-   const route=result?.routes?.[0];
-   if(!response.ok||!validarRotaDirecoes(result,pontos.length))throw Error('O Mapbox não confirmou todas as paradas desta rota.');
-   setTrace(route.geometry.coordinates);
-   const steps=route.legs.flatMap(leg=>Array.isArray(leg.steps)?leg.steps:[]).filter(step=>typeof step?.maneuver?.instruction==='string').map(step=>({instruction:step.maneuver.instruction,distance:step.distance||0,duration:step.duration||0}));
-   setInstrucoes(steps);setManobra(0);
-   setFeedback('Trajeto rodoviário calculado. Distância estimada: '+(route.distance/1000).toFixed(1)+' km.');
-  }catch(e){setTrace(null);setInstrucoes([]);setManobra(0);setErro(err(e));}
+   const percurso=await calcularPercursoCompleto(pontos,{token});
+   if(requisicao!==consultaPercurso.current)return;
+   setTrace(percurso.geometria);
+   setInstrucoes(percurso.instrucoes);
+   setManobra(0);
+   setFeedback('Percurso calculado com '+percurso.pontos+' pontos em '+percurso.trechos+
+    (percurso.trechos===1?' trecho. ': ' trechos. ')+
+    'Distância estimada: '+(percurso.distancia/1000).toFixed(1)+' km.');
+  }catch(e){
+   if(requisicao!==consultaPercurso.current)return;
+   setTrace(null);setInstrucoes([]);setManobra(0);setErro(err(e));
+  }
  }
  return <section className="be-section be-live">
   <div className="be-row"><h2>Mapa e viagens</h2><button type="button" className="be-btn" disabled={busy||load} onClick={refresh}>Atualizar estado</button></div>
