@@ -691,6 +691,8 @@ test('assistente nativo responde ao FAQ sem Streamlit na página inicial',async 
  await expect(conversa.locator('iframe')).toHaveCount(0);
  await conversa.getByRole('button',{name:'Fechar assistente'}).click();
  await expect(conversa).toBeHidden();
+ await page.getByRole('navigation',{name:'Navegação principal'}).getByRole('link',{name:'Excursões',exact:true}).click();
+ await expect(page).toHaveURL(/\/excursoes$/);
  await page.locator('a[href="/login"]').first().click();
  await expect(page).toHaveURL(/\/login$/);
  await page.getByRole('button',{name:'Abrir assistente BeVans'}).click();
@@ -848,4 +850,16 @@ test('assistente informa indisponibilidade e aceita nova pergunta',async ({page}
  await chat.getByLabel('Sua mensagem').fill('Como entrar em uma turma?');
  await chat.getByRole('button',{name:'Enviar mensagem'}).click();
  await expect(chat.getByText('Orientação do FAQ')).toBeVisible();
+});
+
+test('links de excursões e contato funcionam com JavaScript desativado',async ({browser,baseURL})=>{
+ const ctx=await browser.newContext({javaScriptEnabled:false,baseURL});
+ try{
+  const page=await ctx.newPage();
+  for(const [nome,path] of [['Excursões','/excursoes'],['Entrar em contato','/contato']]){
+   await page.goto('/');
+   await page.getByRole('navigation',{name:'Navegação principal'}).getByRole('link',{name:nome,exact:true}).click();
+   expect(new URL(page.url()).pathname).toBe(path);
+  }
+ }finally{await ctx.close();}
 });

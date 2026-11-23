@@ -12,7 +12,7 @@ test('menu links lead to existing public pages',()=>{
   assert.match(navbar, /label: 'Excursões', href: '\/excursoes'/);
   assert.match(navbar, /href="\/contato"/);
   assert.match(navbar, /href=\{item.href\}/);
-  assert.match(navbar, /<a key=\{item.href\} href=\{item.href\}/);
+  assert.match(navbar, /<Link key=\{item.href\} href=\{item.href\}/);
 });
 
 test('excursion CTA routes to existing account login',()=>{
@@ -21,14 +21,6 @@ test('excursion CTA routes to existing account login',()=>{
   assert.match(excursions,/href="\/login"/);
   assert.match(form,/subject === 'excursoes'/);
 });
-
-test('direct navigation works without hydration for public actions',()=>{
-  const navbar=read('app/components/Navbar.js');
-  assert.match(navbar,/<a className="button button-dark nav-cta" href="\/contato">/);
-  assert.match(navbar,/<a href="\/contato" className="button button-yellow">/);
-  assert.match(navbar,/item\.href==='\/excursoes'\?<a/);
-});
-
 
 test('mobile navigation stays hidden until opened', () => {
   const navbar=read('app/components/Navbar.js');

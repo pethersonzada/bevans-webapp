@@ -37,7 +37,7 @@ function Conversa(){
  async function enviar(texto){
   const valor=texto.trim();
   if(!valor||valor.length>800||ocupado)return;
-  const historico=mensagens.slice(-10).map(m=>({role:m.role,content:m.content}));
+  const historico=mensagens.slice(-10).map(m=>({role:m.role,content:m.content.slice(0,1200)}));
   const id=++sequencia.current;
   setMensagens(atual=>[...atual,{id,role:'user',content:valor}]);
   setPergunta('');setErro('');setOcupado(true);

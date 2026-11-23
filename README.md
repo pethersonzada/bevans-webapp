@@ -191,6 +191,8 @@ Um deploy `READY` significa que a versão foi construída e disponibilizada, nã
 
 O BeVans oferece um **chat nativo em todas as rotas**, inclusive login, painel e páginas institucionais. O atalho flutuante abre uma conversa sem iframe ou saída do domínio. A página `/assistente` também abre esse mesmo widget. As mensagens persistem na memória enquanto o layout raiz do Next.js permanecer montado; **não** são gravadas automaticamente em `localStorage` ou cookies.
 
+A seleção dos trechos do FAQ usa a conversa dentro do BeVans. Quando habilitado, o modelo externo recebe apenas os trechos públicos selecionados.
+
 A interface chama `POST /api/assistente` no **próprio** webapp, com `pergunta` (2 a 800 caracteres) e até 12 mensagens de `historico` com papéis `user` ou `assistant`. A API valida origem, formato, tamanho, informações sensíveis e um limite simples de requisições por instância. Não exige Firebase para perguntas públicas e não consulta o banco de passageiros.
 
 ### FAQ e geração por IA
