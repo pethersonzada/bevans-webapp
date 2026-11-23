@@ -22,8 +22,8 @@ export const metadata = {
     apple: '/images/vetor-tema-claro.png',
   },
   robots: metadadosRobots(process.env),
-  openGraph: { title: 'BeVans | Rotas e transporte mais organizados', description: 'Turmas, confirmação de presença e navegação no app. Conheça o projeto BeVans.', siteName: 'BeVans', locale: 'pt_BR', type: 'website', url: '/' },
-  twitter: { card: 'summary', title: 'BeVans | Rotas e transporte mais organizados', description: 'Conheça as funcionalidades atuais e futuras do BeVans.' },
+  openGraph: { title: 'BeVans | Rotas e transporte mais organizados', description: 'Turmas, confirmação de presença e navegação no app. Conheça o projeto BeVans.', siteName: 'BeVans', locale: 'pt_BR', type: 'website', url: '/', images:[{url:'/images/vetor-com-nome-tema-claro.png',alt:'BeVans'}] },
+  twitter: { card: 'summary', title: 'BeVans | Rotas e transporte mais organizados', description: 'Conheça as funcionalidades atuais e futuras do BeVans.',images:['/images/vetor-com-nome-tema-claro.png'] },
 };
 
 export default function RootLayout({children}) {

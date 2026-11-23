@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
-export const metadata={title:'Excursões | BeVans',description:'Excursões no BeVans: criação e publicação no aplicativo, inscrições por convite no navegador e execução de ida e volta.'};
+export const metadata={title:'Excursões | BeVans',description:'Excursões no BeVans: criação e publicação no aplicativo, inscrições por convite no navegador e execução de ida e volta.',alternates:{canonical:'/excursoes'}};
 const steps=[
  {num:'01',title:'Crie a excursão',desc:'Defina destino, datas, capacidade, coleta e paradas no aplicativo.'},
  {num:'02',title:'Compartilhe o convite',desc:'O link de inscrição pode ser aberto no navegador sem instalar o aplicativo.'},

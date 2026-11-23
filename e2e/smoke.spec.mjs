@@ -575,3 +575,65 @@ test('login atualizado é legível no celular sem rolagem lateral',async ({page}
  expect(bounds.scrollWidth).toBeLessThanOrEqual(bounds.width+2);
  expect(bounds.card).toBeLessThan(bounds.width);
 });
+
+test('login mantém formulário centralizado e sem cartão deslocado em desktop, tablet e celular',async ({page})=>{
+ for(const [width,height] of [[1440,900],[1024,768],[390,844],[360,720]]){
+  await page.setViewportSize({width,height});
+  await page.goto('/login');
+  for(const theme of ['light','dark']){
+   await page.evaluate(t=>{document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;localStorage.setItem('bevans-theme',t)},theme);
+   await expect(page.getByRole('heading',{name:'Acessar minha conta'})).toBeVisible();
+   await expect(page.getByRole('link',{name:/Voltar para o site/})).toBeVisible();
+   await expect(page.getByRole('textbox',{name:'E-mail'})).toBeVisible();
+   const boxes=await page.evaluate(()=>{
+    const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width}};
+    return {viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,
+     area:rect('.be-auth-area'),content:rect('.be-auth-content'),story:rect('.be-auth-story'),
+     background:getComputedStyle(document.querySelector('.be-auth-content')).backgroundColor};
+   });
+   expect(boxes.scrollWidth).toBeLessThanOrEqual(boxes.viewport+2);
+   expect(boxes.content.left).toBeGreaterThanOrEqual(boxes.area.left-1);
+   expect(boxes.content.right).toBeLessThanOrEqual(boxes.area.right+1);
+   expect(boxes.content.width).toBeGreaterThan(270);
+   if(width>800){
+    expect(boxes.content.left-boxes.area.left).toBeGreaterThan(20);
+    expect(boxes.area.right-boxes.content.right).toBeGreaterThan(20);
+    expect(Math.abs(boxes.area.left-boxes.story.right)).toBeLessThanOrEqual(2);
+    expect(boxes.background).toBe('rgba(0, 0, 0, 0)');
+   }else{
+    await expect(page.locator('.be-auth-story')).toBeHidden();
+    expect(boxes.content.width).toBeLessThan(boxes.viewport);
+   }
+  }
+ }
+});
+
+test('página inicial apresenta caminhos por perfil e seção de privacidade com links válidos',async ({page})=>{
+ await page.goto('/');
+ await expect(page.getByRole('heading',{name:'Encontre seu caminho no BeVans.'})).toBeVisible();
+ await expect(page.locator('#acessos article')).toHaveCount(3);
+ await expect(page.getByRole('heading',{name:'Informação certa, para a pessoa certa.'})).toBeVisible();
+ const area=page.locator('#acessos');
+ await expect(area.getByRole('link',{name:/Entrar como motorista/})).toHaveAttribute('href','/login');
+ await expect(area.getByRole('link',{name:/Entrar como passageiro/})).toHaveAttribute('href','/login');
+ await expect(area.getByRole('link',{name:/Consultar uma excursão/})).toHaveAttribute('href','/convite');
+ await expect(page.locator('#privacidade-e-acesso').getByRole('link',{name:/Política de privacidade/})).toHaveAttribute('href','/privacidade');
+ await expect(page.locator('#privacidade-e-acesso').getByRole('link',{name:/Termos de uso/})).toHaveAttribute('href','/termos');
+ await page.setViewportSize({width:390,height:844});
+ const widths=await page.evaluate(()=>({viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth}));
+ expect(widths.scrollWidth).toBeLessThanOrEqual(widths.viewport+2);
+});
+
+test('páginas públicas publicam endereço canônico próprio e imagem de compartilhamento',async ({page})=>{
+ for(const path of ['/', '/contato','/excursoes','/termos','/privacidade']){
+  await page.goto(path);
+  const href=await page.locator('link[rel="canonical"]').getAttribute('href');
+  expect(new URL(href).pathname).toBe(path);
+  const og=await page.locator('meta[property="og:image"]').getAttribute('content');
+  expect(new URL(og).pathname).toBe('/images/vetor-com-nome-tema-claro.png');
+ }
+ for(const path of ['/login','/painel','/convite']){
+  await page.goto(path);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
+ }
+});
