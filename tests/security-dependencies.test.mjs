@@ -34,6 +34,6 @@ test('autenticação usa apenas SDK Firebase modular sem dependências extras de
  assert.equal(lock.packages['node_modules/@grpc/grpc-js'],undefined);
  assert.equal(lock.packages['node_modules/@firebase/firestore'],undefined);
  const source=readFileSync(new URL('../app/lib/sessao-web.mjs',import.meta.url),'utf8');
- assert.match(source,/from '@firebase\\/app'/);
- assert.match(source,/from '@firebase\\/auth'/);
+ assert.match(source,/from '@firebase\/app'/);
+ assert.match(source,/from '@firebase\/auth'/);
 });
