@@ -4,20 +4,32 @@ import {obterMenuPainel,abaAtivaNoMenu,tituloDaTela} from '../lib/painel-menu.mj
 import {NavegacaoPrincipal,MaisFerramentas} from './PainelNavegacao';
 import {filtrosCatalogoIniciais,normalizarFiltrosCatalogo,lerPaginaCatalogo} from '../lib/catalogo-rotas.mjs';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import {firebaseSignIn,firebasePasswordReset,FirebaseSessionExpiredError,criarCoordenadorSessao} from '../lib/bevans-auth.mjs';
 import {apiRequest,ApiError,array,pagina,ep,diaLocal,idSeguro} from '../lib/bevans-api.mjs';
 import './painel.css';
-import ViagensWeb from './ViagensWeb';
-import EnderecosWeb from './EnderecosWeb';
-import GestaoExcursaoWeb from './GestaoExcursaoWeb';
-import RotasEditorWeb from './RotasEditorWeb';
-import ColetaPrivadaWeb from './ColetaPrivadaWeb';
-import ConfiguracoesWeb from './ConfiguracoesWeb';
-import OperacoesWeb from './OperacoesWeb';
-import EmbarquePublicoWeb from './EmbarquePublicoWeb';
-import PlanejamentoEmbarquesWeb from './PlanejamentoEmbarquesWeb';
+
+
+
+
+
+
+
+
+
 import {validarCancelamentoEmbarque,mensagemErroEmbarque} from '../lib/embarque-web.mjs';
+
+// O login não precisa carregar os módulos operacionais antes da autenticação.
+const ViagensWeb=dynamic(()=>import('./ViagensWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const EnderecosWeb=dynamic(()=>import('./EnderecosWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const GestaoExcursaoWeb=dynamic(()=>import('./GestaoExcursaoWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const RotasEditorWeb=dynamic(()=>import('./RotasEditorWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const ColetaPrivadaWeb=dynamic(()=>import('./ColetaPrivadaWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const ConfiguracoesWeb=dynamic(()=>import('./ConfiguracoesWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const OperacoesWeb=dynamic(()=>import('./OperacoesWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const EmbarquePublicoWeb=dynamic(()=>import('./EmbarquePublicoWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const PlanejamentoEmbarquesWeb=dynamic(()=>import('./PlanejamentoEmbarquesWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
 
 const statuses={PENDENTE:'Pendente',APROVADO:'Aprovado',REJEITADO:'Recusado',EMBARCADO:'Embarcado',AGUARDANDO:'Aguardando',DESEMBARCADO:'Desembarcado',NAO_EMBARCOU:'Não embarcou'};
 const display=v=>v==null?'Não informado':statuses[v]||String(v);
