@@ -874,7 +874,7 @@ test('configurações deixam de mostrar carregamento após erro e permitem nova 
  await expect(page.getByText('Preferências indisponíveis. Tente atualizar novamente.')).toBeVisible();
  await expect(page.getByRole('alert').filter({hasText:'Serviço de preferências temporariamente indisponível.'})).toBeVisible();
  await page.unroute('https://api.bevans.invalid/notificacoes/preferencias');
- await page.getByRole('button',{name:'Atualizar'}).click();
+ await page.getByRole('heading',{name:'Configurações da conta'}).locator('..').getByRole('button',{name:'Atualizar',exact:true}).click();
  await expect(page.getByRole('button',{name:'Salvar preferências'})).toBeVisible();
  await expect(page.getByText('Preferências indisponíveis. Tente atualizar novamente.')).toHaveCount(0);
 });
