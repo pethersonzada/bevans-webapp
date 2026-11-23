@@ -1,0 +1,70 @@
+name: Jornadas reais de homologação (somente leitura)
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: 'SHA completo de 40 caracteres do deployment Preview validado'
+        required: true
+        type: string
+      confirmar_dados_descartaveis:
+        description: 'Confirmo ambiente isolado, contas descartáveis e nenhum dado de pessoas reais'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  jornadas:
+    if: ${{ github.ref == 'refs/heads/main' && inputs.confirmar_dados_descartaveis }}
+    runs-on: ubuntu-24.04
+    environment: homologacao
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+      BEVANS_STAGING_WEB_URL: ${{ vars.BEVANS_STAGING_WEB_URL }}
+      BEVANS_STAGING_API_URL: ${{ vars.BEVANS_STAGING_API_URL }}
+      BEVANS_STAGING_EXPECTED_SHA: ${{ inputs.expected_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verificar SHA, CORS e negação anônima no Preview
+        env:
+          BEVANS_STAGING_VERCEL_BYPASS: ${{ secrets.BEVANS_STAGING_VERCEL_BYPASS }}
+        run: node scripts/staging-readonly-smoke.mjs
+      - name: Instalar dependências fixadas do aplicativo
+        run: npm ci
+      - name: Instalar Playwright em pasta separada
+        run: |
+          mkdir -p "$RUNNER_TEMP/bevans-playwright" node_modules/@playwright
+          npm install --prefix "$RUNNER_TEMP/bevans-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @playwright/test@1.56.1
+          ln -s "$RUNNER_TEMP/bevans-playwright/node_modules/@playwright/test" node_modules/@playwright/test
+      - name: Instalar Chromium
+        run: |
+          "$RUNNER_TEMP/bevans-playwright/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Executar login real e isolamento sem mutações
+        env:
+          BEVANS_FIXTURES_DESCARTAVEIS: confirmado
+          BEVANS_STAGING_MOTORISTA_EMAIL: ${{ secrets.BEVANS_STAGING_MOTORISTA_EMAIL }}
+          BEVANS_STAGING_MOTORISTA_PASSWORD: ${{ secrets.BEVANS_STAGING_MOTORISTA_PASSWORD }}
+          BEVANS_STAGING_PASSAGEIRO_EMAIL: ${{ secrets.BEVANS_STAGING_PASSAGEIRO_EMAIL }}
+          BEVANS_STAGING_PASSAGEIRO_PASSWORD: ${{ secrets.BEVANS_STAGING_PASSAGEIRO_PASSWORD }}
+          BEVANS_STAGING_VERCEL_BYPASS: ${{ secrets.BEVANS_STAGING_VERCEL_BYPASS }}
+        run: |
+          "$RUNNER_TEMP/bevans-playwright/node_modules/.bin/playwright" test --config=e2e-real/playwright.config.mjs
+      - name: Registrar evidências sem PII após sucesso
+        run: node scripts/registrar-evidencias-staging.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: homologacao-real-somente-leitura
+          path: ${{ runner.temp }}/evidencias-bevans-staging/resultado.json
+          if-no-files-found: error
+          retention-days: 14
