@@ -1,33 +1,21 @@
-// Verificação pública e somente leitura do Streamlit, sem iniciar conversas de IA.
-const ORIGEM_AGENTE='https://bevans-suporte.streamlit.app';
-const ORIGEM_WEB='https://bevans-webapp.vercel.app';
-
-export function validarRespostaStreamlit({status,url,tipo,frameOptions='',csp='',html=''}) {
- const destino=new URL(url);
- if(destino.origin!==ORIGEM_AGENTE||destino.protocol!=='https:')
-  throw Error('O assistente redirecionou para uma origem não autorizada.');
- if(status!==200)throw Error('O Streamlit não retornou HTTP 200.');
- if(!/^text\/html(?:;|$)/i.test(tipo||''))throw Error('A resposta do assistente não é HTML.');
- if(/\b(?:DENY|SAMEORIGIN)\b/i.test(frameOptions))
-  throw Error('O Streamlit bloqueia incorporação por X-Frame-Options.');
- const diretiva=(csp||'').split(';').map(s=>s.trim()).find(s=>/^frame-ancestors(?:\s|$)/i.test(s));
- if(diretiva){
-  const fontes=diretiva.split(/\s+/).slice(1);
-  const permitido=fontes.some(f=>f==='*'||f==='https:'||f===ORIGEM_WEB||f==='https://*.vercel.app');
-  if(!permitido)throw Error('A política frame-ancestors não permite o domínio do BeVans.');
- }
- if(/(?:this app has gone to sleep|app is sleeping|wake (?:this )?app up)/i.test(html))
-  throw Error('O Streamlit está em suspensão e ainda não disponibilizou o chat.');
- if(!/streamlit|_stcore|stApp/i.test(html))
-  throw Error('O serviço respondeu HTML, mas não foi possível reconhecer o aplicativo Streamlit.');
- return {origem:destino.origin,permiteIncorporacaoPorCabecalhos:true,status:200};
+// Valida a conversa nativa em produção sem pedir credenciais ou dados pessoais.
+export function validarPaginaAssistente({status,html}){
+ if(status!==200)throw Error('A página /assistente não retornou HTTP 200.');
+ if(typeof html!=='string'||!html.includes('Iniciar conversa no BeVans')||
+    !html.includes('Seu espaço para tirar dúvidas sobre o BeVans'))
+  throw Error('A página publicada não apresenta o acesso ao chat nativo.');
+ if(html.includes('bevans-suporte.streamlit.app/?embed=true'))
+  throw Error('A página ainda embute o Streamlit.');
+ return true;
 }
 
-export function validarPaginaPublica({status,html}) {
- if(status!==200)throw Error('A página pública /assistente não retornou HTTP 200.');
- if(!html.includes('bevans-suporte.streamlit.app/')||
-    !html.includes('Abrir assistente')||
-    !html.includes('Conversa com o Assistente BeVans'))
-  throw Error('A página pública não apresenta o iframe e a alternativa de acesso esperados.');
+export function validarRespostaChat({status,tipo,dados}){
+ if(status!==200)throw Error('A API do chat não retornou HTTP 200.');
+ if(!/^application\/json(?:;|$)/i.test(tipo||''))
+  throw Error('A API do chat não retornou JSON.');
+ if(!dados||typeof dados.resposta!=='string'||!dados.resposta.trim()||
+    !['faq','ia'].includes(dados.modo))
+  throw Error('A API do chat retornou contrato inválido.');
+ if(dados.resposta.length>2500)throw Error('Resposta do chat excedeu o limite.');
  return true;
 }

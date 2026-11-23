@@ -30,12 +30,31 @@
 .bev-chat-header h2{font-size:18px;font-weight:790;letter-spacing:-.035em;color:#fff;margin:0;line-height:1.35}
 .bev-chat-close{display:grid;place-items:center;flex:none;width:38px;height:38px;background:#ffffff1c;border:1px solid #ffffff46;border-radius:10px;color:#fff}
 .bev-chat-close:hover{background:#ffffff35}
-.bev-chat-iframe-wrap{flex:1;min-height:0;overflow:hidden;background:#fff}
-.bev-chat-iframe{display:block;width:100%;height:100%;border:0;background:#fff}
-.bev-chat-footer{flex:none;display:grid;gap:8px;padding:12px 16px;border-top:1px solid #deebf4;background:#f4f8fc}
-.bev-chat-footer p{font-size:10.5px;color:#50657c;line-height:1.6;margin:0;max-width:none}
-.bev-chat-footer a{display:inline-flex;justify-content:space-between;align-items:center;gap:9px;color:#0758a6;font-size:12px;font-weight:800;min-height:28px}
-.bev-chat-footer a:hover{text-decoration:underline;text-underline-offset:3px}
+.bev-chat-header-actions{display:inline-flex;align-items:center;gap:8px}
+.bev-chat-new{border:1px solid #b8dbf756;background:#ffffff14;border-radius:8px;color:#fff;padding:9px;font-size:11px;font-weight:750;white-space:nowrap}
+.bev-chat-new:hover{background:#ffffff2c}
+.bev-chat-conversation{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;background:#f5f8fd;padding:17px 14px;display:flex;flex-direction:column;gap:13px}
+.bev-chat-message{max-width:91%;min-width:0;width:fit-content;display:grid;gap:5px;padding:11px 13px;border-radius:14px;background:#fff;border:1px solid #dce8f4;box-shadow:0 2px 8px #17396008}
+.bev-chat-message-assistant{align-self:flex-start;border-top-left-radius:4px}
+.bev-chat-message-user{align-self:flex-end;border-top-right-radius:4px;background:#075db2;color:#fff;border-color:#075db2}
+.bev-chat-sender{font-size:10px;letter-spacing:.01em;font-weight:850;color:#476f9e}
+.bev-chat-message-user .bev-chat-sender{color:#cde6ff}
+.bev-chat-message p{font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;margin:0}
+.bev-chat-message small{font-size:10px;color:#66829c}
+.bev-chat-suggestions{display:flex;flex-wrap:wrap;gap:8px}
+.bev-chat-suggestions button{background:#ecf4ff;border:1px solid #b9d4f0;border-radius:12px;padding:10px 12px;color:#155b9c;font-size:11px;font-weight:750;text-align:left}
+.bev-chat-suggestions button:hover{background:#d7eaff}
+.bev-chat-loading{margin:0;align-self:flex-start;font-size:12px;color:#627c99}
+.bev-chat-error{margin:0;padding:10px;border-radius:10px;border:1px solid #efb8b8;background:#fff2f1;color:#8f3030;font-size:12px;line-height:1.5}
+.bev-chat-form{flex:none;display:grid;gap:7px;padding:12px 14px 13px;border-top:1px solid #d9e6f4;background:#fff}
+.bev-chat-form label{color:#1e3e60;font-size:12px;font-weight:800}
+.bev-chat-send-row{display:flex;gap:8px;align-items:flex-end;min-width:0}
+.bev-chat-send-row textarea{flex:1;min-width:0;resize:vertical;min-height:49px;max-height:130px;padding:11px;border:1px solid #c2d4e6;border-radius:10px;background:#fff;color:#183651;font-size:13px;line-height:1.45}
+.bev-chat-send-row textarea:focus{outline:2px solid #288bfa;outline-offset:1px}
+.bev-chat-send-row button{flex:none;align-self:stretch;min-width:70px;border-radius:10px;border:1px solid #075ba8;background:#075ba8;color:white;font-size:12px;font-weight:800}
+.bev-chat-send-row button:disabled{opacity:.5;cursor:not-allowed}
+.bev-chat-form>p{font-size:9.5px;color:#58718b;line-height:1.4;margin:0}
+.bev-chat-new:focus-visible,.bev-chat-send-row button:focus-visible,.bev-chat-suggestions button:focus-visible{outline:3px solid #58b0ff;outline-offset:2px}
 body:has(.be-app) .bev-chat-launcher{bottom:88px}
 body:has(.be-app) .bev-chat-panel{bottom:20px}
 @media(max-width:800px){
@@ -48,16 +67,20 @@ body:has(.be-app) .bev-chat-panel{bottom:20px}
  }
  .bev-chat-root:has(.bev-chat-panel:not([hidden])) .bev-chat-launcher{display:none}
  .bev-chat-header{padding:13px 15px}
- .bev-chat-footer{padding:10px 15px}
- .bev-chat-footer p{font-size:10px}
+ .bev-chat-form{padding:10px 12px}
+ .bev-chat-conversation{padding:13px 12px}
 }
 @media(max-width:420px){
  .bev-chat-launcher{right:12px;padding:11px 12px}
  .bev-chat-header h2{font-size:17px}
 }
 html[data-theme="dark"] .bev-chat-panel{background:#132339;border-color:#36516d;color:#ecf5ff}
-html[data-theme="dark"] .bev-chat-iframe-wrap{background:#f5f7fa}
-html[data-theme="dark"] .bev-chat-footer{background:#1b2c41;border-color:#344b65}
-html[data-theme="dark"] .bev-chat-footer p{color:#c0d1e2}
-html[data-theme="dark"] .bev-chat-footer a{color:#9fd1ff}
+html[data-theme="dark"] .bev-chat-conversation{background:#0e1c2d}
+html[data-theme="dark"] .bev-chat-message-assistant{background:#223a54;color:#ecf5ff;border-color:#42607d}
+html[data-theme="dark"] .bev-chat-sender{color:#a9d4ff}
+html[data-theme="dark"] .bev-chat-form{background:#192b40;border-color:#34506a}
+html[data-theme="dark"] .bev-chat-form label{color:#e3f1ff}
+html[data-theme="dark"] .bev-chat-form>p{color:#b4c7d9}
+html[data-theme="dark"] .bev-chat-send-row textarea{background:#12253b;border-color:#42607d;color:#f2f8ff}
+html[data-theme="dark"] .bev-chat-suggestions button{background:#274564;color:#cce9ff;border-color:#456b8f}
 @media(prefers-reduced-motion:reduce){.bev-chat-launcher{transition:none}}
