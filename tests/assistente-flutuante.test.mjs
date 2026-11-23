@@ -37,3 +37,11 @@ test('tema claro e escuro, acessibilidade e versão móvel possuem estilos indep
  assert.match(css,/html\[data-theme="dark"\]/);
  assert.match(css,/:focus-visible/);
 });
+
+test('nova conversa invalida resposta pendente e erro recupera a mensagem não enviada',()=>{
+ const componente=ler('app/components/AssistenteFlutuante.jsx');
+ assert.match(componente,/if\(envioRef\.current!==controller\)return/);
+ assert.match(componente,/envioRef\.current===controller/);
+ assert.match(componente,/setMensagens\(atual=>atual\.filter\(m=>m\.id!==id\)\)/);
+ assert.match(componente,/setPergunta\(valor\)/);
+});
