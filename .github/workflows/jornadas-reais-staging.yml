@@ -57,6 +57,7 @@ jobs:
           BEVANS_STAGING_MOTORISTA_PASSWORD: ${{ secrets.BEVANS_STAGING_MOTORISTA_PASSWORD }}
           BEVANS_STAGING_PASSAGEIRO_EMAIL: ${{ secrets.BEVANS_STAGING_PASSAGEIRO_EMAIL }}
           BEVANS_STAGING_PASSAGEIRO_PASSWORD: ${{ secrets.BEVANS_STAGING_PASSAGEIRO_PASSWORD }}
+          BEVANS_STAGING_FIREBASE_API_KEY: ${{ secrets.BEVANS_STAGING_FIREBASE_API_KEY }}
           BEVANS_STAGING_VERCEL_BYPASS: ${{ secrets.BEVANS_STAGING_VERCEL_BYPASS }}
         run: |
           "$RUNNER_TEMP/bevans-playwright/node_modules/.bin/playwright" test --config=e2e-real/playwright.config.mjs
