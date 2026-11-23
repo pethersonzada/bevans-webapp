@@ -662,124 +662,90 @@ test('cartão social é PNG horizontal válido, com proteção HTTP para telas p
 });
 
 
-test('assistente público abre no menu e incorpora Streamlit com alternativa externa',async ({page})=>{
- await page.route('https://bevans-suporte.streamlit.app/**',route=>route.fulfill({
-  status:200,contentType:'text/html',
-  body:'<!doctype html><html lang="pt-BR"><body><main><h1>Chat simulado do Assistente BeVans</h1><p>Resposta fictícia do FAQ.</p></main></body></html>'
- }));
- await page.goto('/');
- await page.getByRole('navigation',{name:'Navegação principal'}).getByRole('link',{name:'Assistente'}).click();
- await expect(page).toHaveURL(/\/assistente$/);
- await expect(page.getByRole('heading',{name:'Seu espaço para tirar dúvidas sobre o BeVans.'})).toBeVisible();
- const iframe=page.locator('iframe[title="Conversa com o Assistente BeVans"]');
- await expect(iframe).toBeVisible();
- await expect(iframe).toHaveAttribute('src','https://bevans-suporte.streamlit.app/?embed=true');
- await expect(iframe).toHaveAttribute('referrerpolicy','no-referrer');
- await expect(page.frameLocator('iframe[title="Conversa com o Assistente BeVans"]').getByRole('heading',{name:'Chat simulado do Assistente BeVans'})).toBeVisible();
- const links=page.getByRole('link',{name:/Abrir assistente (em nova aba|diretamente)/});
- expect(await links.count()).toBeGreaterThanOrEqual(2);
- for(const link of await links.all()){
-  await expect(link).toHaveAttribute('href','https://bevans-suporte.streamlit.app/');
-  await expect(link).toHaveAttribute('target','_blank');
-  await expect(link).toHaveAttribute('rel',/noopener noreferrer/);
- }
- await expect(page.getByText(/Não compartilhe senhas, tokens/)).toBeVisible();
- await expect(page.getByRole('contentinfo').getByRole('link',{name:'Assistente'})).toHaveAttribute('href','/assistente');
-});
 
-test('assistente acessível no menu móvel, sem rolagem horizontal e com tema escuro',async ({page})=>{
- await page.route('https://bevans-suporte.streamlit.app/**',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><html><body>Conversa de demonstração</body></html>'}));
- await page.setViewportSize({width:390,height:844});
+test('assistente nativo responde ao FAQ sem Streamlit na página inicial',async ({page})=>{
  await page.goto('/');
- await page.getByRole('button',{name:'Abrir menu'}).click();
- await page.locator('#mobile-navigation').getByRole('link',{name:'Assistente'}).click();
- await expect(page).toHaveURL(/\/assistente$/);
- await expect(page.getByRole('heading',{name:'Assistente BeVans',exact:true})).toBeVisible();
- await page.evaluate(()=>{document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';});
- await expect(page.locator('iframe[title="Conversa com o Assistente BeVans"]')).toBeVisible();
- const box=await page.evaluate(()=>{
-  const root=document.documentElement;
-  const frame=document.querySelector('.be-assistente-frame-shell').getBoundingClientRect();
-  return {width:innerWidth,scroll:root.scrollWidth,frameLeft:frame.left,frameRight:frame.right};
- });
- expect(box.scroll).toBeLessThanOrEqual(box.width+2);
- expect(box.frameLeft).toBeGreaterThanOrEqual(-1);
- expect(box.frameRight).toBeLessThanOrEqual(box.width+1);
- await expect(page.getByRole('link',{name:/Abrir assistente diretamente/})).toBeVisible();
-});
-
-
-test('assistente flutuante aparece em todas as telas e mantém a conversa entre navegações',async ({page})=>{
- let requisicoes=0;
- await page.route('https://bevans-suporte.streamlit.app/**',route=>{
-  if(route.request().url().includes('embed=true'))requisicoes++;
-  return route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><html lang="pt-BR"><body><h1>Assistente de teste</h1><p>Resposta sintética.</p></body></html>'});
- });
- await page.goto('/');
- const abrir=page.getByRole('button',{name:'Abrir assistente BeVans'});
- await expect(abrir).toBeVisible();
- await expect(page.locator('.bev-chat-iframe')).toHaveCount(0);
- await abrir.click();
- const janela=page.getByRole('dialog',{name:'Assistente BeVans'});
- await expect(janela).toBeVisible();
- await expect(janela.locator('iframe')).toHaveAttribute('src','https://bevans-suporte.streamlit.app/?embed=true');
- await expect(page.frameLocator('.bev-chat-iframe').getByRole('heading',{name:'Assistente de teste'})).toBeVisible();
- await expect(janela.getByRole('link',{name:/Abrir no Streamlit/})).toHaveAttribute('href','https://bevans-suporte.streamlit.app/');
- await janela.getByRole('button',{name:'Fechar assistente'}).click();
- await expect(janela).toBeHidden();
- await expect(page.locator('.bev-chat-iframe')).toHaveCount(1);
- await page.getByRole('link',{name:'Entrar na minha conta BeVans'}).click();
- await expect(page).toHaveURL(/\/login$/);
  await expect(page.getByRole('button',{name:'Abrir assistente BeVans'})).toBeVisible();
+ await expect(page.locator('iframe[src*="streamlit"]')).toHaveCount(0);
  await page.getByRole('button',{name:'Abrir assistente BeVans'}).click();
- await expect(page.frameLocator('.bev-chat-iframe').getByRole('heading',{name:'Assistente de teste'})).toBeVisible();
- expect(requisicoes).toBe(1);
+ const conversa=page.getByRole('dialog',{name:'Assistente BeVans'});
+ await expect(conversa).toBeVisible();
+ await expect(conversa.getByRole('button',{name:'Nova conversa'})).toBeVisible();
+ await conversa.getByRole('button',{name:'Como funcionam as excursões?'}).click();
+ await expect(conversa.getByText(/O organizador cria a excursão/)).toBeVisible();
+ await expect(conversa.getByText('Orientação do FAQ')).toBeVisible();
+ await expect(conversa.locator('iframe')).toHaveCount(0);
+ await conversa.getByRole('button',{name:'Fechar assistente'}).click();
+ await expect(conversa).toBeHidden();
+ await page.locator('a[href="/login"]').first().click();
+ await expect(page).toHaveURL(/\/login$/);
+ await page.getByRole('button',{name:'Abrir assistente BeVans'}).click();
+ await expect(conversa.getByText(/O organizador cria a excursão/)).toBeVisible();
  await page.keyboard.press('Escape');
- await expect(janela).toBeHidden();
+ await expect(conversa).toBeHidden();
  await expect(page.getByRole('button',{name:'Abrir assistente BeVans'})).toBeFocused();
 });
 
-test('assistente funciona em celular sem sobrepor o menu de viagens',async ({page})=>{
+test('página /assistente abre chat interno e possui formulário de envio',async ({page})=>{
+ await page.goto('/assistente');
+ await expect(page.getByRole('heading',{name:'Seu espaço para tirar dúvidas sobre o BeVans.'})).toBeVisible();
+ await expect(page.locator('iframe')).toHaveCount(0);
+ await expect(page.getByRole('link',{name:/Streamlit/})).toHaveCount(0);
+ await page.getByRole('button',{name:/Iniciar conversa no BeVans/}).first().click();
+ const janela=page.getByRole('dialog',{name:'Assistente BeVans'});
+ await expect(janela.getByLabel('Sua mensagem')).toBeVisible();
+ await janela.getByLabel('Sua mensagem').fill('Posso criar uma conta neste site?');
+ await janela.getByRole('button',{name:'Enviar mensagem'}).click();
+ await expect(janela.getByText(/O cadastro público permanece fechado/)).toBeVisible();
+ await janela.getByRole('button',{name:'Nova conversa'}).click();
+ await expect(janela.getByText(/O cadastro público permanece fechado/)).toHaveCount(0);
+});
+
+test('chat no painel de passageiro respeita barra inferior móvel e tema escuro',async ({page})=>{
  await page.setViewportSize({width:390,height:844});
- await page.route('https://bevans-suporte.streamlit.app/**',route=>route.fulfill({status:200,contentType:'text/html',body:'<html><body>Assistente simulado</body></html>'}));
  await mockedLogin(page,'PASSAGEIRO');
  const botao=page.getByRole('button',{name:'Abrir assistente BeVans'});
- const navegacao=page.getByRole('navigation',{name:'Navegação do painel'});
  await expect(botao).toBeVisible();
- await expect(navegacao).toBeVisible();
- const retangulos=await page.evaluate(()=>{
-  const chat=document.querySelector('.bev-chat-launcher').getBoundingClientRect();
-  const menu=document.querySelector('.be-bottom-navigation').getBoundingClientRect();
-  return {limite:chat.bottom,menu:menu.top,largura:document.documentElement.scrollWidth,tela:innerWidth};
+ await expect(page.getByRole('navigation',{name:'Navegação do painel'})).toBeVisible();
+ const posicoes=await page.evaluate(()=>{
+  const b=document.querySelector('.bev-chat-launcher').getBoundingClientRect();
+  const nav=document.querySelector('.be-bottom-navigation').getBoundingClientRect();
+  return {botao:b.bottom,nav:nav.top,scroll:document.documentElement.scrollWidth,width:innerWidth};
  });
- expect(retangulos.limite).toBeLessThanOrEqual(retangulos.menu+2);
- expect(retangulos.largura).toBeLessThanOrEqual(retangulos.tela+2);
+ expect(posicoes.botao).toBeLessThanOrEqual(posicoes.nav+2);
+ expect(posicoes.scroll).toBeLessThanOrEqual(posicoes.width+2);
+ await page.evaluate(()=>{document.documentElement.dataset.theme='dark';});
  await botao.click();
  const janela=page.getByRole('dialog',{name:'Assistente BeVans'});
  await expect(janela).toBeVisible();
- await expect(janela.getByRole('button',{name:'Fechar assistente'})).toBeVisible();
- const dialogo=await janela.boundingBox();
- expect(Math.abs(dialogo.x)).toBeLessThanOrEqual(2);
- expect(dialogo.width).toBe(390);
- expect(dialogo.height).toBe(844);
+ const retangulo=await janela.boundingBox();
+ expect(retangulo.width).toBe(390);
+ expect(retangulo.height).toBe(844);
+ await janela.getByLabel('Sua mensagem').fill('Quais funcionalidades já estão disponíveis?');
+ await janela.getByRole('button',{name:'Enviar mensagem'}).click();
+ await expect(janela.getByText(/O aplicativo BeVans dispõe de turmas/)).toBeVisible();
  await janela.getByRole('button',{name:'Fechar assistente'}).click();
- await expect(navegacao.getByRole('button',{name:'Rotas'})).toBeVisible();
- await navegacao.getByRole('button',{name:'Rotas'}).click();
- await expect(botao).toBeVisible();
+ await expect(page.getByRole('navigation',{name:'Navegação do painel'}).getByRole('button',{name:'Rotas'})).toBeVisible();
 });
 
-test('botão do assistente também aparece nas telas públicas sem carregar Streamlit antes do clique',async ({page})=>{
- const chamadas=[];
- await page.route('https://bevans-suporte.streamlit.app/**',route=>{
-  chamadas.push(route.request().url());
-  return route.fulfill({status:200,contentType:'text/html',body:'<html></html>'});
- });
- for(const rota of ['/contato','/excursoes','/privacidade','/termos','/assistente']){
+test('endpoint do assistente valida dados pessoais, origem e tamanho',async ({request})=>{
+ const url='/api/assistente';
+ const valido=await request.post(url,{data:{pergunta:'Como funcionam as excursões?',historico:[]}});
+ expect(valido.status()).toBe(200);
+ expect(valido.headers()['cache-control']).toContain('no-store');
+ const dados=await valido.json();
+ expect(dados.modo).toBe('faq');
+ expect(dados.resposta).toContain('excursão');
+ const indevido=await request.post(url,{data:{pergunta:'Meu e-mail é teste@example.com'}});
+ expect(indevido.status()).toBe(400);
+ const origem=await request.post(url,{headers:{Origin:'https://site-externo.invalid'},data:{pergunta:'Como funciona?'}});
+ expect(origem.status()).toBe(403);
+});
+
+test('botão flutuante está presente nas demais rotas sem criar iframe ou abrir terceiros',async ({page})=>{
+ for(const rota of ['/contato','/excursoes','/privacidade','/termos']){
   await page.goto(rota);
   await expect(page.getByRole('button',{name:'Abrir assistente BeVans'})).toBeVisible();
+  await expect(page.locator('iframe')).toHaveCount(0);
  }
- // A página /assistente contém seu iframe próprio: somente a janela global deve ser sob demanda.
- expect(chamadas.filter(url=>url.includes('embed=true')).length).toBeGreaterThanOrEqual(1);
- await page.goto('/contato');
- await expect(page.locator('.bev-chat-iframe')).toHaveCount(0);
 });
