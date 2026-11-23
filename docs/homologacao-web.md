@@ -53,3 +53,32 @@ Use dados descartáveis. Nunca faça testes de GPS ou exclusão de contas sobre 
 - O navegador não garante GPS em segundo plano; a navegação por manobras é manual.
 - Não há Web Push para navegadores ou navegação guiada por voz; exigir implementação e aceite separados.
 - A política de privacidade e consentimentos sobre localização de menores exigem revisão especializada antes de operação com dados reais.
+
+
+
+## Evidências automáticas com serviços reais (preparação em 23/11/2026)
+
+Foi criado o workflow **Jornadas reais de homologação (somente leitura)** em `.github/workflows/jornadas-reais-staging.yml`. Ele é **manual**, limitado à branch `main`, exige confirmação explícita de fixtures descartáveis e usa o ambiente GitHub `homologacao`. Configure **required reviewers** e restrição de branch desse ambiente nas configurações do repositório, antes de adicionar as credenciais. A execução não deve ser confundida com o smoke simulado.
+
+Antes de executar, o responsável pela infraestrutura deve provisionar **serviços separados**, sem importar dados de produção: API Java + PostgreSQL migrado; Firebase de teste com motorista e passageiro distintos e registros fictícios coerentes; token público Mapbox restrito ao domínio e com quota; URL HTTPS de Preview com proteção ativa. Não copiar nem descriptografar as variáveis de production. O Streamlit do assistente é independente dessas credenciais.
+
+Configure o Preview da Vercel na branch `staging` usando exclusivamente o Firebase e a API de homologação; o hostname do frontend aprovado por este workflow é `bevans-webapp-git-staging-pethersonzadas-projects.vercel.app`. Depois do deploy Preview, configure os seguintes **nomes**, sem escrever valores em Git:
+
+- GitHub Actions **variables**: `BEVANS_STAGING_WEB_URL` e `BEVANS_STAGING_API_URL`. A URL de API deve ter identificação explícita de staging/homologação. Não use os hosts de produção.
+- GitHub Actions **secrets do ambiente homologacao**: `BEVANS_STAGING_MOTORISTA_EMAIL`, `BEVANS_STAGING_MOTORISTA_PASSWORD`, `BEVANS_STAGING_PASSAGEIRO_EMAIL`, `BEVANS_STAGING_PASSAGEIRO_PASSWORD`. Use contas de teste, nunca contas reais.
+- Opcional, somente quando autorizado pela equipe Vercel: `BEVANS_STAGING_VERCEL_BYPASS`. É enviado **apenas** ao hostname WebApp de Preview no preflight e navegador; proteção do Preview permanece ativada.
+
+No GitHub Actions selecione manualmente o workflow, a branch `main`, informe `expected_sha` com o SHA de **40 caracteres da versão Preview** e marque a confirmação dos dados descartáveis. Primeiro ocorre o smoke read-only: SHA/ambiente Preview, CORS e 401/403 anônimos. Depois o Playwright testa login real de motorista e passageiro, menus segregados, logout e viewport móvel. Não realiza mutações, GPS ou operações com viagens. Os testes **não capturam** vídeos, traces ou screenshots de dados de conta.
+
+**Somente após a conclusão verde** é emitido um artefato `homologacao-real-somente-leitura/resultado.json` (retenção de 14 dias), contendo SHA, tipo de teste, identificador da execução e IDs dos cenários, **sem e-mails, senhas, tokens ou PII**. A execução com resultado vermelho ou bloqueada por staging ausente **não gera** aprovação.
+
+| Prova | Situação conhecida em 23/11/2026 |
+| --- | --- |
+| Unitários, lint, build e browser com mocks | Automatizados no PR e na branch principal; são evidências **sintéticas** |
+| Vercel production SHA e publicação | Verificados pelo deploy e pelo smoke HTTP de produção, sem autenticação |
+| Preview de staging com Firebase/API/PostgreSQL/Mapbox independentes | **Bloqueado**: recursos/variáveis de teste ainda não disponíveis |
+| Login real de motorista e passageiro, perfis e logout | **Não executado** até provisionar contas e executar o workflow manual |
+| Turmas, presença, GPS, vagas concorrentes, excursões e acesso cruzado | **Não homologado**; precisam de fixtures e jornadas operacionais autorizadas |
+| Consentimentos e responsável por menores | **Bloqueados** por revisão jurídico-operacional e comprovação de identidade |
+
+Nunca crie uma evidência `aprovado` manualmente nem use mocks como se fossem backend real. Se o Preview estiver protegido por SSO sem bypass autorizado, a verificação deve falhar e permanecer bloqueada.

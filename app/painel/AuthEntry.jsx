@@ -1,20 +1,35 @@
 'use client';
 import {useCallback,useEffect,useRef,useState} from 'react';
+import {obterMenuPainel,abaAtivaNoMenu,tituloDaTela} from '../lib/painel-menu.mjs';
+import {NavegacaoPrincipal,MaisFerramentas} from './PainelNavegacao';
+import {filtrosCatalogoIniciais,normalizarFiltrosCatalogo,lerPaginaCatalogo} from '../lib/catalogo-rotas.mjs';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import {firebaseSignIn,firebasePasswordReset,FirebaseSessionExpiredError,criarCoordenadorSessao} from '../lib/bevans-auth.mjs';
 import {apiRequest,ApiError,array,pagina,ep,diaLocal,idSeguro} from '../lib/bevans-api.mjs';
 import './painel.css';
-import ViagensWeb from './ViagensWeb';
-import EnderecosWeb from './EnderecosWeb';
-import GestaoExcursaoWeb from './GestaoExcursaoWeb';
-import RotasEditorWeb from './RotasEditorWeb';
-import ColetaPrivadaWeb from './ColetaPrivadaWeb';
-import ConfiguracoesWeb from './ConfiguracoesWeb';
-import OperacoesWeb from './OperacoesWeb';
-import EmbarquePublicoWeb from './EmbarquePublicoWeb';
-import PlanejamentoEmbarquesWeb from './PlanejamentoEmbarquesWeb';
+
+
+
+
+
+
+
+
+
 import {validarCancelamentoEmbarque,mensagemErroEmbarque} from '../lib/embarque-web.mjs';
+
+// O login não precisa carregar os módulos operacionais antes da autenticação.
+const ViagensWeb=dynamic(()=>import('./ViagensWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const EnderecosWeb=dynamic(()=>import('./EnderecosWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const GestaoExcursaoWeb=dynamic(()=>import('./GestaoExcursaoWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const RotasEditorWeb=dynamic(()=>import('./RotasEditorWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const ColetaPrivadaWeb=dynamic(()=>import('./ColetaPrivadaWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const ConfiguracoesWeb=dynamic(()=>import('./ConfiguracoesWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const OperacoesWeb=dynamic(()=>import('./OperacoesWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const EmbarquePublicoWeb=dynamic(()=>import('./EmbarquePublicoWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
+const PlanejamentoEmbarquesWeb=dynamic(()=>import('./PlanejamentoEmbarquesWeb'),{loading:()=> <p role="status" className="be-muted">Carregando módulo…</p>});
 
 const statuses={PENDENTE:'Pendente',APROVADO:'Aprovado',REJEITADO:'Recusado',EMBARCADO:'Embarcado',AGUARDANDO:'Aguardando',DESEMBARCADO:'Desembarcado',NAO_EMBARCOU:'Não embarcou'};
 const display=v=>v==null?'Não informado':statuses[v]||String(v);
@@ -105,7 +120,7 @@ export default function AuthEntry(){
    <div className="be-auth-top"><Link href="/" className="be-auth-back">← Voltar para o site</Link></div>
    <div className="be-auth-content">
     <div className="be-mobile-wordmark"><Image src="/images/vetor-com-nome-tema-claro.png" alt="BeVans" width={164} height={55} className="be-brand-light"/><Image src="/images/bevans-logo-oficial-branco.png" alt="" width={164} height={55} className="be-brand-dark"/></div>
-    <h2>Acessar minha conta</h2><p className="be-auth-description">Entre com seu e-mail e senha do BeVans.</p>
+    <p className="be-auth-eyebrow">ACESSO AO PAINEL</p><h2>Acessar minha conta</h2><p className="be-auth-description">Tudo para acompanhar suas viagens ou organizar suas rotas, em um espaço só seu.</p>
     <Alert error={error}/>{notice&&<p role="status" aria-live="polite" className="be-auth-feedback">{notice}</p>}
     <form className="be-form be-login-form" onSubmit={onSubmit}>
      <label htmlFor="bev-email">E-mail<input id="bev-email" type="email" placeholder="nome@exemplo.com" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}/></label>
@@ -118,20 +133,22 @@ export default function AuthEntry(){
   </section>
  </main>;
  const driver=profile.tipo==='MOTORISTA';
- const tabs=[['inicio','Início'],['turmas','Turmas'],['rotas',driver?'Rotas públicas':'Explorar rotas'],['solicitacoes','Solicitações'],['excursoes','Excursões'],['notificacoes','Notificações'],['operacao','Operações'],['viagens','Mapa e viagens'],['enderecos','Endereços e pontos'],['coleta','Coleta privada'],['configuracoes','Configurações'],...(driver?[['gestao-excursoes','Gestão de excursões'],['editor-rotas','Editor de rotas']]:[])];
- const selected=tabs.find(item=>item[0]===tab);
+ const menu=obterMenuPainel(driver);
+ const abaPrincipal=abaAtivaNoMenu(driver,tab);
+ const tituloAtual=tituloDaTela(driver,tab);
  const firstName=(profile.nome||'').trim().split(/\s+/)[0]||'Usuário';
  return <main className="be-app" id="conteudo">
   <aside className="be-sidebar" aria-label="Navegação da plataforma">
    <Link href="/" className="be-sidebar-brand" aria-label="BeVans, voltar ao site"><Image src="/images/vetor-com-nome-tema-claro.png" alt="BeVans" width={154} height={56} className="be-official-mark be-brand-light"/><Image src="/images/bevans-logo-oficial-branco.png" alt="" width={154} height={56} className="be-official-mark be-brand-dark"/></Link>
-   <div className="be-sidebar-group"><p className="be-nav-label">Navegação</p><nav className="be-sidebar-nav" aria-label="Áreas do painel">{tabs.map(([key,label])=><button type="button" key={key} onClick={()=>setTab(key)} aria-current={tab===key?'page':undefined}>{label}</button>)}</nav></div>
+   <div className="be-sidebar-group"><p className="be-nav-label">{driver?'MENU DO MOTORISTA':'MENU DO PASSAGEIRO'}</p><NavegacaoPrincipal itens={menu.principal} ativa={abaPrincipal} aoSelecionar={setTab}/><p className="be-sidebar-hint">Acesse outras funções em <strong>Mais</strong>.</p></div>
    <div className="be-sidebar-footer"><div className="be-account"><span className="be-avatar" aria-hidden="true">{firstName[0].toUpperCase()}</span><div><strong>{profile.nome||'Minha conta'}</strong><small>{driver?'Motorista':'Passageiro'}</small></div></div><button type="button" className="be-signout" onClick={signOut}>Sair da conta</button><Link href="/" className="be-site-link">Voltar ao site</Link></div>
   </aside>
   <div className="be-main-column">
-   <header className="be-app-top"><div className="be-app-top-left"><Image src="/images/bevans-simbolo-oficial.png" alt="" width={30} height={30} className="be-top-mark be-brand-light"/><Image src="/images/vetor-tema-escuro.png" alt="" width={30} height={30} className="be-top-mark be-brand-dark"/><span>{driver?'Área do motorista':'Área do passageiro'}</span></div><div className="be-app-user"><span className="be-user-name">{profile.nome||'Minha conta'}</span><span className="be-top-avatar" aria-hidden="true">{firstName[0].toUpperCase()}</span><button type="button" className="be-mobile-signout" onClick={signOut}>Sair</button></div></header>
-   <nav className="be-mobile-tabs" aria-label="Navegação do painel">{tabs.map(([key,label])=><button type="button" key={key} onClick={()=>setTab(key)} aria-current={tab===key?'page':undefined}>{label}</button>)}</nav>
-   <div className="be-main-content"><header className="be-page-heading"><div><p className="be-page-location">{driver?'Motorista':'Passageiro'} / {selected?.[1]||'Início'}</p><h1>{tab==='inicio'?`Olá, ${firstName}.`:selected?.[1]}</h1><p>{tab==='inicio'?'Aqui estão as informações da sua conta.':'Dados e ações disponíveis para o seu perfil.'}</p></div>{tab==='inicio'&&<div className="be-heading-date">{new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div>}</header>
+   <header className="be-app-top"><div className="be-app-top-left"><Image src="/images/bevans-simbolo-oficial.png" alt="" width={30} height={30} className="be-top-mark be-brand-light"/><Image src="/images/vetor-tema-escuro.png" alt="" width={30} height={30} className="be-top-mark be-brand-dark"/><span>{driver?'Painel do motorista':'Painel do passageiro'}</span></div><div className="be-app-user"><span className="be-user-name">{profile.nome||'Minha conta'}</span><button type="button" className="be-header-account" aria-label="Abrir configurações da conta" onClick={()=>setTab('configuracoes')}><span className="be-top-avatar" aria-hidden="true">{firstName[0].toUpperCase()}</span></button></div></header>
+   <NavegacaoPrincipal itens={menu.principal} ativa={abaPrincipal} aoSelecionar={setTab} compacta/>
+   <div className="be-main-content"><header className={`be-page-heading ${tab==='inicio'?'be-welcome-heading':''}`}><div><p className="be-page-location">{driver?'Motorista':'Passageiro'} / {tituloAtual}</p><h1>{tab==='inicio'?`Olá, ${firstName}.`:tituloAtual}</h1><p>{tab==='inicio'?(driver?'Gerencie suas turmas, solicitações e viagens a partir deste painel.':'Acompanhe seus vínculos, pedidos e informações de viagem em um só lugar.'):(tab==='mais'?'Escolha uma área para continuar.':driver?'Consulte e gerencie as informações da sua operação.':'Consulte suas informações e solicitações com segurança.')}</p></div>{tab==='inicio'&&<div className="be-welcome-actions"><div className="be-heading-date">{new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div><button className="be-welcome-primary" type="button" onClick={()=>setTab(driver?'viagens':'rotas')}>{driver?'Acompanhar viagens':'Encontrar minha rota'} <span aria-hidden="true">→</span></button></div>}</header>
     {tab==='inicio'&&<Overview api={api} profile={profile} driver={driver} onGo={setTab}/>}
+    {tab==='mais'&&<MaisFerramentas grupos={menu.grupos} aoSelecionar={setTab} motorista={driver} aoSair={signOut}/>}
     {tab==='turmas'&&<Turmas api={api} profile={profile} driver={driver}/>}
     {tab==='rotas'&&<Rotas api={api} profile={profile} driver={driver}/>}
     {tab==='solicitacoes'&&<Solicitacoes api={api} profile={profile} driver={driver}/>}
@@ -165,14 +182,14 @@ function Overview({api,profile,driver,onGo}){
    unread:naoLidas.status==='fulfilled'?naoLidas.value:null,
   };
  },[profile.id,driver]);
- const latest=state.data?.turmas?.slice(0,4);
+ const latest=state.data?.turmas?.slice(0,3);
  return <div className="be-overview">
    <div className="be-overview-primary">
     <section className="be-overview-section"><div className="be-section-title"><div><h2>Suas turmas</h2><p>{driver?'Grupos que você administra.':'Turmas vinculadas à sua conta.'}</p></div><button type="button" className="be-text-action" onClick={()=>onGo('turmas')}>Ver todas →</button></div>
      {state.loading?<Empty>Carregando turmas…</Empty>:state.data?.turmasError?<Alert error={state.data.turmasError}/>:!latest?.length?<div className="be-empty-line"><p>Nenhuma turma encontrada.</p><button type="button" className="be-text-action" onClick={()=>onGo('turmas')}>Abrir turmas →</button></div>:<div className="be-overview-list">{latest.map(t=><div className="be-overview-row" key={t.id}><div className="be-list-monogram" aria-hidden="true">{(t.nome||'T').trim()[0].toUpperCase()}</div><div><strong>{t.nome||`Turma ${t.id}`}</strong><small>{[t.turno,t.destinoNome].filter(Boolean).join(' · ')||'Informações da turma'}</small></div><span className="be-row-id">#{t.id}</span></div>)}</div>}
     </section>
-    <section className="be-overview-section"><div className="be-section-title"><div><h2>Acessar</h2><p>Escolha o que deseja consultar.</p></div></div><div className="be-shortcuts">
-     {[["solicitacoes","Solicitações","Pedidos de vínculo e embarque"],["rotas",driver?'Rotas públicas':'Explorar rotas',"Itinerários e horários"],["excursoes","Excursões","Viagens e participantes"],["operacao","Operações","Estado das viagens"]].map(([key,title,desc])=><button key={key} type="button" onClick={()=>onGo(key)}><span><strong>{title}</strong><small>{desc}</small></span><span aria-hidden="true">→</span></button>)}
+    <section className="be-overview-section be-overview-actions"><div className="be-section-title"><div><h2>{driver?'Gerenciar operação':'Sua jornada'}</h2><p>{driver?'Atalhos para as tarefas do motorista.':'Atalhos para acompanhar suas viagens.'}</p></div></div><div className="be-shortcuts">
+     {(driver?[["solicitacoes","Analisar solicitações","Vínculos e pedidos de embarque"],["viagens","Mapa e viagens","Operação e acompanhamento"],["editor-rotas","Editar rotas","Configurar itinerários"],["gestao-excursoes","Gerir excursões","Organizar saídas e participantes"]]:[["rotas","Encontrar rotas","Itinerários e horários disponíveis"],["solicitacoes","Minhas solicitações","Acompanhar pedidos e aprovações"],["viagens","Acompanhar viagens","Mapa e informações autorizadas"],["notificacoes","Ver notificações","Atualizações da sua conta"]]).map(([key,title,desc])=><button key={key} type="button" onClick={()=>onGo(key)}><span><strong>{title}</strong><small>{desc}</small></span><span aria-hidden="true">→</span></button>)}
     </div></section>
    </div>
    <aside className="be-overview-aside"><div className="be-section-title"><div><h2>Notificações</h2><p>Atualizações da sua conta</p></div></div>
@@ -192,15 +209,89 @@ function Turmas({api,profile,driver}){
  {data.loading?<Empty>Carregando…</Empty>:!data.data?.length?<Empty>Nenhuma turma disponível para esta conta.</Empty>:<div className="be-grid">{data.data.map(t=><Panel key={t.id} title={t.nome||`Turma ${t.id}`}><p>{t.turno}</p><p className="be-muted">Turma #{t.id} · Capacidade: {t.capacidade??'não configurada'}</p><p className="be-muted">Origem: {t.origemNome||'Não cadastrada'}</p><p className="be-muted">Destino: {t.destinoNome||'Não cadastrado'}</p>{driver&&t.codigoConvite&&<p>Código de convite: <strong>{t.codigoConvite}</strong></p>}</Panel>)}</div>}</section>;
 }
 function Rotas({api,driver}){
- const [filters,setFilters]=useState({cidade:'',destino:''}),[selected,setSelected]=useState(null),[route,setRoute]=useState(null),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false);
- const list=useAsync(s=>api(driver?ep.rotas:ep.catalogo(filters),{signal:s}).then(r=>driver?array(r):pagina(r)),[driver,filters.cidade,filters.destino]);
- const [details,setDetails]=useState(null);
- async function open(id){setFeedback('');setRoute(null);setSelected(id);try{const r=await api(ep.rota(id));if(r?.id!==id)throw Error('O servidor retornou outra rota.');setRoute(r);}catch(e){setFeedback(e.message);}}
+ const [filtros,setFiltros]=useState(()=>({...filtrosCatalogoIniciais}));
+ const [aplicados,setAplicados]=useState(()=>({}));
+ const [paginaAtual,setPaginaAtual]=useState(0);
+ const [selected,setSelected]=useState(null),[route,setRoute]=useState(null),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false);
+ const list=useAsync(async s=>{
+  const resposta=await api(driver?ep.rotas:ep.catalogo({...aplicados,pagina:String(paginaAtual)}),{signal:s});
+  const page=driver?{itens:array(resposta),total:resposta.length,pagina:0,totalPaginas:1}:lerPaginaCatalogo(resposta);
+  if(!driver&&page.pagina!==paginaAtual)throw Error('A API retornou outra página de resultados.');
+  return page;
+ },[driver,aplicados,paginaAtual]);
+ const resultados=list.data?.itens;
+ const [loadingDetails,setLoadingDetails]=useState(false);
+ const routeRequest=useRef(0);
+ function limparDetalhes(){
+  routeRequest.current++;
+  setSelected(null);setRoute(null);setLoadingDetails(false);setFeedback('');
+ }
+ function pesquisar(e){
+  e.preventDefault();
+  try{
+   const novos=normalizarFiltrosCatalogo(filtros);
+   limparDetalhes();
+   setPaginaAtual(0);
+   setAplicados(novos);
+   if(JSON.stringify(novos)===JSON.stringify(aplicados)&&paginaAtual===0)list.reload();
+  }catch(error){setFeedback(error instanceof Error?error.message:'Filtros inválidos.');}
+ }
+ function limparFiltros(){
+  limparDetalhes();
+  setFiltros({...filtrosCatalogoIniciais});
+  setAplicados({});
+  setPaginaAtual(0);
+  if(!Object.keys(aplicados).length&&paginaAtual===0)list.reload();
+ }
+ function mudarPagina(nova){
+  if(!Number.isSafeInteger(nova)||nova<0||nova>=(list.data?.totalPaginas??0))return;
+  limparDetalhes();
+  setPaginaAtual(nova);
+ }
+ async function open(id){
+  const request=++routeRequest.current;
+  setFeedback('');setRoute(null);setSelected(id);setLoadingDetails(true);
+  try{
+   const r=await api(ep.rota(id));
+   if(r?.id!==id)throw Error('O servidor retornou outra rota.');
+   if(request===routeRequest.current)setRoute(r);
+  }catch(e){if(request===routeRequest.current)setFeedback(e instanceof Error?e.message:'Não foi possível consultar a rota.');}
+  finally{if(request===routeRequest.current)setLoadingDetails(false);}
+ }
  async function write(task){if(busy)return;setBusy(true);setFeedback('');try{await task();list.reload();if(selected)await open(selected);}catch(e){setFeedback(e.message);}finally{setBusy(false);}}
  return <section className="be-section"><div className="be-row"><h2>{driver?'Gerenciamento de rotas públicas':'Catálogo de rotas públicas'}</h2><Button onClick={list.reload}>Atualizar</Button></div><Alert error={list.error||feedback}/>
- {!driver&&<div className="be-fieldset"><label>Cidade<input value={filters.cidade} onChange={e=>setFilters(p=>({...p,cidade:e.target.value}))}/></label><label>Destino<input value={filters.destino} onChange={e=>setFilters(p=>({...p,destino:e.target.value}))}/></label></div>}
- {list.loading?<Empty>Consultando rotas…</Empty>:!list.data?.length?<Empty>Nenhuma rota disponível.</Empty>:<div className="be-grid">{list.data.map(r=><Panel key={r.id} title={r.nome}><p>{r.cidade} {r.modo?`· ${r.modo}`:''}</p><p className="be-muted">{r.destinoNome||r.destino||''}</p><p className="be-muted">{driver?(r.publicada?'Publicada':'Não publicada'):`Vagas: ${r.vagas?.disponiveis??'indisponível'}`}</p><div className="be-actions"><Button onClick={()=>open(r.id)}>Detalhes oficiais</Button>{!driver&&<Button disabled={busy} onClick={()=>write(async()=>{const response=await api(ep.favoritas(r.id),{method:r.favorita?'DELETE':'PUT'});return response;})}>{r.favorita?'Remover favorito':'Favoritar'}</Button>}</div></Panel>)}</div>}
- {selected&&!route&&<Empty>Carregando a rota selecionada…</Empty>}
+ {!driver&&<form className="be-catalogo-form" onSubmit={pesquisar} aria-label="Filtros de rotas">
+  <div className="be-catalogo-fields">
+   <label>Buscar rotas<input maxLength={160} placeholder="Nome, destino, campus ou região" value={filtros.q} onChange={e=>setFiltros(p=>({...p,q:e.target.value}))}/></label>
+   <label>Cidade de operação<input maxLength={160} placeholder="Ex.: Recife" value={filtros.cidade} onChange={e=>setFiltros(p=>({...p,cidade:e.target.value}))}/></label>
+   <label>Destino<input maxLength={160} placeholder="Destino da rota" value={filtros.destino} onChange={e=>setFiltros(p=>({...p,destino:e.target.value}))}/></label>
+   <label>Turno<input maxLength={160} placeholder="Ex.: Manhã" value={filtros.turno} onChange={e=>setFiltros(p=>({...p,turno:e.target.value}))}/></label>
+   <label>Categoria<select value={filtros.categoria} onChange={e=>setFiltros(p=>({...p,categoria:e.target.value}))}>
+    <option value="">Todas as categorias</option><option value="UNIVERSITARIA">Universitária</option><option value="ESCOLAR">Escolar</option><option value="OUTROS">Outras</option>
+   </select></label>
+   <label>Dia de operação<select value={filtros.dia} onChange={e=>setFiltros(p=>({...p,dia:e.target.value}))}>
+    <option value="">Todos os dias</option>
+    {[['MONDAY','Segunda-feira'],['TUESDAY','Terça-feira'],['WEDNESDAY','Quarta-feira'],['THURSDAY','Quinta-feira'],['FRIDAY','Sexta-feira'],['SATURDAY','Sábado'],['SUNDAY','Domingo']].map(([v,n])=><option key={v} value={v}>{n}</option>)}
+   </select></label>
+  </div>
+  <div className="be-catalogo-actions">
+   <label className="be-catalogo-check"><input type="checkbox" checked={filtros.somenteComVagas} onChange={e=>setFiltros(p=>({...p,somenteComVagas:e.target.checked}))}/>Somente com vagas</label>
+   <label className="be-catalogo-check"><input type="checkbox" checked={filtros.somenteFavoritas} onChange={e=>setFiltros(p=>({...p,somenteFavoritas:e.target.checked}))}/>Somente favoritas</label>
+   <button type="submit" className="be-btn primary" disabled={busy||list.loading}>Buscar rotas</button>
+   <button type="button" className="be-btn" onClick={limparFiltros} disabled={busy}>Limpar filtros</button>
+  </div>
+  <p className="be-muted">Os filtros são aplicados ao selecionar “Buscar rotas”. Os resultados exibem apenas informações públicas autorizadas.</p>
+ </form>}
+ {list.loading?<Empty>Consultando rotas…</Empty>:!resultados?.length?<Empty>{list.error?'Não foi possível carregar as rotas. Tente atualizar.':'Nenhuma rota encontrada para os filtros informados.'}</Empty>:<div className="be-grid">{resultados.map(r=><Panel key={r.id} title={r.nome}><p>{r.cidade} {r.modo?`· ${r.modo}`:''}</p><p className="be-muted">{r.destinoNome||r.destino||''}</p><p className="be-muted">{driver?(r.publicada?'Publicada':'Não publicada'):`Vagas: ${r.vagas?.disponiveis??'indisponível'}`}</p><div className="be-actions"><Button onClick={()=>open(r.id)}>Detalhes oficiais</Button>{!driver&&<Button disabled={busy} onClick={()=>write(async()=>{const response=await api(ep.favoritas(r.id),{method:r.favorita?'DELETE':'PUT'});return response;})}>{r.favorita?'Remover favorito':'Favoritar'}</Button>}</div></Panel>)}</div>}
+ {!driver&&!list.loading&&!list.error&&list.data&&<nav className="be-catalogo-pagination" aria-label="Paginação do catálogo">
+   <p role="status" className="be-muted">{list.data.total} {list.data.total===1?'rota encontrada':'rotas encontradas'}{list.data.totalPaginas>0?` · Página ${list.data.pagina+1} de ${list.data.totalPaginas}`:''}</p>
+   {list.data.totalPaginas>1&&<div className="be-actions">
+    <button className="be-btn" type="button" disabled={busy||paginaAtual===0} onClick={()=>mudarPagina(paginaAtual-1)}>Anterior</button>
+    <button className="be-btn" type="button" disabled={busy||paginaAtual>=list.data.totalPaginas-1} onClick={()=>mudarPagina(paginaAtual+1)}>Próxima</button>
+   </div>}
+  </nav>}
+ {selected&&loadingDetails&&<p role="status" className="be-muted">Carregando a rota selecionada…</p>}
+ {selected&&!loadingDetails&&!route&&!feedback&&<Empty>Não foi possível apresentar os detalhes da rota.</Empty>}
  {route&&<Panel title={`Rota: ${route.nome}`}><p>{route.origemNome} → {route.destinoNome}</p><p>{route.modo} · {route.categoria} · IDA {route.horarioIda||'não configurada'} · VOLTA {route.horarioVolta||'não configurada'}</p><p className="be-muted">Dias: {route.dias?.join(', ')}</p><h3>Paradas</h3>{route.paradas?.length?<div className="be-list">{route.paradas.map((p,i)=><div key={p.id||i} className="be-item">{i+1}. {p.nome}</div>)}</div>:<Empty>Sem paradas cadastradas.</Empty>}
  {driver?<><p className="be-alert">A publicação altera o catálogo. Confira os dados e confirme conscientemente.</p><div className="be-actions"><Button disabled={busy} onClick={()=>write(async()=>{if(!window.confirm(`${route.publicada?'Despublicar':'Publicar'} a rota ${route.nome}?`))return;const r=await api(`/rotas-publicas/${idSeguro(route.id)}/publicacao`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({valor:!route.publicada})});if(!r||r.publicada===route.publicada)throw Error('O servidor não confirmou a publicação.');})}>{route.publicada?'Despublicar rota':'Publicar rota'}</Button></div></>:<EmbarquePublicoWeb key={route.id} api={api} rota={route} onChanged={list.reload}/>}
  </Panel>}</section>;
@@ -221,11 +312,18 @@ function Solicitacoes({api,profile,driver}){
 }
 function Excursoes({api,driver}){
  const state=useAsync(s=>driver?api(ep.excursoes,{signal:s}).then(pagina):Promise.resolve([]),[driver]);
- const [id,setId]=useState(null),[exec,setExec]=useState(null),[error,setError]=useState('');
- async function load(id){setId(id);setExec(null);setError('');try{const x=array(await api(ep.execucoes(id)));setExec(x);}catch(e){setError(e.message);}}
- if(!driver)return <Panel title="Excursões"><p>Inscrições de passageiros são feitas com convites individuais. O webapp não acessa recursos privados do motorista em nome do passageiro.</p><Empty>O fluxo de inscrição com convite será integrado separadamente.</Empty></Panel>;
+ const [id,setId]=useState(null),[exec,setExec]=useState(null),[error,setError]=useState(''),[loadingExec,setLoadingExec]=useState(false);
+ const execRequest=useRef(0);
+ async function load(id){
+  const request=++execRequest.current;
+  setId(id);setExec(null);setError('');setLoadingExec(true);
+  try{const x=array(await api(ep.execucoes(id)));if(request===execRequest.current)setExec(x);}
+  catch(e){if(request===execRequest.current)setError(e instanceof Error?e.message:'Não foi possível consultar as execuções.');}
+  finally{if(request===execRequest.current)setLoadingExec(false);}
+ }
+ if(!driver)return <Panel title="Excursões"><p>Inscrições de passageiros são feitas com convites individuais. O webapp não acessa recursos privados do motorista em nome do passageiro.</p><p className="be-muted">Para se inscrever, use o link de convite individual fornecido pelo organizador. A consulta aqui não disponibiliza execuções privadas do motorista.</p></Panel>;
  return <section className="be-section"><div className="be-row"><h2>Excursões</h2><Button onClick={state.reload}>Atualizar</Button></div><Alert error={state.error||error}/>{state.loading?<Empty>Carregando…</Empty>:!state.data?.length?<Empty>Nenhuma excursão encontrada.</Empty>:<div className="be-grid">{state.data.map(e=><Panel key={e.id} title={e.titulo}><p>{e.origemNome||'Origem'} → {e.destinoNome}</p><p>Partida: {stamp(e.partidaEm)}</p><p>Volta: {stamp(e.retornoEm)}</p><p className="be-muted">{display(e.estado)} · {e.capacidade} assentos</p><Button onClick={()=>load(e.id)}>Consultar execuções</Button></Panel>)}</div>}
- {id&&<section className="be-section"><Panel title={`Execuções da excursão #${id}`}><Button onClick={()=>load(id)}>Atualizar execuções</Button>{!exec?<Empty>Carregando execuções…</Empty>:!exec.length?<Empty>Não existe execução registrada. O início exige prévia, versão salva e validação dos participantes no aplicativo.</Empty>:<div className="be-list">{exec.map(v=><div className="be-item" key={v.id}><strong>Execução #{v.id} · {dir(v.sentido)} · {display(v.estado)}</strong><p>{v.pontos?.length||0} pontos no roteiro oficial</p></div>)}</div>}</Panel></section>}</section>;
+ {id&&<section className="be-section"><Panel title={`Execuções da excursão #${id}`}><Button onClick={()=>load(id)}>Atualizar execuções</Button>{loadingExec?<p role="status" className="be-muted">Carregando execuções…</p>:error?<Empty>Não foi possível apresentar as execuções. Tente atualizar.</Empty>:!exec?.length?<Empty>Não existe execução registrada. O início exige prévia, versão salva e validação dos participantes no aplicativo.</Empty>:<div className="be-list">{exec.map(v=><div className="be-item" key={v.id}><strong>Execução #{v.id} · {dir(v.sentido)} · {display(v.estado)}</strong><p>{v.pontos?.length||0} pontos no roteiro oficial</p></div>)}</div>}</Panel></section>}</section>;
 }
 function Notificacoes({api,onGo}){
  const state=useAsync(s=>api(ep.notificacoes,{signal:s}).then(v=>v?.content?array(v.content):pagina(v)),[]);

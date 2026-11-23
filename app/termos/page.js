@@ -3,6 +3,7 @@ import Link from 'next/link';
 export const metadata = {
   title: 'Termos de uso',
   description: 'Condições de uso da página institucional BeVans.',
+  alternates: {canonical:'/termos'},
 };
 
 export default function TermosPage() {

@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ContactForm from '../components/ContactForm';
 
-export const metadata={title:'Contato',description:'Converse sobre o BeVans, rotas, excursões e gestão de frotas em planejamento.'};
+export const metadata={title:'Contato',description:'Converse sobre o BeVans, rotas, excursões e gestão de frotas em planejamento.',alternates:{canonical:'/contato'}};
 
 const topics=[['01','Rotas e turmas','Transporte escolar e universitário, presença e navegação.'],['02','Excursões','Convites, inscrições e embarques já disponíveis no aplicativo; painel web em evolução.'],['03','Gestão de frotas','Futura organização de veículos, motoristas e turmas de empresas.']];
 export default function ContatoPage(){

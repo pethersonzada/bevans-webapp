@@ -33,7 +33,11 @@ async function run(){
  const api=readStagingURL('BEVANS_STAGING_API_URL');
  if(web.origin===api.origin)throw Error('Use origens web e API separadas para testar CORS corretamente.');
  const webBase=stagingBaseUrl(web),apiBase=stagingBaseUrl(api);
- const page=await check(webBase+'/painel');
+ // Bypass autorizado opcional, encaminhado apenas ao host web de homologação.
+ // Jamais enviar à API, Mapbox, Firebase ou registrá-lo em logs.
+ const bypass=process.env.BEVANS_STAGING_VERCEL_BYPASS;
+ const webHeaders=bypass?{'x-vercel-protection-bypass':bypass}:{};
+ const page=await check(webBase+'/painel',{headers:webHeaders});
  expectStatus(page,[200],'Página de login');
  const policy=page.headers.get('permissions-policy')||'';
  if(!policy.includes('geolocation=(self)')||!policy.includes('camera=()')||!policy.includes('microphone=()'))
@@ -42,7 +46,7 @@ async function run(){
  console.log('OK: página da web de homologação e cabeçalhos de proteção.');
 
  const release=await fetch(webBase+'/api/build-info',{
-  method:'GET',cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(12000),
+  method:'GET',headers:webHeaders,cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(12000),
  });
  expectStatus(release,[200],'Identidade do build');
  if(!/no-store/i.test(release.headers.get('cache-control')||''))throw Error('Endpoint de build não desabilitou o cache.');

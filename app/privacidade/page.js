@@ -3,6 +3,7 @@ import Link from 'next/link';
 export const metadata = {
   title: 'Privacidade',
   description: 'Informações sobre o tratamento de dados na página institucional BeVans.',
+  alternates: {canonical:'/privacidade'},
 };
 
 export default function PrivacidadePage() {
