@@ -1,0 +1,45 @@
+name: Assistente público (somente leitura)
+
+on:
+  pull_request:
+    paths:
+      - 'app/assistente/**'
+      - 'app/lib/assistente*.mjs'
+      - 'scripts/verificar-assistente-publico.mjs'
+      - 'tests/assistente-verificacao.test.mjs'
+      - '.github/workflows/assistente-publico.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/assistente/**'
+      - 'app/lib/assistente*.mjs'
+      - 'scripts/verificar-assistente-publico.mjs'
+      - '.github/workflows/assistente-publico.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validar regras locais de origem e iframe
+        run: node --test tests/assistente-verificacao.test.mjs
+      - name: Consultar página pública e Streamlit, sem autenticação
+        run: node scripts/verificar-assistente-publico.mjs
+      - name: Publicar resultado técnico, sem dados pessoais
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: disponibilidade-assistente
+          path: ${{ runner.temp }}/bevans-assistente-publico.json
+          if-no-files-found: ignore
+          retention-days: 7
