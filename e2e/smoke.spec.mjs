@@ -623,3 +623,17 @@ test('página inicial apresenta caminhos por perfil e seção de privacidade com
  const widths=await page.evaluate(()=>({viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth}));
  expect(widths.scrollWidth).toBeLessThanOrEqual(widths.viewport+2);
 });
+
+test('páginas públicas publicam endereço canônico próprio e imagem de compartilhamento',async ({page})=>{
+ for(const path of ['/', '/contato','/excursoes','/termos','/privacidade']){
+  await page.goto(path);
+  const href=await page.locator('link[rel="canonical"]').getAttribute('href');
+  expect(new URL(href).pathname).toBe(path);
+  const og=await page.locator('meta[property="og:image"]').getAttribute('content');
+  expect(new URL(og).pathname).toBe('/images/vetor-com-nome-tema-claro.png');
+ }
+ for(const path of ['/login','/painel','/convite']){
+  await page.goto(path);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
+ }
+});
