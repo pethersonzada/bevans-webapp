@@ -8,6 +8,7 @@ const navigation = [
  { label: 'Para quem é', href: '/#beneficios' },
  { label: 'Modalidades', href: '/#precos' },
  { label: 'Excursões', href: '/excursoes' },
+ { label: 'Assistente', href: '/assistente' },
  { label: 'Dúvidas', href: '/#faq' },
 ];
 export default function Navbar(){
