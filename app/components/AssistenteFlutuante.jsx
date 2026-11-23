@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
+import {useIdentidade} from '../lib/sessao-web.mjs';
 import './assistente-flutuante.css';
 
 const SUGESTOES=['Como entrar em uma turma?','Como funcionam as excursões?','Posso entrar pelo navegador?'];
@@ -12,6 +13,10 @@ function IconeConversa({fechar=false}){
 }
 
 export default function AssistenteFlutuante(){
+ const user=useIdentidade();
+ return <Conversa key={user?.uid||'visitante'}/>;
+}
+function Conversa(){
  const [aberto,setAberto]=useState(false);
  const [iniciado,setIniciado]=useState(false);
  const [pergunta,setPergunta]=useState('');
@@ -21,6 +26,7 @@ export default function AssistenteFlutuante(){
  const botaoRef=useRef(null),janelaRef=useRef(null),fecharRef=useRef(null),fimRef=useRef(null);
  const envioRef=useRef(null),sequencia=useRef(0);
 
+ useEffect(()=>()=>envioRef.current?.abort(),[]);
  function abrir(){setIniciado(true);setAberto(true);}
  function fechar(){setAberto(false);}
  function novaConversa(){
@@ -70,6 +76,7 @@ export default function AssistenteFlutuante(){
  useEffect(()=>{
   if(!aberto)return;
   const anterior=document.activeElement;
+  const lancador=botaoRef.current;
   const overflowAnterior=document.body.style.overflow;
   document.body.style.overflow='hidden';
   fecharRef.current?.focus();
@@ -87,8 +94,8 @@ export default function AssistenteFlutuante(){
   return()=>{
    document.removeEventListener('keydown',aoTeclar);
    document.body.style.overflow=overflowAnterior;
-   if(anterior?.isConnected)anterior.focus();
-   else botaoRef.current?.focus();
+   if(anterior?.isConnected && anterior.getClientRects().length)anterior.focus();
+   else lancador?.focus();
   };
  },[aberto]);
 

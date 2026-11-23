@@ -7,7 +7,7 @@ const navegacao=readFileSync(new URL('../app/painel/PainelNavegacao.jsx',import.
 test('login com estrutura própria e sem cadastro público',()=>{
  assert.match(jsx,/be-auth-story/);
  assert.match(jsx,/be-auth-area/);
- assert.match(jsx,/firebaseSignIn/);
+ assert.match(jsx,/await entrar\(email.trim\(\),password\)/);
  assert.match(jsx,/firebasePasswordReset/);
  assert.doesNotMatch(jsx,/firebaseSignUp|href="\/cadastro"/);
 });

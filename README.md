@@ -95,7 +95,7 @@ O workflow em `.github/workflows/quality.yml` também executa verificações aut
 4. O painel apresenta opções segundo o perfil recuperado (`MOTORISTA`, `PASSAGEIRO` ou `ALUNO`).
 5. As chamadas do painel passam por `app/lib/bevans-api.mjs`; a **autorização definitiva** de acesso a dados e operações pertence ao backend.
 
-A sessão é mantida **em memória da aba**, incluindo o token de atualização. Ao recarregar a página pode ser necessário entrar novamente; nenhuma persistência de sessão em cookies está implementada nesse cliente. O login contempla recuperação de senha pelo fluxo Firebase, conforme a configuração do projeto.
+O SDK oficial do Firebase restaura a conta no mesmo navegador e origem usando persistência local. O painel consulta o perfil próprio no Spring Boot antes de mostrar os módulos. Sair da conta encerra a sessão persistida. Em um computador compartilhado, use “Sair da conta” ao terminar.
 
 ### Painel operacional
 

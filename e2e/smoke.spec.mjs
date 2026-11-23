@@ -3,24 +3,25 @@ import {test,expect} from '@playwright/test';
 const cors={
  'Access-Control-Allow-Origin':'*',
  'Access-Control-Allow-Methods':'GET,POST,PUT,DELETE,OPTIONS',
- 'Access-Control-Allow-Headers':'Authorization,Content-Type,X-Convite,X-Inscricao',
+ 'Access-Control-Allow-Headers':'Authorization,Content-Type,X-Convite,X-Inscricao,X-Client-Version,X-Firebase-gmpid',
  'Cache-Control':'no-store',
 };
 const respond=(route,body,status=200)=>route.fulfill({status,headers:{...cors,'Content-Type':'application/json'},body:JSON.stringify(body)});
 const person=role=>role==='MOTORISTA'?{id:7,nome:'Condutor Homologação',tipo:'MOTORISTA'}:{id:8,nome:'Passageiro Homologação',tipo:'PASSAGEIRO'};
 
-async function mockedLogin(page,role='MOTORISTA'){
- const fakeProfile=person(role);
+async function mockConta(page,role='MOTORISTA',uid='uid-homologacao'){
+ const fakeProfile={...person(role),firebaseUid:uid};
  await page.route('https://identitytoolkit.googleapis.com/**',async route=>{
+  if(route.request().url().includes('accounts:lookup'))return respond(route,{users:[{localId:uid,email:'qa@exemplo.invalid'}]});
   if(!route.request().url().includes('signInWithPassword'))return respond(route,{},404);
-  await respond(route,{idToken:'synthetic-test-token',refreshToken:'synthetic-refresh',localId:'uid-homologacao',expiresIn:'3600'});
+  await respond(route,{idToken:'synthetic-test-token',refreshToken:'synthetic-refresh',localId:uid,expiresIn:'3600'});
  });
  await page.route('https://api.bevans.invalid/**',async route=>{
   const request=route.request();
   if(request.method()==='OPTIONS')return route.fulfill({status:204,headers:cors});
   const url=new URL(request.url()),path=url.pathname;
   if(request.headers().authorization!=='Bearer synthetic-test-token')return respond(route,{message:'Sem sessão'},401);
-  if(path==='/usuarios/por-uid/uid-homologacao')return respond(route,fakeProfile);
+  if(path==='/usuarios/por-uid/'+uid)return respond(route,fakeProfile);
   if(path==='/turmas/motorista/7')return respond(route,[{id:41,nome:'Turma QA',origemNome:'Origem teste',origemLatitude:-8.1,origemLongitude:-35.1,destinoNome:'Destino teste',destinoLatitude:-8.12,destinoLongitude:-35.12}]);
   if(path==='/turmas/usuario/8/todas')return respond(route,[]);
   if(path==='/turmas/41/passageiros')return respond(route,[]);
@@ -31,6 +32,9 @@ async function mockedLogin(page,role='MOTORISTA'){
   if(path==='/excursoes'||path==='/notificacoes')return respond(route,{itens:[],content:[]});
   return respond(route,[]);
  });
+}
+async function mockedLogin(page,role,uid){
+ await mockConta(page,role,uid);
  await page.goto('/painel');
  await page.getByLabel('E-mail').fill('qa@exemplo.invalid');
  await page.getByLabel('Senha',{exact:true}).fill('senha-sintetica');
@@ -340,10 +344,13 @@ test('conta própria: conflito de exclusão preserva sessão e 202 encerra sem a
 });
 
 async function loginComTokenPertoDoVencimento(page){
+ const inicio=Date.now();
+ await page.clock.setFixedTime(inicio);
  await page.route('https://identitytoolkit.googleapis.com/**',route=>{
   const url=route.request().url();
+  if(url.includes('lookup'))return respond(route,{users:[{localId:'uid-sessao-teste',email:'qa@exemplo.invalid'}]});
   if(url.includes('signInWithPassword'))return respond(route,{
-   idToken:'short-lived-token',refreshToken:'refresh-only-test',localId:'uid-sessao-teste',expiresIn:'30',
+   idToken:'short-lived-token',refreshToken:'refresh-only-test',localId:'uid-sessao-teste',expiresIn:'3600',
   });
   return respond(route,{},404);
  });
@@ -363,6 +370,9 @@ async function loginComTokenPertoDoVencimento(page){
  await page.getByLabel('E-mail').fill('qa@exemplo.invalid');
  await page.getByLabel('Senha',{exact:true}).fill('senha-sintetica');
  await page.getByRole('button',{name:'Entrar',exact:true}).click();
+ await expect(page.locator('.be-app')).toBeVisible();
+ await page.clock.setFixedTime(inicio+3600000);
+ await abrirArea(page,'Turmas');
 }
 
 test('Firebase 503 não derruba o passageiro; três consultas simultâneas renovam token uma vez',async ({page})=>{
@@ -375,8 +385,9 @@ test('Firebase 503 não derruba o passageiro; três consultas simultâneas renov
  await loginComTokenPertoDoVencimento(page);
  const nav=page.getByRole('navigation',{name:'Áreas do painel'});
  await expect(nav).toBeVisible();
- await expect(page.getByRole('heading',{name:'Olá, Passageiro.'})).toBeVisible();
+ await expect(page.getByText(/Não foi possível renovar o acesso/).first()).toBeVisible();
  await expect.poll(()=>refreshCalls).toBe(1);
+ await abrirArea(page,'Pedidos');
  await abrirArea(page,'Turmas');
  await expect(page.getByRole('heading',{name:'Turmas vinculadas'})).toBeVisible();
  await expect.poll(()=>refreshCalls).toBe(2);
@@ -748,4 +759,40 @@ test('botão flutuante está presente nas demais rotas sem criar iframe ou abrir
   await expect(page.getByRole('button',{name:'Abrir assistente BeVans'})).toBeVisible();
   await expect(page.locator('iframe')).toHaveCount(0);
  }
+});
+
+test('sessão acompanha navegação, refresh, reabertura e logout',async ({page,browser})=>{
+ await mockedLogin(page);
+ await page.getByRole('link',{name:'Voltar ao site',exact:true}).click();
+ await page.getByRole('link',{name:'Abrir meu painel BeVans'}).click();
+ await expect(page).toHaveURL(/\/painel$/);
+ await expect(page.getByText('Painel do motorista',{exact:true})).toBeVisible();
+ await page.reload();
+ await expect(page.locator('.be-app')).toBeVisible();
+ const dados=await page.context().storageState({indexedDB:true});
+ const reaberto=await browser.newContext({baseURL:new URL(page.url()).origin,storageState:dados});
+ try{
+  const nova=await reaberto.newPage();
+  await mockConta(nova);
+  await nova.goto('/login');
+  await expect(nova).toHaveURL(/\/painel$/);
+  await expect(nova.getByText('Painel do motorista',{exact:true})).toBeVisible();
+  await nova.getByRole('button',{name:'Sair da conta',exact:true}).click();
+  await expect(nova.getByLabel('E-mail')).toBeVisible();
+  await nova.reload();
+  await expect(nova.getByLabel('E-mail')).toBeVisible();
+  await mockedLogin(nova,'PASSAGEIRO','uid-passageiro');
+  await expect(nova.getByText('Painel do passageiro',{exact:true})).toBeVisible();
+  await expect(nova.getByText('Condutor Homologação')).toHaveCount(0);
+ }finally{await reaberto.close();}
+});
+
+test('senha inválida mantém os dados privados fora da tela',async ({page})=>{
+ await page.route('https://identitytoolkit.googleapis.com/**',route=>respond(route,{error:{message:'INVALID_LOGIN_CREDENTIALS'}},400));
+ await page.goto('/login');
+ await page.getByLabel('E-mail').fill('qa@exemplo.invalid');
+ await page.getByLabel('Senha',{exact:true}).fill('senha-incorreta');
+ await page.getByRole('button',{name:'Entrar',exact:true}).click();
+ await expect(page.getByRole('alert')).toContainText('Confira o e-mail e a senha');
+ await expect(page.locator('.be-app')).toHaveCount(0);
 });
