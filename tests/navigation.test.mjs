@@ -73,7 +73,7 @@ test('footer links point to existing pages and home sections', () => {
   const sections=['Hero','Features','Experience','Pricing','Faq']
     .map(name=>read('app/components/'+name+'.js'))
     .join('\n');
-  const links=[...footer.matchAll(/<Link\\b[^>]*href="([^"]+)"/g)].map(match=>match[1]);
+  const links=[...footer.matchAll(/<Link\b[^>]*href="([^"]+)"/g)].map(match=>match[1]);
   assert.ok(links.length>0);
   for (const href of links) {
     if (href.startsWith('/#')) {
