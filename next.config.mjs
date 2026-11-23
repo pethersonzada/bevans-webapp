@@ -32,6 +32,14 @@ const nextConfig = {
           { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
         ],
       },
+      // A proteção vale no HTTP mesmo quando o cliente ainda não carregou o HTML.
+      ...['/login','/painel','/cadastro'].map(source=>({
+        source,
+        headers:[
+          {key:'Referrer-Policy',value:'no-referrer'},
+          {key:'X-Robots-Tag',value:'noindex, nofollow, noarchive'},
+        ],
+      })),
     ];
   },
 };

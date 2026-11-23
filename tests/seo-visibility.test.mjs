@@ -44,8 +44,24 @@ test('headers HTTP impedem indexação no Preview e mantêm produção pública'
   assert.equal(root['x-robots-tag'],undefined);
   const invite=Object.fromEntries(prod.find(x=>x.source==='/convite').headers.map(x=>[x.key.toLowerCase(),x.value]));
   assert.match(invite['x-robots-tag'],/noindex/);
+  for(const path of ['/login','/painel','/cadastro']){
+   const headers=Object.fromEntries(prod.find(x=>x.source===path).headers.map(x=>[x.key.toLowerCase(),x.value]));
+   assert.match(headers['x-robots-tag'],/noindex/);
+   assert.equal(headers['referrer-policy'],'no-referrer');
+  }
  }finally{
   if(old===undefined)delete process.env.VERCEL_ENV;
   else process.env.VERCEL_ENV=old;
  }
+});
+
+
+test('cartão Open Graph usa rota horizontal de 1200 por 630 sem depender de arquivo remoto',()=>{
+ const layout=readFileSync(new URL('../app/layout.js',import.meta.url),'utf8');
+ const source=readFileSync(new URL('../app/opengraph-image.jsx',import.meta.url),'utf8');
+ assert.match(layout,/summary_large_image/);
+ assert.match(layout,/\/opengraph-image/);
+ assert.match(source,/width:1200,height:630/);
+ assert.match(source,/ImageResponse/);
+ assert.doesNotMatch(source,/https?:\/\//);
 });

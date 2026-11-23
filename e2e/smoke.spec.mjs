@@ -630,10 +630,33 @@ test('páginas públicas publicam endereço canônico próprio e imagem de compa
   const href=await page.locator('link[rel="canonical"]').getAttribute('href');
   expect(new URL(href).pathname).toBe(path);
   const og=await page.locator('meta[property="og:image"]').getAttribute('content');
-  expect(new URL(og).pathname).toBe('/images/vetor-com-nome-tema-claro.png');
+  expect(new URL(og).pathname).toBe('/opengraph-image');
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content','summary_large_image');
  }
  for(const path of ['/login','/painel','/convite']){
   await page.goto(path);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
  }
+});
+
+
+test('cartão social é PNG horizontal válido, com proteção HTTP para telas privadas',async ({page,request})=>{
+ const response=await request.get('/opengraph-image');
+ expect(response.status()).toBe(200);
+ expect(response.headers()['content-type']).toMatch(/^image\/png/);
+ const buffer=await response.body();
+ expect(buffer.length).toBeGreaterThan(500);
+ expect(buffer.subarray(0,8).toString('hex')).toBe('89504e470d0a1a0a');
+ expect(buffer.readUInt32BE(16)).toBe(1200);
+ expect(buffer.readUInt32BE(20)).toBe(630);
+ for(const path of ['/login','/painel','/convite']){
+  const res=await request.get(path);
+  expect(res.status()).toBe(200);
+  expect(res.headers()['x-robots-tag']).toMatch(/noindex/);
+  expect(res.headers()['referrer-policy']).toBe('no-referrer');
+ }
+ const robots=await request.get('/robots.txt');
+ expect(robots.status()).toBe(200);
+ const content=await robots.text();
+ for(const path of ['/login','/painel','/convite','/api/'])expect(content).toContain(path);
 });
