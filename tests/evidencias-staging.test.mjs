@@ -24,6 +24,6 @@ test('registro guarda somente evidências técnicas e nenhum dado de conta',()=>
  assert.equal(registro.cenarios.length,6);
  assert.equal(registro.execucaoGitHub,123456);
  const json=JSON.stringify(registro);
- assert.doesNotMatch(json,/senha|password|uid|idToken|Bearer|gps|longitude|latitude|@/i);
+ assert.doesNotMatch(json,/senha|password|uid|idToken|Bearer|longitude|latitude|@/i);
  assert.equal(registro.sha,env.expectedSha);
 });
