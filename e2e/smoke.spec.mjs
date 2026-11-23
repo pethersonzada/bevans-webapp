@@ -660,3 +660,50 @@ test('cartão social é PNG horizontal válido, com proteção HTTP para telas p
  const content=await robots.text();
  for(const path of ['/login','/painel','/convite','/api/'])expect(content).toContain(path);
 });
+
+
+test('assistente público abre no menu e incorpora Streamlit com alternativa externa',async ({page})=>{
+ await page.route('https://bevans-suporte.streamlit.app/**',route=>route.fulfill({
+  status:200,contentType:'text/html',
+  body:'<!doctype html><html lang="pt-BR"><body><main><h1>Chat simulado do Assistente BeVans</h1><p>Resposta fictícia do FAQ.</p></main></body></html>'
+ }));
+ await page.goto('/');
+ await page.getByRole('navigation',{name:'Navegação principal'}).getByRole('link',{name:'Assistente'}).click();
+ await expect(page).toHaveURL(/\/assistente$/);
+ await expect(page.getByRole('heading',{name:'Seu espaço para tirar dúvidas sobre o BeVans.'})).toBeVisible();
+ const iframe=page.locator('iframe[title="Conversa com o Assistente BeVans"]');
+ await expect(iframe).toBeVisible();
+ await expect(iframe).toHaveAttribute('src','https://bevans-suporte.streamlit.app/?embed=true');
+ await expect(iframe).toHaveAttribute('referrerpolicy','no-referrer');
+ await expect(page.frameLocator('iframe[title="Conversa com o Assistente BeVans"]').getByRole('heading',{name:'Chat simulado do Assistente BeVans'})).toBeVisible();
+ const links=page.getByRole('link',{name:/Abrir assistente (em nova aba|diretamente)/});
+ expect(await links.count()).toBeGreaterThanOrEqual(2);
+ for(const link of await links.all()){
+  await expect(link).toHaveAttribute('href','https://bevans-suporte.streamlit.app/');
+  await expect(link).toHaveAttribute('target','_blank');
+  await expect(link).toHaveAttribute('rel',/noopener noreferrer/);
+ }
+ await expect(page.getByText(/Não compartilhe senhas, tokens/)).toBeVisible();
+ await expect(page.getByRole('contentinfo').getByRole('link',{name:'Assistente'})).toHaveAttribute('href','/assistente');
+});
+
+test('assistente acessível no menu móvel, sem rolagem horizontal e com tema escuro',async ({page})=>{
+ await page.route('https://bevans-suporte.streamlit.app/**',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><html><body>Conversa de demonstração</body></html>'}));
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/');
+ await page.getByRole('button',{name:'Abrir menu'}).click();
+ await page.locator('#mobile-navigation').getByRole('link',{name:'Assistente'}).click();
+ await expect(page).toHaveURL(/\/assistente$/);
+ await expect(page.getByRole('heading',{name:'Assistente BeVans',exact:true})).toBeVisible();
+ await page.evaluate(()=>{document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';});
+ await expect(page.locator('iframe[title="Conversa com o Assistente BeVans"]')).toBeVisible();
+ const box=await page.evaluate(()=>{
+  const root=document.documentElement;
+  const frame=document.querySelector('.be-assistente-frame-shell').getBoundingClientRect();
+  return {width:innerWidth,scroll:root.scrollWidth,frameLeft:frame.left,frameRight:frame.right};
+ });
+ expect(box.scroll).toBeLessThanOrEqual(box.width+2);
+ expect(box.frameLeft).toBeGreaterThanOrEqual(-1);
+ expect(box.frameRight).toBeLessThanOrEqual(box.width+1);
+ await expect(page.getByRole('link',{name:/Abrir assistente diretamente/})).toBeVisible();
+});

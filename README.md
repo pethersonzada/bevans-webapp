@@ -185,3 +185,17 @@ A `main` conta com um workflow `Deployment HTTP smoke (read only)` que verifica 
 O workflow `Staging security smoke (read only)` é manual e exige duas origens **isoladas** (web e API) e um SHA esperado. Antes de usá-lo, siga [docs/staging-setup-web.md](docs/staging-setup-web.md). Previews Vercel são protegidos por SSO; testes não devem desabilitar essa proteção por conveniência.
 
 Um deploy `READY` significa que a versão foi construída e disponibilizada, não que o fluxo completo foi homologado.
+
+
+## Assistente virtual na versão web
+
+A rota pública [`/assistente`](https://bevans-webapp.vercel.app/assistente) incorpora o [Assistente BeVans](https://bevans-suporte.streamlit.app/) usando `https://bevans-suporte.streamlit.app/?embed=true`. A Vercel hospeda apenas a página Next.js; a conversa, o RAG e o FAQ continuam hospedados no **Streamlit Community Cloud** e mantidos no repositório `pethersonzada/bevans-agente`.
+
+- A URL pública fica em `app/lib/assistente.mjs`; altere as duas constantes se o aplicativo do Streamlit mudar de endereço. Não é necessário configurar variável de ambiente para esse endereço público.
+- Não coloque `OPENAI_API_KEY`, tokens do Firebase ou credenciais Python em `NEXT_PUBLIC_*` ou no navegador. O assistente é externo e **não recebe automaticamente** a sessão BeVans. A integração é um iframe, sem API nativa de chat no webapp.
+- Para testar localmente, execute `npm ci && npm test && npm run lint && npm run build && npm run dev`; acesse `http://localhost:3000/assistente`, confira o menu desktop/móvel, o tema claro/escuro, a moldura e o link **Abrir assistente em nova aba**.
+- Para homologar na Vercel, confirme a publicação do SHA esperado, abra `/assistente` em navegador real e faça uma pergunta fictícia ao FAQ. Verifique que o Streamlit está **público e acordado**; em caso de bloqueio por iframe, extensões, CSP ou indisponibilidade, use o link externo sempre visível. O evento `onload` de um iframe não comprova que o chat ficou utilizável.
+- No projeto Streamlit, configure `OPENAI_API_KEY` exclusivamente nos **Secrets do Streamlit**. Não exponha nomes, endereços, localização, senhas, credenciais ou dados de menores nas perguntas.
+- O CSS e a moldura estão em `app/assistente/assistente.css`. `next.config.mjs` não contém regra `frame-src` que impeça este domínio; qualquer nova política CSP deve permitir **somente** a origem `https://bevans-suporte.streamlit.app` para o iframe.
+
+Os testes Playwright usam uma resposta **simulada** para o iframe, portanto comprovam navegação, composição e alternativa externa, não a geração de respostas da OpenAI nem a disponibilidade permanente do Streamlit.
