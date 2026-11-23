@@ -1,37 +1,24 @@
 import {writeFile,appendFile} from 'node:fs/promises';
-import {validarPaginaPublica,validarRespostaStreamlit} from '../app/lib/assistente-verificacao.mjs';
+import {validarPaginaAssistente,validarRespostaChat} from '../app/lib/assistente-verificacao.mjs';
 
-// Sem credenciais, sessão ou pergunta à OpenAI. Apenas HTML e cabeçalhos públicos.
-const AGENTE='https://bevans-suporte.streamlit.app/?embed=true';
-const WEB='https://bevans-webapp.vercel.app/assistente';
-const resumo={alvo:'Assistente BeVans',metodo:'GET somente leitura',chatRealTestado:false,resultado:'inconclusivo'};
-
-async function consultar(url,{tentativas=3}={}){
- let ultimo;
- for(let i=0;i<tentativas;i++){
-  try{
-   const resposta=await fetch(url,{
-    redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(20000),
-    headers:{Accept:'text/html'},
-   });
-   const html=await resposta.text();
-   return {status:resposta.status,url:resposta.url,tipo:resposta.headers.get('content-type')||'',
-    frameOptions:resposta.headers.get('x-frame-options')||'',csp:resposta.headers.get('content-security-policy')||'',html};
-  }catch(erro){
-   ultimo=erro;
-   if(i<tentativas-1)await new Promise(resolve=>setTimeout(resolve,8000));
-  }
- }
- throw Error('Falha de conexão HTTP pública: '+(ultimo?.name==='TimeoutError'?'tempo limite':'rede indisponível'));
-}
+const BASE='https://bevans-webapp.vercel.app';
+const resumo={alvo:'Chat nativo do BeVans',metodo:'GET página e POST FAQ público, sem credenciais',resultado:'inconclusivo',modeloGenerativoTestado:false};
 
 try{
- const [web,agente]=await Promise.all([consultar(WEB),consultar(AGENTE)]);
- validarPaginaPublica(web);
- validarRespostaStreamlit(agente);
- resumo.resultado='http-e-cabecalhos-aprovados';
- resumo.detalhe='A página web contém iframe e fallback; Streamlit respondeu HTML 200 sem bloqueio explícito nos cabeçalhos. A conversa real e a renderização visual ainda precisam de aceite humano.';
- console.log('APROVADO: página /assistente, origem Streamlit e políticas HTTP de incorporação.');
+ const page=await fetch(BASE+'/assistente',{headers:{Accept:'text/html'},cache:'no-store',signal:AbortSignal.timeout(15000)});
+ const html=await page.text();
+ validarPaginaAssistente({status:page.status,html});
+ const response=await fetch(BASE+'/api/assistente',{
+  method:'POST',headers:{'Content-Type':'application/json',Origin:BASE},
+  body:JSON.stringify({pergunta:'Quais funcionalidades já estão disponíveis?',historico:[]}),
+  cache:'no-store',signal:AbortSignal.timeout(18000),
+ });
+ const tipo=response.headers.get('content-type')||'';
+ const dados=await response.json();
+ validarRespostaChat({status:response.status,tipo,dados});
+ resumo.resultado='chat-nativo-http-aprovado';
+ resumo.detalhe='A página e o endpoint do BeVans responderam. A geração por modelo e as jornadas autenticadas não fazem parte deste teste.';
+ console.log('APROVADO: chat e FAQ responderam pelo domínio do BeVans.');
 }catch(e){
  resumo.resultado='bloqueado';
  resumo.detalhe=e.message;
@@ -40,12 +27,10 @@ try{
 }
 if(process.env.GITHUB_STEP_SUMMARY)
  await appendFile(process.env.GITHUB_STEP_SUMMARY,
-  '## Assistente BeVans: prova pública\n\n'+
+  '## Chat BeVans: verificação pública\n\n'+
   '- Resultado: **'+resumo.resultado+'**\n'+
-  '- Tipo: GET sem sessão, tokens ou perguntas ao modelo\n'+
-  '- Limite: não demonstra resposta real nem compatibilidade visual do iframe\n'+
+  '- Tipo: GET página e POST pergunta genérica, sem dados pessoais\n'+
+  '- Limite: modelo pago e jornadas reais não testados\n'+
   '- Detalhe: '+resumo.detalhe+'\n');
-if(process.env.RUNNER_TEMP){
- const file=process.env.RUNNER_TEMP+'/bevans-assistente-publico.json';
- await writeFile(file,JSON.stringify(resumo,null,2)+'\n',{mode:0o600});
-}
+if(process.env.RUNNER_TEMP)
+ await writeFile(process.env.RUNNER_TEMP+'/bevans-assistente-publico.json',JSON.stringify(resumo,null,2)+'\n',{mode:0o600});
