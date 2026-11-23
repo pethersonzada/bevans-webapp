@@ -28,8 +28,16 @@ function podeConsultar(request){
 
 export async function POST(request){
  const origem=request.headers.get('origin');
- if(origem&&origem!==new URL(request.url).origin)
-  return responder({erro:'Origem da solicitação não autorizada.'},403);
+ if(origem){
+  let autorizado=false;
+  try{
+   const recebido=new URL(origem);
+   const host=request.headers.get('host')||new URL(request.url).host;
+   autorizado=(recebido.host===host||recebido.origin===new URL(request.url).origin)&&
+    (recebido.protocol==='https:'||['localhost','127.0.0.1'].includes(recebido.hostname));
+  }catch{}
+  if(!autorizado)return responder({erro:'Origem da solicitação não autorizada.'},403);
+ }
  const tipo=request.headers.get('content-type')||'';
  if(!tipo.toLowerCase().startsWith('application/json'))
   return responder({erro:'Envie uma pergunta em JSON.'},415);
