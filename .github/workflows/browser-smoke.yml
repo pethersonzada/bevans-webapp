@@ -39,11 +39,13 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/bevans-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @playwright/test@1.56.1
           ln -s "$RUNNER_TEMP/bevans-playwright/node_modules/@playwright/test" node_modules/@playwright/test
       - name: Install Chromium and OS dependencies
-        run: "$RUNNER_TEMP/bevans-playwright/node_modules/.bin/playwright" install --with-deps chromium
+        run: |
+          "$RUNNER_TEMP/bevans-playwright/node_modules/.bin/playwright" install --with-deps chromium
       - name: Build with synthetic public configuration
         run: npm run build
       - name: Run browser smoke tests (no real credentials or backend mutations)
-        run: "$RUNNER_TEMP/bevans-playwright/node_modules/.bin/playwright" test --config=e2e/playwright.config.mjs
+        run: |
+          "$RUNNER_TEMP/bevans-playwright/node_modules/.bin/playwright" test --config=e2e/playwright.config.mjs
       - name: Upload browser report on failure
         if: failure()
         uses: actions/upload-artifact@v4
