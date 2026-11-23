@@ -24,3 +24,16 @@ test('package-lock contém exatamente as versões declaradas',()=>{
  assert.match(lock.packages['node_modules/next'].integrity,/^sha512-/);
  assert.match(lock.packages['node_modules/eslint-config-next'].integrity,/^sha512-/);
 });
+
+test('autenticação usa apenas SDK Firebase modular sem dependências extras de Firestore e gRPC',()=>{
+ assert.equal(project.dependencies.firebase,undefined);
+ assert.equal(lock.packages[''].dependencies.firebase,undefined);
+ assert.ok(project.dependencies['@firebase/app']);
+ assert.ok(project.dependencies['@firebase/auth']);
+ assert.equal(lock.packages['node_modules/firebase'],undefined);
+ assert.equal(lock.packages['node_modules/@grpc/grpc-js'],undefined);
+ assert.equal(lock.packages['node_modules/@firebase/firestore'],undefined);
+ const source=readFileSync(new URL('../app/lib/sessao-web.mjs',import.meta.url),'utf8');
+ assert.match(source,/from '@firebase\\/app'/);
+ assert.match(source,/from '@firebase\\/auth'/);
+});
