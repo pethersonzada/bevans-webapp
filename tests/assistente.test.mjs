@@ -1,35 +1,34 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {URL_ASSISTENTE,URL_ASSISTENTE_EMBUTIDO} from '../app/lib/assistente.mjs';
 
 const ler=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 
-test('assistente utiliza exclusivamente a origem pública do Streamlit com embed',()=>{
- const direto=new URL(URL_ASSISTENTE),embed=new URL(URL_ASSISTENTE_EMBUTIDO);
- assert.equal(direto.protocol,'https:');
- assert.equal(direto.hostname,'bevans-suporte.streamlit.app');
- assert.equal(embed.origin,direto.origin);
- assert.equal(embed.pathname,'/');
- assert.equal(embed.searchParams.get('embed'),'true');
- assert.equal([...embed.searchParams.keys()].length,1);
-});
-
-test('página incorpora o serviço externo sem expor autenticação nem criar API de chat',()=>{
+test('página do assistente abre a conversa integrada e não direciona para Streamlit',()=>{
  const pagina=ler('app/assistente/page.js');
- assert.match(pagina,/URL_ASSISTENTE_EMBUTIDO/);
- assert.match(pagina,/title="Conversa com o Assistente BeVans"/);
- assert.match(pagina,/referrerPolicy="no-referrer"/);
- assert.match(pagina,/sandbox="allow-scripts allow-same-origin allow-forms/);
- assert.match(pagina,/rel="noopener noreferrer"/);
+ const botao=ler('app/assistente/BotaoAbrirAssistente.jsx');
+ assert.match(pagina,/BotaoAbrirAssistente/);
  assert.match(pagina,/id="conteudo"/);
- assert.doesNotMatch(pagina,/OPENAI_API_KEY|NEXT_PUBLIC_BEVANS_FIREBASE|Authorization:|Bearer\s/);
+ assert.match(pagina,/canonical:'\/assistente'/);
+ assert.match(botao,/bevans:abrir-assistente/);
+ assert.doesNotMatch(pagina,/iframe|streamlit\.app|URL_ASSISTENTE_EMBUTIDO/);
 });
 
-test('links públicos ficam disponíveis na navegação e no rodapé',()=>{
+test('API interna do BeVans responde sem solicitar segredo ao navegador',()=>{
+ const api=ler('app/api/assistente/route.js');
+ const cliente=ler('app/components/AssistenteFlutuante.jsx');
+ assert.match(api,/export async function POST/);
+ assert.match(api,/validarConversa/);
+ assert.match(api,/responderPeloFaq/);
+ assert.match(api,/BEVANS_ASSISTENTE_IA/);
+ assert.match(api,/OPENAI_API_KEY/);
+ assert.match(cliente,/fetch\('\/api\/assistente'/);
+ assert.doesNotMatch(cliente,/OPENAI_API_KEY|Authorization:|Bearer\s|iframe|streamlit\.app/);
+});
+
+test('links do assistente continuam acessíveis no menu público e no rodapé',()=>{
  const menu=ler('app/components/Navbar.js');
  const rodape=ler('app/components/Footer.js');
  assert.match(menu,/label: 'Assistente', href: '\/assistente'/);
  assert.match(rodape,/<Link href="\/assistente">Assistente<\/Link>/);
- assert.match(ler('app/assistente/page.js'),/canonical:'\/assistente'/);
 });
