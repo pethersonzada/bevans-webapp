@@ -29,7 +29,7 @@ export async function validarWebPublica({baseUrl,expectedSha,target,fetchImpl=fe
  const call=async(path)=>{
   const res=await fetchImpl(origin+path,{
    method:'GET',redirect:'manual',cache:'no-store',
-   headers:{Accept:path==='/api/build-info'?'application/json':'text/html, */*'},
+   headers:{Accept:path==='/api/build-info'?'application/json':path==='/opengraph-image'?'image/png':'text/html, */*'},
    signal:AbortSignal.timeout(12000),
   });
   return res;
@@ -54,7 +54,7 @@ export async function validarWebPublica({baseUrl,expectedSha,target,fetchImpl=fe
   if(i<attempts-1)await sleep(intervalMs);
  }
  exigir(versionOk,'O SHA esperado não foi publicado neste ambiente. Não aprovar o release.');
- const pages=['/painel','/convite'];
+ const pages=['/login','/painel','/convite'];
  for(const page of pages){
   const r=await call(page);
   exigir(r.status===200,page+' não retornou HTTP 200.');
@@ -62,17 +62,25 @@ export async function validarWebPublica({baseUrl,expectedSha,target,fetchImpl=fe
   exigir(r.headers.get('x-frame-options')==='DENY',page+' permite enquadramento.');
   const policy=r.headers.get('permissions-policy')||'';
   exigir(policy.includes('geolocation=(self)')&&policy.includes('camera=()')&&policy.includes('microphone=()'),page+' não possui Permissions-Policy esperada.');
-  if(page==='/convite'){
-   exigir(r.headers.get('referrer-policy')==='no-referrer','Convite sem referrer-policy estrito.');
-   exigir(/noindex/i.test(r.headers.get('x-robots-tag')||''),'Convite indexável por ausência de noindex.');
-  }
+  exigir(r.headers.get('referrer-policy')==='no-referrer',page+' sem referrer-policy estrito.');
+  exigir(/noindex/i.test(r.headers.get('x-robots-tag')||''),page+' indexável por ausência de noindex.');
  }
+ // Confirma o recurso realmente servido em produção, além dos metadados HTML.
+ const social=await call('/opengraph-image');
+ exigir(social.status===200,'Imagem social não retornou HTTP 200.');
+ exigir(/^image\/png(?:;|$)/i.test(social.headers.get('content-type')||''),'Imagem social sem Content-Type PNG.');
+ const raw=await social.arrayBuffer();
+ exigir(raw.byteLength>=24,'Imagem social está vazia ou incompleta.');
+ const png=new DataView(raw);
+ const signature=[137,80,78,71,13,10,26,10];
+ exigir(signature.every((value,index)=>png.getUint8(index)===value),'Imagem social sem assinatura PNG.');
+ exigir(png.getUint32(16)===1200&&png.getUint32(20)===630,'Imagem social com dimensões incompatíveis.');
  const robots=await call('/robots.txt');
  exigir(robots.status===200,'robots.txt não retornou HTTP 200.');
  const data=await robots.text();
  if(target==='preview')exigir(/Disallow:\s*\//i.test(data),'Preview deve bloquear indexação integral.');
  else {
-  for(const path of ['/painel','/convite','/api/'])exigir(data.includes('Disallow: '+path),'robots.txt não protege '+path);
+  for(const path of ['/login','/painel','/convite','/api/'])exigir(data.includes('Disallow: '+path),'robots.txt não protege '+path);
  }
- return {sha:expectedSha.toLowerCase(),target,verifiedPaths:['/api/build-info',...pages,'/robots.txt']};
+ return {sha:expectedSha.toLowerCase(),target,verifiedPaths:['/api/build-info',...pages,'/opengraph-image','/robots.txt']};
 }
