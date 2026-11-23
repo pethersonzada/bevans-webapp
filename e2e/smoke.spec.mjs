@@ -846,6 +846,8 @@ test('assistente informa indisponibilidade e aceita nova pergunta',async ({page}
  await page.route('**/api/assistente',route=>route.abort());
  await chat.getByRole('button',{name:'Como entrar em uma turma?'}).click();
  await expect(chat.getByRole('alert')).toHaveText('Falha de conexão. Tente novamente.');
+ await expect(chat.getByLabel('Sua mensagem')).toHaveValue('Como entrar em uma turma?');
+ await expect(chat.locator('.bev-chat-message-user')).toHaveCount(0);
  await page.unroute('**/api/assistente');
  await chat.getByLabel('Sua mensagem').fill('Como entrar em uma turma?');
  await chat.getByRole('button',{name:'Enviar mensagem'}).click();
@@ -862,4 +864,17 @@ test('links de excursões e contato funcionam com JavaScript desativado',async (
    expect(new URL(page.url()).pathname).toBe(path);
   }
  }finally{await ctx.close();}
+});
+
+test('configurações deixam de mostrar carregamento após erro e permitem nova tentativa',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ await page.route('https://api.bevans.invalid/notificacoes/preferencias',route=>
+  respond(route,{mensagem:'Serviço de preferências temporariamente indisponível.'},503));
+ await abrirArea(page,'Configurações');
+ await expect(page.getByText('Preferências indisponíveis. Tente atualizar novamente.')).toBeVisible();
+ await expect(page.getByRole('alert').filter({hasText:'Serviço de preferências temporariamente indisponível.'})).toBeVisible();
+ await page.unroute('https://api.bevans.invalid/notificacoes/preferencias');
+ await page.getByRole('heading',{name:'Configurações da conta'}).locator('..').getByRole('button',{name:'Atualizar',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Salvar preferências'})).toBeVisible();
+ await expect(page.getByText('Preferências indisponíveis. Tente atualizar novamente.')).toHaveCount(0);
 });

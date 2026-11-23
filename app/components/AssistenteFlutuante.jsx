@@ -52,10 +52,17 @@ function Conversa(){
    const dados=await response.json().catch(()=>({}));
    if(!response.ok||typeof dados.resposta!=='string')
     throw Error(dados.erro||'Não foi possível consultar o assistente.');
+   // Uma resposta antiga não pode reaparecer depois de "Nova conversa".
+   if(envioRef.current!==controller)return;
    setMensagens(atual=>[...atual,{id:++sequencia.current,role:'assistant',content:dados.resposta,modo:dados.modo}]);
    if(dados.aviso)setErro(dados.aviso);
   }catch(e){
-   if(e.name!=='AbortError')setErro(e instanceof TypeError?'Falha de conexão. Tente novamente.':e.message||'Não foi possível consultar o assistente.');
+   if(e.name!=='AbortError'&&envioRef.current===controller){
+    // Falha não é resposta: devolve a pergunta ao campo para facilitar a tentativa.
+    setMensagens(atual=>atual.filter(m=>m.id!==id));
+    setPergunta(valor);
+    setErro(e instanceof TypeError?'Falha de conexão. Tente novamente.':e.message||'Não foi possível consultar o assistente.');
+   }
   }finally{
    if(envioRef.current===controller){envioRef.current=null;setOcupado(false);}
   }

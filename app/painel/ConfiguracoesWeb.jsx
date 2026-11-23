@@ -8,9 +8,9 @@ const message=e=>e instanceof Error?e.message:'Falha ao consultar configuraçõe
 export default function ConfiguracoesWeb({api,profile,driver,session,isCurrent,onSessionRotated,onDeletionPending}){
  const [preferencias,setPreferencias]=useState(null),[contato,setContato]=useState(null),[telefone,setTelefone]=useState(''),[habilitado,setHabilitado]=useState(false),[aceite,setAceite]=useState(false);
  const [turmas,setTurmas]=useState([]),[turmaId,setTurmaId]=useState(''),[motorista,setMotorista]=useState(null);
- const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const load=useCallback(async()=>{
-  setError('');
+  setError('');setLoading(true);
   try{
    const [prefs,ct,groups]=await Promise.all([
     api('/notificacoes/preferencias'),
@@ -27,6 +27,7 @@ export default function ConfiguracoesWeb({api,profile,driver,session,isCurrent,o
     setTurmas(groups);
    }
   }catch(e){setError(message(e));}
+  finally{setLoading(false);}
  },[api,driver,profile.id]);
  useEffect(()=>{Promise.resolve().then(()=>load());},[load]);
  async function update(task,success){
@@ -59,7 +60,7 @@ export default function ConfiguracoesWeb({api,profile,driver,session,isCurrent,o
   }catch(e){setError(message(e));}finally{setBusy(false);}
  }
  return <section className="be-section">
-  <div className="be-row"><h2>Configurações da conta</h2><button className="be-btn" type="button" onClick={load}>Atualizar</button></div>
+  <div className="be-row"><h2>Configurações da conta</h2><button className="be-btn" type="button" disabled={busy||loading} onClick={load}>Atualizar</button></div>
   <p className="be-muted">Preferências associadas à sua conta autenticada. O recebimento de notificações push no navegador depende de implementação específica e de autorização do navegador.</p>
   {error&&<p className="be-error" role="alert">{error}</p>}{notice&&<p role="status" className="be-alert">{notice}</p>}
   <div className="be-settings-layout">
@@ -68,9 +69,10 @@ export default function ConfiguracoesWeb({api,profile,driver,session,isCurrent,o
     {preferencias?<><div className="be-form"><label style={{display:'flex',flexDirection:'row',alignItems:'center',gap:10}}><input type="checkbox" checked={preferencias.pushOperacional} onChange={e=>setPreferencias(p=>({...p,pushOperacional:e.target.checked}))} style={{width:18}}/>Avisos operacionais</label>
      <label style={{display:'flex',flexDirection:'row',alignItems:'center',gap:10}}><input type="checkbox" checked={preferencias.pushInformativo} onChange={e=>setPreferencias(p=>({...p,pushInformativo:e.target.checked}))} style={{width:18}}/>Avisos informativos</label>
     </div><button className="be-btn primary" type="button" disabled={busy} onClick={savePrefs}>Salvar preferências</button>
-    <p className="be-muted">Estas opções controlam as preferências no servidor e não registram automaticamente este navegador para push.</p></>:<p>Carregando preferências…</p>}
+    <p className="be-muted">Estas opções controlam as preferências no servidor e não registram automaticamente este navegador para push.</p></>:loading?<p role="status">Carregando preferências…</p>:<p className="be-muted">Preferências indisponíveis. Tente atualizar novamente.</p>}
    </section>
    {driver?<section className="be-card"><h3>Contato comercial do motorista</h3><p className="be-muted">O número só aparece para passageiros aprovados quando a divulgação estiver habilitada.</p>
+    {!contato&&(loading?<p role="status">Carregando contato…</p>:<p className="be-muted">Contato comercial indisponível. Tente atualizar novamente.</p>)}
     {contato&&<div className="be-form"><label>Telefone comercial<input value={telefone} inputMode="tel" autoComplete="tel" placeholder="+55 (81) 99999-8888" onChange={e=>setTelefone(e.target.value)}/></label>
      <label style={{display:'flex',flexDirection:'row',gap:10,alignItems:'center'}}><input style={{width:18}} type="checkbox" checked={habilitado} onChange={e=>setHabilitado(e.target.checked)}/>Habilitar contato comercial</label>
      <label style={{display:'flex',flexDirection:'row',gap:10,alignItems:'center'}}><input style={{width:18}} type="checkbox" checked={aceite} onChange={e=>setAceite(e.target.checked)}/>Autorizo divulgar este telefone comercial a passageiros aprovados.</label>
