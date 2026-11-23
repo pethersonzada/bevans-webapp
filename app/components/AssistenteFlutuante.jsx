@@ -48,7 +48,7 @@ export default function AssistenteFlutuante(){
  return <div className="bev-chat-root">
   <button ref={botaoRef} type="button" className="bev-chat-launcher"
    onClick={aberto?fechar:abrir} aria-label={aberto?'Fechar assistente BeVans':'Abrir assistente BeVans'}
-   aria-expanded={aberto} aria-controls="bev-chat-panel" title="Assistente BeVans">
+   aria-expanded={aberto} aria-controls={iniciado?"bev-chat-panel":undefined} title="Assistente BeVans">
    <IconeConversa fechar={aberto}/><span>{aberto?'Fechar':'Assistente'}</span>
   </button>
   {aberto&&<button className="bev-chat-backdrop" aria-label="Fechar janela do assistente" type="button" onClick={fechar}/>}
