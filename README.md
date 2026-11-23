@@ -95,7 +95,7 @@ O workflow em `.github/workflows/quality.yml` também executa verificações aut
 4. O painel apresenta opções segundo o perfil recuperado (`MOTORISTA`, `PASSAGEIRO` ou `ALUNO`).
 5. As chamadas do painel passam por `app/lib/bevans-api.mjs`; a **autorização definitiva** de acesso a dados e operações pertence ao backend.
 
-A sessão é mantida **em memória da aba**, incluindo o token de atualização. Ao recarregar a página pode ser necessário entrar novamente; nenhuma persistência de sessão em cookies está implementada nesse cliente. O login contempla recuperação de senha pelo fluxo Firebase, conforme a configuração do projeto.
+O SDK oficial do Firebase restaura a conta no mesmo navegador e origem usando persistência local. O painel consulta o perfil próprio no Spring Boot antes de mostrar os módulos. Sair da conta encerra a sessão persistida. Em um computador compartilhado, use “Sair da conta” ao terminar.
 
 ### Painel operacional
 
@@ -190,6 +190,8 @@ Um deploy `READY` significa que a versão foi construída e disponibilizada, nã
 ## Assistente virtual integrado ao webapp
 
 O BeVans oferece um **chat nativo em todas as rotas**, inclusive login, painel e páginas institucionais. O atalho flutuante abre uma conversa sem iframe ou saída do domínio. A página `/assistente` também abre esse mesmo widget. As mensagens persistem na memória enquanto o layout raiz do Next.js permanecer montado; **não** são gravadas automaticamente em `localStorage` ou cookies.
+
+A seleção dos trechos do FAQ usa a conversa dentro do BeVans. Quando habilitado, o modelo externo recebe apenas os trechos públicos selecionados.
 
 A interface chama `POST /api/assistente` no **próprio** webapp, com `pergunta` (2 a 800 caracteres) e até 12 mensagens de `historico` com papéis `user` ou `assistant`. A API valida origem, formato, tamanho, informações sensíveis e um limite simples de requisições por instância. Não exige Firebase para perguntas públicas e não consulta o banco de passageiros.
 

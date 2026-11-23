@@ -84,3 +84,7 @@ html[data-theme="dark"] .bev-chat-form>p{color:#b4c7d9}
 html[data-theme="dark"] .bev-chat-send-row textarea{background:#12253b;border-color:#42607d;color:#f2f8ff}
 html[data-theme="dark"] .bev-chat-suggestions button{background:#274564;color:#cce9ff;border-color:#456b8f}
 @media(prefers-reduced-motion:reduce){.bev-chat-launcher{transition:none}}
+html[data-theme="dark"] .bev-chat-message small,
+html[data-theme="dark"] .bev-chat-loading{color:#b5cce2}
+html[data-theme="dark"] .bev-chat-message-user .bev-chat-sender{color:#e2f2ff}
+html[data-theme="dark"] .bev-chat-error{background:#422630;border-color:#945565;color:#ffd9db}

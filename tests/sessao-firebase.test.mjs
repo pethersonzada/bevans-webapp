@@ -1,102 +1,57 @@
-import {test} from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
-import {
- firebaseRefresh,criarCoordenadorSessao,FirebaseSessionExpiredError,FirebaseUnavailableError,
-} from '../app/lib/bevans-auth.mjs';
+import {criarAcesso} from '../app/lib/acesso-autenticado.mjs';
+import {ApiError} from '../app/lib/bevans-api.mjs';
 
-const valid={uid:'uid-ficticio',idToken:'token-antigo',refreshToken:'refresh-ficticio',expiresAt:0};
-const rotated={...valid,idToken:'token-novo',refreshToken:'refresh-novo',expiresAt:Date.now()+3_600_000};
-function deferred(){
- let resolve,reject;
- const promise=new Promise((a,b)=>{resolve=a;reject=b;});
- return {promise,resolve,reject};
+function ambiente(getIdToken, request=async token=>token) {
+ const user={uid:'sintetico',getIdToken};
+ let atual=user;
+ const sair=async candidato=>{if(candidato===atual)atual=null;};
+ return {user,sair,ativo:()=>atual===user,...criarAcesso({contaAtual:u=>u===atual,sair,request})};
 }
-
-test('20 chamadas simultâneas usam exatamente uma renovação e recebem o token novo',async()=>{
- const gate=deferred();let count=0;
- const coordinator=criarCoordenadorSessao(async()=>{count++;return gate.promise;});
- coordinator.set({...valid});
- const waiting=Array.from({length:20},()=>coordinator.token());
- await Promise.resolve();
- assert.equal(count,1);
- gate.resolve({...rotated});
- const result=await Promise.all(waiting);
- assert.deepEqual([...new Set(result)],['token-novo']);
- assert.equal(coordinator.current().refreshToken,'refresh-novo');
- assert.equal(await coordinator.token(),'token-novo');
- assert.equal(count,2); // chamada ao coordinator, sem rede quando firebaseRefresh detecta validade
+test('20 consultas simultâneas compartilham o token obtido pelo SDK',async()=>{
+ let chamadas=0;
+ const auth=ambiente(async()=>{chamadas++;return 'valido';});
+ const respostas=await Promise.all(Array.from({length:20},()=>auth.consultar(auth.user,'/perfil')));
+ assert.deepEqual([...new Set(respostas)],['valido']);
+ assert.equal(chamadas,1);
 });
-
-test('logout invalida renovação pendente e nunca publica o token antigo',async()=>{
- const gate=deferred(),coordinator=criarCoordenadorSessao(()=>gate.promise);
- coordinator.set({...valid});
- const pending=coordinator.token();
- await Promise.resolve();
- coordinator.clear();
- gate.resolve({...rotated});
- await assert.rejects(pending,/sessão mudou/);
- assert.equal(coordinator.current(),null);
- await assert.rejects(()=>coordinator.token(),FirebaseSessionExpiredError);
+test('resposta pendente de outra conta é descartada após logout',async()=>{
+ const resposta=Promise.withResolvers(),iniciada=Promise.withResolvers();
+ const auth=ambiente(async()=>'antigo',async()=>{iniciada.resolve();return resposta.promise;});
+ const leitura=auth.consultar(auth.user,'/perfil');
+ await iniciada.promise;
+ await auth.sair(auth.user);
+ resposta.resolve({nome:'Pessoa anterior'});
+ await assert.rejects(leitura,/conta mudou/);
 });
-
-test('nova autenticação do mesmo UID invalida respostas da sessão anterior',async()=>{
- const gate=deferred(),coordinator=criarCoordenadorSessao(()=>gate.promise);
- coordinator.set({...valid});
- const pending=coordinator.token();
- await Promise.resolve();
- coordinator.set({...rotated,idToken:'outro-login'});
- gate.resolve({...rotated});
- await assert.rejects(pending,/sessão mudou/);
- assert.equal(coordinator.current().idToken,'outro-login');
-});
-
-test('Firebase 503 e falhas de rede não significam revogação, e não retornam token vencido',async()=>{
- const oldFetch=globalThis.fetch,oldKey=process.env.NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY;
- process.env.NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY='key-sintetica';
- let count=0;
- try{
-  globalThis.fetch=async()=>{count++;if(count===1)throw new TypeError('sem rede');
-   if(count===2)return Response.json({error:{message:'SERVICE_UNAVAILABLE'}},{status:503});
-   return Response.json({id_token:'id-token-renovado',refresh_token:'refresh-rotacionado',expires_in:'3600',user_id:valid.uid});
-  };
-  const coordinator=criarCoordenadorSessao(firebaseRefresh);
-  coordinator.set({...valid});
-  await assert.rejects(()=>coordinator.token(),FirebaseUnavailableError);
-  assert.equal(coordinator.current().idToken,'token-antigo');
-  await assert.rejects(()=>coordinator.token(),FirebaseUnavailableError);
-  assert.equal(coordinator.current().uid,valid.uid);
-  const newToken=await coordinator.token();
-  assert.equal(newToken,'id-token-renovado');
-  assert.equal(coordinator.current().refreshToken,'refresh-rotacionado');
-  assert.equal(count,3);
- }finally{
-  globalThis.fetch=oldFetch;
-  if(oldKey===undefined)delete process.env.NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY;
-  else process.env.NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY=oldKey;
+test('revogação pede novo login e falha de rede permite tentar de novo',async()=>{
+ for(const [code,permanece] of [['auth/user-token-expired',false],['auth/invalid-refresh-token',false],['auth/network-request-failed',true]]){
+  const auth=ambiente(async()=>{throw Object.assign(Error(),{code});});
+  await assert.rejects(auth.obterToken(auth.user));
+  assert.equal(auth.ativo(),permanece);
  }
 });
-
-test('Firebase 400 com INVALID_REFRESH_TOKEN é expiração real; 429 é temporário',async()=>{
- const oldFetch=globalThis.fetch,oldKey=process.env.NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY;
- process.env.NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY='key-sintetica';
- try{
-  globalThis.fetch=async()=>Response.json({error:{message:'INVALID_REFRESH_TOKEN'}},{status:400});
-  await assert.rejects(()=>firebaseRefresh({...valid}),FirebaseSessionExpiredError);
-  globalThis.fetch=async()=>Response.json({error:{message:'TOO_MANY_ATTEMPTS_TRY_LATER'}},{status:429});
-  await assert.rejects(()=>firebaseRefresh({...valid}),FirebaseUnavailableError);
-  globalThis.fetch=async()=>Response.json({id_token:'token-outro',expires_in:'3600',user_id:'uid-intruso'});
-  await assert.rejects(()=>firebaseRefresh({...valid}),FirebaseSessionExpiredError);
- }finally{
-  globalThis.fetch=oldFetch;
-  if(oldKey===undefined)delete process.env.NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY;
-  else process.env.NEXT_PUBLIC_BEVANS_FIREBASE_API_KEY=oldKey;
- }
+test('401 força renovação antes de repetir uma consulta',async()=>{
+ const tokens=[];
+ const auth=ambiente(async forcar=>forcar?'novo':'antigo',async token=>{
+  tokens.push(token);
+  if(token==='antigo')throw new ApiError('Expirado',401);
+  return 'perfil';
+ });
+ assert.equal(await auth.consultar(auth.user,'/perfil'),'perfil');
+ assert.deepEqual(tokens,['antigo','novo']);
 });
-
-test('token ainda válido não chama Firebase; token de identidade vazia não é aceito',async()=>{
- const current={...valid,expiresAt:Date.now()+120_000};
- const resolved=await firebaseRefresh(current);
- assert.equal(resolved,current);
- await assert.rejects(()=>firebaseRefresh({...valid,uid:''}),FirebaseSessionExpiredError);
- await assert.rejects(()=>firebaseRefresh({...valid,refreshToken:''}),FirebaseSessionExpiredError);
+test('escrita rejeitada não é repetida automaticamente',async()=>{
+ let chamadas=0;
+ const auth=ambiente(async()=> 'valido',async()=>{chamadas++;throw new ApiError('Recusado',401);});
+ await assert.rejects(auth.consultar(auth.user,'/turmas',{method:'POST'}),e=>e.status===401);
+ assert.equal(chamadas,1);
+});
+test('403 preserva a identidade e não dispara renovação',async()=>{
+ const renovacoes=[];
+ const auth=ambiente(async forcar=>{renovacoes.push(forcar);return 'valido';},async()=>{throw new ApiError('Acesso restrito',403);});
+ await assert.rejects(auth.consultar(auth.user,'/restrito'),e=>e.status===403);
+ assert.deepEqual(renovacoes,[false]);
+ assert.equal(auth.ativo(),true);
 });

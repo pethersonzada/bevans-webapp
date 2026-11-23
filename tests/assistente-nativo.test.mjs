@@ -46,11 +46,11 @@ test('modelo opcional recebe apenas recortes do FAQ e jamais recebe token no cor
   chamada={url,opts};
   return {ok:true,json:async()=>({choices:[{message:{content:'Consulte sua turma e aguarde aprovação.'}}]})};
  };
- const retorno=await responderComModelo('Como entrar em uma turma?',[],{apiKey:'key-ficticia',fetcher});
+ const retorno=await responderComModelo('Como entrar em uma turma no endereço fictício Rua Sigilo?', [{role:'user',content:'Meu histórico privado'}],{apiKey:'key-ficticia',fetcher});
  assert.equal(retorno.modo,'ia');
  assert.equal(chamada.url,'https://api.openai.com/v1/chat/completions');
  assert.equal(chamada.opts.headers.Authorization,'Bearer key-ficticia');
- assert.doesNotMatch(chamada.opts.body,/key-ficticia/);
+ assert.doesNotMatch(chamada.opts.body,/key-ficticia|Rua Sigilo|Meu histórico privado/);
  const body=JSON.parse(chamada.opts.body);
  assert.equal(body.messages[0].role,'system');
  assert.ok(body.messages.at(-1).content.includes('FAQ'));
