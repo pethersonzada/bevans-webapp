@@ -187,22 +187,24 @@ O workflow `Staging security smoke (read only)` é manual e exige duas origens *
 Um deploy `READY` significa que a versão foi construída e disponibilizada, não que o fluxo completo foi homologado.
 
 
-## Assistente virtual na versão web
+## Assistente virtual integrado ao webapp
 
-A rota pública [`/assistente`](https://bevans-webapp.vercel.app/assistente) incorpora o [Assistente BeVans](https://bevans-suporte.streamlit.app/) usando `https://bevans-suporte.streamlit.app/?embed=true`. A Vercel hospeda apenas a página Next.js; a conversa, o RAG e o FAQ continuam hospedados no **Streamlit Community Cloud** e mantidos no repositório `pethersonzada/bevans-agente`.
+O BeVans oferece um **chat nativo em todas as rotas**, inclusive login, painel e páginas institucionais. O atalho flutuante abre uma conversa sem iframe ou saída do domínio. A página `/assistente` também abre esse mesmo widget. As mensagens persistem na memória enquanto o layout raiz do Next.js permanecer montado; **não** são gravadas automaticamente em `localStorage` ou cookies.
 
-- A URL pública fica em `app/lib/assistente.mjs`; altere as duas constantes se o aplicativo do Streamlit mudar de endereço. Não é necessário configurar variável de ambiente para esse endereço público.
-- Não coloque `OPENAI_API_KEY`, tokens do Firebase ou credenciais Python em `NEXT_PUBLIC_*` ou no navegador. O assistente é externo e **não recebe automaticamente** a sessão BeVans. A integração é um iframe, sem API nativa de chat no webapp.
-- Para testar localmente, execute `npm ci && npm test && npm run lint && npm run build && npm run dev`; acesse `http://localhost:3000/assistente`, confira o menu desktop/móvel, o tema claro/escuro, a moldura e o link **Abrir assistente em nova aba**.
-- Para homologar na Vercel, confirme a publicação do SHA esperado, abra `/assistente` em navegador real e faça uma pergunta fictícia ao FAQ. Verifique que o Streamlit está **público e acordado**; em caso de bloqueio por iframe, extensões, CSP ou indisponibilidade, use o link externo sempre visível. O evento `onload` de um iframe não comprova que o chat ficou utilizável.
-- No projeto Streamlit, configure `OPENAI_API_KEY` exclusivamente nos **Secrets do Streamlit**. Não exponha nomes, endereços, localização, senhas, credenciais ou dados de menores nas perguntas.
-- O CSS e a moldura estão em `app/assistente/assistente.css`. `next.config.mjs` não contém regra `frame-src` que impeça este domínio; qualquer nova política CSP deve permitir **somente** a origem `https://bevans-suporte.streamlit.app` para o iframe.
+A interface chama `POST /api/assistente` no **próprio** webapp, com `pergunta` (2 a 800 caracteres) e até 12 mensagens de `historico` com papéis `user` ou `assistant`. A API valida origem, formato, tamanho, informações sensíveis e um limite simples de requisições por instância. Não exige Firebase para perguntas públicas e não consulta o banco de passageiros.
 
-Os testes Playwright usam uma resposta **simulada** para o iframe, portanto comprovam navegação, composição e alternativa externa, não a geração de respostas da OpenAI nem a disponibilidade permanente do Streamlit.
+### FAQ e geração por IA
 
+A base em `app/lib/conhecimento-bevans.mjs` reúne as respostas públicas atuais e orientações verificadas do manual do agente, omitindo regras marcadas como propostas. O conteúdo é compartilhado com o FAQ da página inicial.
 
-### Verificação pública do assistente
+- **Modo padrão (sem custo de IA):** a API responde com o trecho correspondente do FAQ. Se não houver respaldo, declara a limitação. Isso é busca de FAQ, não geração por modelo.
+- **IA opcional no servidor:** para usar respostas geradas com o mesmo modelo padrão do agente Python, configure **exclusivamente nas variáveis protegidas da Vercel** `OPENAI_API_KEY` e `BEVANS_ASSISTENTE_IA=true`. Opcionalmente, `OPENAI_CHAT_MODEL=gpt-4o-mini`. A chave nunca vai para o navegador ou para variáveis `NEXT_PUBLIC_*`. A aplicação limita o comprimento das perguntas, histórico e resposta e recupera apenas entradas verificadas do FAQ antes de consultar o modelo.
+- **Controle de custos:** ativar o modelo cria chamadas faturáveis. O limitador em memória **não é distribuído entre instâncias**; configurar regra de rate limiting/WAF e orçamento do provedor **antes** de habilitar o modo pago publicamente. O modo de FAQ permanece seguro sem credencial.
 
-O workflow [Assistente público (somente leitura)](.github/workflows/assistente-publico.yml) consulta as páginas públicas da Vercel e do Streamlit sem sessão ou perguntas à OpenAI. Ele verifica HTTP 200, origem HTTPS permitida, tipo HTML, ausência de bloqueios explícitos de `X-Frame-Options`/`frame-ancestors` e a existência de iframe e link alternativo na página. O arquivo de evidência `disponibilidade-assistente` contém somente o resultado técnico, sem dados pessoais. Executa automaticamente quando os arquivos da integração mudam e também pode ser acionado manualmente no GitHub Actions.
+O repositório `pethersonzada/bevans-agente` continua como referência da metodologia RAG original e da versão acadêmica Streamlit, mas **o chat web não usa nem incorpora o Streamlit**. O servidor da Vercel não recebe automaticamente os Secrets do Streamlit. A busca local do webapp é textual; a busca vetorial ChromaDB do protótipo Python não foi migrada para a aplicação web.
 
-**Limite da prova:** resposta HTTP e cabeçalhos compatíveis não demonstram que uma pergunta foi respondida. Para concluir o aceite da issue #57, abrir `/assistente` em navegador desktop e móvel, fazer uma pergunta não sensível do FAQ e verificar a resposta real do serviço. Testar também a alternativa **Abrir assistente em nova aba**. O Streamlit pode suspender a instância e exige sua própria configuração de Secrets; nenhum segredo deve ser transferido para a Vercel.
+### Testes e aceite
+
+`npm test && npm run lint && npm run build` valida o contrato, as respostas e as proteções. O Playwright exercita o envio real ao endpoint HTTP interno com o modo FAQ, o mobile e o histórico entre rotas. O workflow `Assistente nativo` executa testes locais nos PRs; a verificação pública após o deploy pode ser acionada manualmente no GitHub Actions. Esse smoke usa uma pergunta genérica de FAQ e não consome a API OpenAI quando o modo gratuito está ativo.
+
+**Limites:** o modo gratuito cobre dúvidas documentadas e não deve inventar políticas. O modelo opcional só poderá ser declarado homologado após configuração de credencial, limite de gastos e teste real com perguntas fictícias. Não compartilhe senha, CPF, localização, tokens ou dados de menores.
