@@ -17,6 +17,7 @@ test('busca local devolve orientação do FAQ sem exigir OpenAI',()=>{
  assert.deepEqual(rota.fontes,['FAQ do site']);
  const entrada=responderPeloFaq('Como um passageiro entra em uma turma?');
  assert.match(entrada.resposta,/código|aprovação/i);
+ assert.match(responderPeloFaq('Como entrar em uma turma?').resposta,/Entrar com convite/);
  assert.ok(buscarFaq('Posso criar uma conta neste site?').length>0);
 });
 

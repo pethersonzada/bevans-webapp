@@ -808,14 +808,15 @@ test('senha inválida mantém os dados privados fora da tela',async ({page})=>{
  await expect(page.locator('.be-app')).toHaveCount(0);
 });
 
-test('motorista cria turma e passageiro solicita entrada com convite',async ({page})=>{
+test('passageiro vê a turma somente depois de solicitar entrada e receber aprovação',async ({page})=>{
  await mockedLogin(page);
  let turma;
+ let status;
  await page.route('https://api.bevans.invalid/turmas',route=>{
   const pedido=route.request().postDataJSON();
   expect(pedido).toEqual({nome:'Turma de ensaio',turno:'Noite',motorista:{id:7},capacidade:12});
   turma={...pedido,id:99};
-  return respond(route,turma,201);
+  return respond(route,turma);
  });
  await page.route('https://api.bevans.invalid/turmas/motorista/7',route=>respond(route,turma?[turma]:[]));
  await abrirArea(page,'Turmas');
@@ -830,6 +831,7 @@ test('motorista cria turma e passageiro solicita entrada com convite',async ({pa
  await mockedLogin(page,'PASSAGEIRO','uid-passageiro');
  await page.route('https://api.bevans.invalid/turmas/entrar/8?codigo=DEMO',route=>{
   expect(route.request().method()).toBe('POST');
+  status='PENDENTE';
   return route.fulfill({status:200,headers:cors,contentType:'text/plain',body:'Solicitação enviada. Aguarde aprovação.'});
  });
  await abrirArea(page,'Turmas');
@@ -837,6 +839,36 @@ test('motorista cria turma e passageiro solicita entrada com convite',async ({pa
  await page.getByLabel('Código da turma').fill('DEMO');
  await page.getByRole('button',{name:'Enviar solicitação'}).click();
  await expect(page.getByRole('status')).toContainText('Aguarde a aprovação');
+ const listaPassageiro='https://api.bevans.invalid/turmas/usuario/8/todas';
+ const consultarVinculo=route=>respond(route,status==='APROVADO'?[turma]:[]);
+ await page.route(listaPassageiro,consultarVinculo);
+ await page.getByRole('button',{name:'Atualizar',exact:true}).click();
+ await expect(page.getByText('Nenhuma turma disponível para esta conta.')).toBeVisible();
+
+ await page.getByRole('button',{name:'Sair da conta'}).click();
+ await expect(page.getByLabel('E-mail')).toBeVisible();
+ await mockedLogin(page);
+ await page.route('https://api.bevans.invalid/turmas/motorista/7',route=>respond(route,[turma]));
+ await page.route('https://api.bevans.invalid/turmas/99/pendentes',route=>
+  respond(route,status==='PENDENTE'?[{id:12,aluno:person('PASSAGEIRO')}]:[]));
+ await page.route('https://api.bevans.invalid/turmas/analisar/12?status=APROVADO',route=>{
+  expect(route.request().method()).toBe('PUT');
+  expect(status).toBe('PENDENTE');
+  status='APROVADO';
+  return route.fulfill({status:200,headers:cors,contentType:'text/plain',body:'Status atualizado com sucesso.'});
+ });
+ await abrirArea(page,'Solicitações');
+ await expect(page.getByText('Passageiro Homologação',{exact:true})).toBeVisible();
+ page.once('dialog',dialog=>dialog.accept());
+ await page.getByRole('button',{name:'Aprovar',exact:true}).click();
+ await expect(page.getByText('Nenhum vínculo pendente.')).toBeVisible();
+
+ await page.getByRole('button',{name:'Sair da conta'}).click();
+ await expect(page.getByLabel('E-mail')).toBeVisible();
+ await mockedLogin(page,'PASSAGEIRO','uid-passageiro');
+ await page.route(listaPassageiro,consultarVinculo);
+ await abrirArea(page,'Turmas');
+ await expect(page.getByRole('heading',{name:'Turma de ensaio'})).toBeVisible();
 });
 
 test('assistente informa indisponibilidade e aceita nova pergunta',async ({page})=>{
@@ -877,4 +909,17 @@ test('configurações deixam de mostrar carregamento após erro e permitem nova 
  await page.getByRole('heading',{name:'Configurações da conta'}).locator('..').getByRole('button',{name:'Atualizar',exact:true}).click();
  await expect(page.getByRole('button',{name:'Salvar preferências'})).toBeVisible();
  await expect(page.getByText('Preferências indisponíveis. Tente atualizar novamente.')).toHaveCount(0);
+});
+
+
+test('falha na consulta de vínculos não apresenta uma lista vazia como confirmada',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO','uid-passageiro');
+ const url='https://api.bevans.invalid/turmas/usuario/8/todas';
+ await page.route(url,route=>respond(route,{mensagem:'Consulta indisponível.'},503));
+ await abrirArea(page,'Solicitações');
+ await expect(page.getByRole('alert').filter({hasText:'Consulta indisponível.'})).toBeVisible();
+ await expect(page.getByText('Nenhuma turma vinculada.')).toHaveCount(0);
+ await page.unroute(url);
+ await page.getByRole('button',{name:'Atualizar',exact:true}).click();
+ await expect(page.getByText('Nenhuma turma vinculada.')).toBeVisible();
 });

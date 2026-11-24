@@ -13,7 +13,7 @@ export const FAQ_PUBLICO=[
 export const CONHECIMENTO_BEVANS=[
  ...FAQ_PUBLICO.map(item=>({pergunta:item.q,resposta:item.a,origem:'FAQ do site'})),
  {pergunta:'Como o motorista cria uma turma?',resposta:'No aplicativo, o motorista autorizado acessa Turmas, cria uma turma e informa nome, turno, origem e destino. A turma tem um código próprio para pedidos de entrada.',origem:'Manual do agente'},
- {pergunta:'Como um passageiro entra em uma turma?',resposta:'O passageiro informa o código de seis caracteres fornecido pelo motorista e aguarda a aprovação. O código permite solicitar entrada; sozinho, não libera dados reservados da turma.',origem:'Manual do agente'},
+ {pergunta:'Como entrar em uma turma como passageiro?',resposta:'No painel do passageiro, abra Mais, Minhas turmas e Entrar com convite. Informe o código fornecido pelo motorista e envie a solicitação. Após a aprovação, a turma aparece em Minhas turmas.',origem:'Manual do agente'},
  {pergunta:'Meu código de turma não funciona. O que faço?',resposta:'Confira os seis caracteres, sem espaços extras, e peça ao motorista para confirmar se a turma continua ativa e se o código está atualizado.',origem:'Manual do agente'},
  {pergunta:'Como o motorista aprova uma solicitação?',resposta:'O motorista revisa o pedido de entrada na área de solicitações ou notificações e decide se aprova ou recusa. O passageiro só recebe acesso aos dados da turma após a aprovação.',origem:'Manual do agente'},
  {pergunta:'Como confirmar presença na van?',resposta:'Depois de aprovado na turma, o passageiro acessa a confirmação diária e informa se vai na ida, volta, em ambos os sentidos ou se não vai. Endereços de embarque e desembarque devem estar corretos.',origem:'Manual do agente'},
