@@ -48,9 +48,9 @@ test('nova conversa invalida resposta pendente e erro recupera a mensagem não e
 
 test('atalho do assistente fica compacto e separado do tema no celular',()=>{
  const css=ler('app/components/assistente-flutuante.css');
- const mobile=css.slice(css.indexOf('/* No celular, o atalho não deve encobrir'));
+ const mobile=css.slice(css.indexOf('/* Ações flutuantes simétricas em telas pequenas'));
  assert.match(mobile,/@media\(max-width:800px\)/);
- assert.match(mobile,/left:12px;right:auto/);
+ assert.match(mobile,/left:16px;right:auto/);
  assert.match(mobile,/width:52px;height:52px/);
  assert.match(mobile,/border-radius:16px/);
  assert.match(mobile,/\.bev-chat-launcher span\{display:none\}/);
