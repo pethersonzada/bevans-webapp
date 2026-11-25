@@ -1,0 +1,70 @@
+/* Página pública de convites: estilos próprios, sem importar o painel autenticado. */
+.convite-page{
+ min-height:100dvh;padding:clamp(24px,5vw,64px) 20px 110px;
+ background:linear-gradient(180deg,#edf5fe 0%,#f6f9fd 45%,#f6f9fd 100%);
+ color:#172b43;
+}
+.convite-page .convite-container{width:min(100%,850px);margin-inline:auto}
+.convite-page .convite-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:25px}
+.convite-page .be-brand{font-size:26px;font-weight:850;letter-spacing:-.045em;color:#123253}
+.convite-page .convite-header>span{font-size:12px;font-weight:750;letter-spacing:.05em;color:#476887;background:#e1eeff;padding:9px 13px;border-radius:999px}
+.convite-page .be-card{min-width:0;background:#fff;border:1px solid #d7e3f1;border-radius:18px;padding:clamp(20px,4vw,34px);box-shadow:0 12px 36px #123b6910}
+.convite-page .be-section{margin:0 0 20px}
+.convite-page .be-section h1{font-size:clamp(27px,4.8vw,38px);font-weight:800;letter-spacing:-.045em;line-height:1.15;color:#122b48;margin:0 0 16px}
+.convite-page .be-section h2{font-size:clamp(21px,3vw,27px);font-weight:780;letter-spacing:-.035em;line-height:1.25;color:#143251;margin:0 0 12px}
+.convite-page .be-section h3{font-size:18px;line-height:1.35;margin:0 0 9px}
+.convite-page .be-section p{font-size:14px;line-height:1.7;margin:10px 0;color:#304b65;overflow-wrap:anywhere}
+.convite-page .be-section .be-muted{color:#59728c;font-size:13px}
+.convite-page .be-form{display:grid;gap:17px;width:100%;max-width:580px;margin-top:22px}
+.convite-page .be-form label{display:grid;gap:8px;min-width:0;color:#1c3957;font-size:13px;font-weight:730;line-height:1.5}
+.convite-page .be-form input:not([type="checkbox"]),.convite-page .be-form select,.convite-page .be-form textarea{
+ width:100%;min-width:0;max-width:100%;min-height:49px;padding:11px 13px;
+ border:1px solid #b9cce0;border-radius:10px;background:#fff;color:#17314d;font:inherit;font-size:15px;
+}
+.convite-page .be-form input:focus-visible,.convite-page .be-form select:focus-visible{outline:3px solid #7dbfff;outline-offset:2px}
+.convite-page .be-form input[type="checkbox"]{width:19px!important;height:19px;flex:none;accent-color:#0875e1}
+.convite-page .be-form a{color:#075cba;text-decoration:underline;text-underline-offset:2px}
+.convite-page .be-btn,.convite-page a.be-btn{
+ display:inline-flex;align-items:center;justify-content:center;gap:8px;max-width:100%;min-height:46px;
+ padding:11px 18px;border:1px solid #b7cce1;border-radius:10px;background:#f3f8fe;color:#164979;
+ font-size:13px;font-weight:760;line-height:1.35;text-align:center;white-space:normal;cursor:pointer;
+}
+.convite-page .be-btn:hover:not(:disabled){background:#e2f0ff}
+.convite-page .be-btn.primary,.convite-page a.be-btn.primary{background:#007bff;border-color:#007bff;color:#fff}
+.convite-page .be-btn.primary:hover:not(:disabled){background:#0068da}
+.convite-page .be-btn.danger{color:#a32838;border-color:#e1a9b3;background:#fff6f7}
+.convite-page .be-btn:disabled{opacity:.5;cursor:not-allowed}
+.convite-page .be-actions{display:flex;flex-wrap:wrap;gap:10px;margin:17px 0}
+.convite-page .be-list{display:grid;gap:12px;margin:15px 0}
+.convite-page .be-item{border:1px solid #dbe6f2;border-radius:12px;background:#f8fbff;padding:15px;min-width:0}
+.convite-page .be-error,.convite-page .be-alert{padding:12px 14px;border-radius:10px;font-size:13px!important;line-height:1.6}
+.convite-page .be-error{background:#fff0f2;border:1px solid #eeb5bd;color:#892436!important}
+.convite-page .be-alert{background:#fff8e8;border:1px solid #ebd49d;color:#65491b!important}
+.convite-page :is(button,a,input,select,textarea):focus-visible{outline:3px solid #60aaff;outline-offset:3px}
+@media(max-width:600px){
+ .convite-page{padding:22px 16px 110px}
+ .convite-page .convite-header{margin-bottom:19px}
+ .convite-page .be-brand{font-size:24px}
+ .convite-page .be-card{padding:22px 18px;border-radius:15px}
+ .convite-page .be-section{margin-bottom:14px}
+ .convite-page .be-section h1{font-size:29px}
+ .convite-page .be-section h2{font-size:22px}
+ .convite-page .be-form{max-width:100%;gap:15px}
+ .convite-page .be-form>.be-btn{width:100%}
+ .convite-page .be-actions{flex-direction:column}
+ .convite-page .be-actions .be-btn{width:100%}
+}
+html[data-theme="dark"] .convite-page{background:#0e1725;color:#ecf3fb}
+html[data-theme="dark"] .convite-page .be-brand{color:#eaf4ff}
+html[data-theme="dark"] .convite-page .convite-header>span{background:#233c58;color:#c1dbf5}
+html[data-theme="dark"] .convite-page .be-card{background:#17283c;border-color:#36516f;box-shadow:none}
+html[data-theme="dark"] .convite-page .be-section :is(h1,h2,h3){color:#eef5fd}
+html[data-theme="dark"] .convite-page .be-section p{color:#c5d5e7}
+html[data-theme="dark"] .convite-page .be-section .be-muted{color:#b0c7dd}
+html[data-theme="dark"] .convite-page .be-form label{color:#dceaf8}
+html[data-theme="dark"] .convite-page .be-form :is(input:not([type="checkbox"]),select,textarea){background:#102239;border-color:#436381;color:#f2f7ff}
+html[data-theme="dark"] .convite-page .be-item{background:#142339;border-color:#3a536e;color:#eef5fc}
+html[data-theme="dark"] .convite-page .be-btn:not(.primary):not(.danger){background:#233d58;border-color:#496581;color:#e0edfa}
+html[data-theme="dark"] .convite-page .be-btn.danger{background:#3d2532;color:#ffd3db}
+html[data-theme="dark"] .convite-page .be-error{background:#422331;border-color:#8b5266;color:#ffdbdf!important}
+html[data-theme="dark"] .convite-page .be-alert{background:#3c3220;border-color:#806847;color:#ffdeb0!important}
