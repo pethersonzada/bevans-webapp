@@ -51,8 +51,14 @@ test('atalho do assistente fica compacto e separado do tema no celular',()=>{
  const mobile=css.slice(css.indexOf('/* No celular, o atalho não deve encobrir'));
  assert.match(mobile,/@media\(max-width:800px\)/);
  assert.match(mobile,/left:12px;right:auto/);
- assert.match(mobile,/width:48px;height:48px/);
+ assert.match(mobile,/width:52px;height:52px/);
+ assert.match(mobile,/border-radius:16px/);
  assert.match(mobile,/\.bev-chat-launcher span\{display:none\}/);
  const tema=ler('app/theme.css');
  assert.match(tema,/\.experience-intro h2\{[\s\S]*?white-space:normal;overflow-wrap:break-word;text-wrap:wrap/);
+ assert.match(tema,/\.bev-theme-toggle\{[\s\S]*?width:52px;height:52px/);
+ assert.match(tema,/bottom:calc\(16px \+ env\(safe-area-inset-bottom,0px\)\)/);
+ const espaco=ler('app/globals-access.css');
+ assert.match(espaco,/\.bev-hero-inner\{[\s\S]*?padding-bottom:48px/);
+ assert.match(espaco,/\.experience-section\{[\s\S]*?padding-top:60px/);
 });
