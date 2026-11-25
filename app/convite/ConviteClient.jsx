@@ -97,9 +97,9 @@ export default function ConviteClient(){
   try{const r=await publico('/publico/excursoes/inscricao',{'X-Inscricao':credencial},'DELETE');const confirmado=r||await publico('/publico/excursoes/inscricao',{'X-Inscricao':credencial});if(confirmado?.estado!=='CANCELADA')throw Error('O servidor não confirmou o cancelamento. Consulte a inscrição antes de repetir.');setInscricao(confirmado);}
   catch(e){setErro(text(e));}finally{setBusy(false);}
  }
- return <main id="conteudo" className="be-shell" style={{padding:'clamp(18px,4vw,48px)',minHeight:'100dvh'}}>
-  <div style={{maxWidth:850,margin:'0 auto'}}>
-   <Link href="/" className="be-brand">BeVans</Link>
+ return <main id="conteudo" className="be-shell convite-page">
+  <div className="convite-container">
+   <header className="convite-header"><Link href="/" className="be-brand" aria-label="Voltar à página inicial do BeVans">BeVans</Link><span>Excursões</span></header>
    <section className="be-card be-section"><h1>Convite para excursão</h1>
     <p className="be-muted">Inscrição individual. O convite dá acesso apenas a informações públicas autorizadas, sem dados de outros participantes.</p>
     {!loading&&!convite&&!dados&&<p>Para solicitar uma vaga, abra o link enviado pelo organizador. Se recebeu apenas um código de excursão, peça o link completo. Para consultar uma inscrição existente, use sua credencial individual abaixo.</p>}
