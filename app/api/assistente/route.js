@@ -1,6 +1,8 @@
 import {NextResponse} from 'next/server';
 import {responderComModelo,responderPeloFaq,validarConversa} from '../../lib/assistente-nativo.mjs';
 
+import {lerJsonLimitado} from '../../lib/corpo-json.mjs';
+
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
@@ -14,13 +16,14 @@ function responder(dados,status=200){
 }
 function podeConsultar(request){
  const agora=Date.now();
- if(visitantes.size>2500){
+ if(visitantes.size>=2500){
   for(const [ip,info] of visitantes)if(info.ate<=agora)visitantes.delete(ip);
-  if(visitantes.size>2500)visitantes.clear();
+
  }
  const ip=request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim()||
   request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||'anônimo';
  const info=visitantes.get(ip);
+ if(!info&&visitantes.size>=2500)return false;
  if(!info||info.ate<=agora){visitantes.set(ip,{ate:agora+JANELA_MS,total:1});return true;}
  info.total++;
  return info.total<=LIMITE_REQUISICOES;
@@ -42,7 +45,7 @@ export async function POST(request){
   if(!autorizado)return responder({erro:'Origem da solicitação não autorizada.'},403);
  }
  const tipo=request.headers.get('content-type')||'';
- if(!tipo.toLowerCase().startsWith('application/json'))
+ if(tipo.split(';')[0].trim().toLowerCase()!=='application/json')
   return responder({erro:'Envie uma pergunta em JSON.'},415);
  if(Number(request.headers.get('content-length')||0)>16000)
   return responder({erro:'Mensagem muito extensa.'},413);
@@ -50,10 +53,9 @@ export async function POST(request){
   return responder({erro:'Muitas mensagens em sequência. Aguarde alguns minutos.'},429);
  let conversa;
  try{
-  const bruto=await request.text();
-  if(bruto.length>16000)return responder({erro:'Mensagem muito extensa.'},413);
-  conversa=validarConversa(JSON.parse(bruto));
+  conversa=validarConversa(await lerJsonLimitado(request,16000));
  }catch(e){
+  if(e instanceof RangeError)return responder({erro:'Mensagem muito extensa.'},413);
   return responder({erro:e instanceof SyntaxError?'Formato de mensagem inválido.':e.message},400);
  }
 
