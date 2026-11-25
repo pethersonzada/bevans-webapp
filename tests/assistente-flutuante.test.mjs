@@ -45,3 +45,14 @@ test('nova conversa invalida resposta pendente e erro recupera a mensagem não e
  assert.match(componente,/setMensagens\(atual=>atual\.filter\(m=>m\.id!==id\)\)/);
  assert.match(componente,/setPergunta\(valor\)/);
 });
+
+test('atalho do assistente fica compacto e separado do tema no celular',()=>{
+ const css=ler('app/components/assistente-flutuante.css');
+ const mobile=css.slice(css.indexOf('/* No celular, o atalho não deve encobrir'));
+ assert.match(mobile,/@media\(max-width:800px\)/);
+ assert.match(mobile,/left:12px;right:auto/);
+ assert.match(mobile,/width:48px;height:48px/);
+ assert.match(mobile,/\.bev-chat-launcher span\{display:none\}/);
+ const tema=ler('app/theme.css');
+ assert.match(tema,/\.experience-intro h2\{[\s\S]*?white-space:normal;overflow-wrap:break-word;text-wrap:wrap/);
+});
