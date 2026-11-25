@@ -210,3 +210,5 @@ O repositório `pethersonzada/bevans-agente` continua como referência da metodo
 `npm test && npm run lint && npm run build` valida o contrato, as respostas e as proteções. O Playwright exercita o envio real ao endpoint HTTP interno com o modo FAQ, o mobile e o histórico entre rotas. O workflow `Assistente nativo` executa testes locais nos PRs; a verificação pública após o deploy pode ser acionada manualmente no GitHub Actions. Esse smoke usa uma pergunta genérica de FAQ e não consome a API OpenAI quando o modo gratuito está ativo.
 
 **Limites:** o modo gratuito cobre dúvidas documentadas e não deve inventar políticas. O modelo opcional só poderá ser declarado homologado após configuração de credencial, limite de gastos e teste real com perguntas fictícias. Não compartilhe senha, CPF, localização, tokens ou dados de menores.
+
+O chat em `/assistente` usa o endpoint local `POST /api/assistente`. A publicação Streamlit documentada pelo agente oferece uma interface de usuário. Para conectar o serviço Python ao chat, falta um contrato HTTP publicado com autenticação de servidor e limites de tempo e uso. A busca no FAQ funciona sem chave de IA.

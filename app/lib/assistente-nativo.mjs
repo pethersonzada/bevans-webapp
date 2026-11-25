@@ -69,15 +69,16 @@ export function responderPeloFaq(pergunta,historico=[]){
  const encontrados=buscarFaq(pergunta,historico,3);
  if(!encontrados.length)return {
   resposta:'Ainda não encontrei uma orientação confiável sobre isso no FAQ do BeVans. Posso ajudar com turmas, rotas, excursões, login e acompanhamento de viagens. Para outros assuntos, consulte os canais oficiais de suporte.',
-  modo:'faq',fontes:[],
+  modo:'faq',fontes:[],destino:'contato',
  };
  const melhor=encontrados[0];
- return {resposta:melhor.resposta,modo:'faq',fontes:[melhor.origem]};
+ return {resposta:melhor.resposta,modo:'faq',fontes:[melhor.origem],destino:melhor.destino};
 }
 
 export function prepararPrompt(pergunta,historico){
  const encontrados=buscarFaq(pergunta,historico,4);
  return {
+  destino:encontrados[0]?.destino,
   contexto:encontrados.map((item,i)=>`Trecho ${i+1} (${item.origem}): ${item.pergunta}\n${item.resposta}`).join('\n\n'),
   fontes:[...new Set(encontrados.map(x=>x.origem))],
  };
@@ -86,7 +87,7 @@ export function prepararPrompt(pergunta,historico){
 // Reutiliza o contrato de agente baseado em FAQ do repositório BeVans,
 // mas mantém a credencial OpenAI exclusivamente no servidor Next.js.
 export async function responderComModelo(pergunta,historico,{apiKey,fetcher=fetch,model='gpt-4o-mini'}={}){
- const {contexto,fontes}=prepararPrompt(pergunta,historico);
+ const {contexto,fontes,destino}=prepararPrompt(pergunta,historico);
  if(!contexto)return responderPeloFaq(pergunta,historico);
  if(!apiKey||typeof apiKey!=='string')throw Error('Credencial da IA não configurada.');
  const mensagens=[
@@ -102,5 +103,5 @@ export async function responderComModelo(pergunta,historico,{apiKey,fetcher=fetc
  const json=await resposta.json();
  const texto=json?.choices?.[0]?.message?.content;
  if(typeof texto!=='string'||!texto.trim())throw Error('A IA retornou uma resposta vazia.');
- return {resposta:texto.trim().slice(0,2400),modo:'ia',fontes};
+ return {resposta:texto.trim().slice(0,2400),modo:'ia',fontes,destino};
 }

@@ -1,10 +1,18 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
+import Link from 'next/link';
 import {useIdentidade} from '../lib/sessao-web.mjs';
 import './assistente-flutuante.css';
 
 const SUGESTOES=['Como entrar em uma turma?','Como funcionam as excursões?','Posso entrar pelo navegador?'];
+const atalhos=new Map([
+ ['excursao',['/excursoes','Ver como participar de excursões']],
+ ['login',['/login','Acessar minha conta']],
+ ['cadastro',['/cadastro','Consultar acesso ao cadastro']],
+ ['contato',['/contato','Falar com a equipe']],
+ ['painel',['/painel','Abrir meu painel']],
+]);
 const BOAS_VINDAS='Oi! Sou o assistente do BeVans. Pergunte sobre turmas, viagens, rotas, excursões ou acesso. Não envie dados pessoais.';
 
 function IconeConversa({fechar=false}){
@@ -54,7 +62,8 @@ function Conversa(){
     throw Error(dados.erro||'Não foi possível consultar o assistente.');
    // Uma resposta antiga não pode reaparecer depois de "Nova conversa".
    if(envioRef.current!==controller)return;
-   setMensagens(atual=>[...atual,{id:++sequencia.current,role:'assistant',content:dados.resposta,modo:dados.modo}]);
+   const resposta={id:++sequencia.current,role:'assistant',content:dados.resposta,modo:dados.modo,atalho:atalhos.get(dados.destino)};
+   setMensagens(atual=>[...atual,resposta]);
    if(dados.aviso)setErro(dados.aviso);
   }catch(e){
    if(e.name!=='AbortError'&&envioRef.current===controller){
@@ -134,12 +143,13 @@ function Conversa(){
     {mensagens.map(m=><div key={m.id} className={'bev-chat-message bev-chat-message-'+m.role}>
      <span className="bev-chat-sender">{m.role==='user'?'Você':'BeVans'}</span>
      <p>{m.content}</p>
+     {m.atalho&&<p><Link href={m.atalho[0]} onClick={fechar}>{m.atalho[1]}</Link></p>}
      {m.modo==='faq'&&<small>Orientação do FAQ</small>}
     </div>)}
     {!mensagens.length&&<div className="bev-chat-suggestions" aria-label="Sugestões de perguntas">
      {SUGESTOES.map(s=><button key={s} type="button" onClick={()=>enviar(s)}>{s}</button>)}
     </div>}
-    {ocupado&&<p className="bev-chat-loading" role="status">Consultando o FAQ…</p>}
+    {ocupado&&<p className="bev-chat-loading" role="status">Buscando orientação…</p>}
     {erro&&<p className="bev-chat-error" role="alert">{erro}</p>}
     <div ref={fimRef}/>
    </div>
