@@ -15,3 +15,39 @@
 .be-auth .be-btn.primary{min-height:46px}
 @media(max-width:950px){.nav-login-cta{min-height:42px;padding:10px 14px}.nav-cta{display:none}}
 @media(max-width:550px){.site-nav{height:68px;gap:9px}.nav-actions{gap:9px}.brand-name{font-size:22px}.nav-login-cta{font-size:13px;padding:9px 13px}.nav-login-cta span{display:none}.brand-icon{width:36px;height:36px}.brand-icon img{max-width:36px;height:auto}.bev-hero-actions{flex-wrap:wrap}.footer-cta-actions{flex-direction:column;align-items:stretch}}
+
+/* Ritmo vertical da página inicial em telas pequenas. */
+@media(max-width:600px){
+ .bev-hero-inner{
+  padding-top:56px;
+  padding-bottom:48px;
+ }
+ .bev-hero-actions{
+  margin-top:26px;
+  gap:12px;
+ }
+ .bev-hero-actions :is(.bev-button-primary,.bev-button-ghost){
+  min-height:54px;
+  padding:14px 18px;
+ }
+ .bev-hero-copy>.bev-hero-access-note{
+  max-width:34rem;
+  margin:18px auto 0;
+  font-size:13px;
+  line-height:1.6;
+ }
+ .experience-section{
+  padding-top:60px;
+  padding-bottom:72px;
+ }
+ .experience-intro{
+  margin-bottom:30px;
+ }
+ .experience-kicker{
+  display:block;
+  margin-bottom:12px;
+ }
+ .experience-intro h2{
+  margin:0 0 16px;
+ }
+}
