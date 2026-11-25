@@ -73,14 +73,15 @@ body:has(.be-app) .bev-chat-panel{bottom:20px}
 @media(max-width:420px){
  .bev-chat-header h2{font-size:17px}
 }
-/* No celular, o atalho não deve encobrir títulos nem disputar espaço com o tema. */
+/* Ações flutuantes simétricas em telas pequenas, sem cobrir os títulos. */
 @media(max-width:800px){
  .bev-chat-launcher{
-  left:12px;right:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));
-  width:48px;height:48px;min-height:48px;padding:0;gap:0;
-  border-radius:50%;box-shadow:0 5px 18px #052e634d;
+  left:16px;right:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  width:52px;height:52px;min-width:52px;min-height:52px;padding:0;gap:0;
+  border-radius:16px;box-shadow:0 8px 24px #14253a2e;
  }
  .bev-chat-launcher span{display:none}
+ .bev-chat-launcher svg{width:22px;height:22px}
  body:has(.be-app) .bev-chat-launcher{
   bottom:calc(93px + env(safe-area-inset-bottom,0px));
  }
