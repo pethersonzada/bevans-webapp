@@ -181,6 +181,12 @@ html[data-theme="dark"] :focus-visible{outline-color:#88c6ff}
 }
 @media(max-width:540px){
  :is(.section-intro,.audience-intro,.faq-layout,.new-pricing-head,.experience-intro) h2{font-size:clamp(28px,8vw,36px)}
+ /* Evita corte horizontal do título principal da experiência. */
+ .experience-intro{min-width:0;max-width:100%}
+ .experience-intro h2{
+  max-width:100%;font-size:clamp(27px,7vw,33px);line-height:1.16;
+  letter-spacing:-.035em;white-space:normal;overflow-wrap:break-word;text-wrap:wrap;
+ }
 }
 
 /* Os estados já aparecem no topo dos cartões. Sem faixas repetidas; espaço uniforme para os links. */
