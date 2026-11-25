@@ -27,3 +27,15 @@ test('tema se sincroniza sem estado React atualizado diretamente no efeito',()=>
  assert.match(component,/bevans-theme-change/);
  assert.equal(component.includes('setTheme('),false);
 });
+
+test('tema no painel mobile fica ao lado do assistente, acima das abas inferiores',()=>{
+ const painel=read('app/painel/painel.css');
+ const assistente=read('app/components/assistente-flutuante.css');
+ const bloco=painel.slice(painel.indexOf('/* No painel mobile, tema e assistente'));
+ assert.match(bloco,/body:has\(\.be-app\) \.bev-theme-toggle\{/);
+ assert.match(bloco,/top:auto;left:auto;right:16px/);
+ assert.match(bloco,/bottom:calc\(93px \+ env\(safe-area-inset-bottom,0px\)\)/);
+ assert.match(bloco,/width:52px;height:52px/);
+ assert.doesNotMatch(bloco,/top:10px;right:63px;bottom:auto/);
+ assert.match(assistente,/body:has\(\.be-app\) \.bev-chat-launcher\{[\s\S]*?bottom:calc\(93px \+ env\(safe-area-inset-bottom,0px\)\)/);
+});
