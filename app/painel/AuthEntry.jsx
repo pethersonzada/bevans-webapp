@@ -250,7 +250,17 @@ function Rotas({api,driver}){
   }catch(e){if(request===routeRequest.current)setFeedback(e instanceof Error?e.message:'Não foi possível consultar a rota.');}
   finally{if(request===routeRequest.current)setLoadingDetails(false);}
  }
- async function write(task){if(busy)return;setBusy(true);setFeedback('');try{await task();list.reload();if(selected)await open(selected);}catch(e){setFeedback(e.message);}finally{setBusy(false);}}
+ async function write(task){
+  if(busy)return;
+  const consulta=routeRequest.current;
+  setBusy(true);setFeedback('');
+  try{
+   await task();
+   list.reload();
+   if(selected&&consulta===routeRequest.current)await open(selected);
+  }catch(e){if(consulta===routeRequest.current)setFeedback(e.message);}
+  finally{setBusy(false);}
+ }
  return <section className="be-section"><div className="be-row"><h2>{driver?'Gerenciamento de rotas públicas':'Catálogo de rotas públicas'}</h2><Button onClick={list.reload}>Atualizar</Button></div><Alert error={list.error||feedback}/>
  {!driver&&<form className="be-catalogo-form" onSubmit={pesquisar} aria-label="Filtros de rotas">
   <div className="be-catalogo-fields">

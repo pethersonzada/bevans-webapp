@@ -253,6 +253,7 @@ test('navegação recusa snapshot do motorista com passageiros inconsistentes',a
  await expect(page.getByRole('alert').filter({hasText:'roteiro não corresponde à operação atual'})).toBeVisible();
  await expect(page.getByRole('button',{name:'Traçar percurso rodoviário'})).toHaveCount(0);
  await expect(page.getByText('Parada A')).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Iniciar ida'})).toHaveCount(0);
 });
 
 test('navegação usa roteiro e snapshot oficiais sem omitir parada obrigatória',async ({page})=>{
@@ -688,6 +689,7 @@ test('assistente nativo responde ao FAQ sem Streamlit na página inicial',async 
  await conversa.getByRole('button',{name:'Como funcionam as excursões?'}).click();
  await expect(conversa.getByText(/O organizador cria a excursão/)).toBeVisible();
  await expect(conversa.getByText('Orientação do FAQ')).toBeVisible();
+ await expect(conversa.getByRole('link',{name:'Ver como participar de excursões'})).toHaveAttribute('href','/excursoes');
  await expect(conversa.locator('iframe')).toHaveCount(0);
  await conversa.getByRole('button',{name:'Fechar assistente'}).click();
  await expect(conversa).toBeHidden();
@@ -922,4 +924,43 @@ test('falha na consulta de vínculos não apresenta uma lista vazia como confirm
  await page.unroute(url);
  await page.getByRole('button',{name:'Atualizar',exact:true}).click();
  await expect(page.getByText('Nenhuma turma vinculada.')).toBeVisible();
+});
+
+test('convite malformado sai da URL e a consulta individual continua disponível',async ({page})=>{
+ await page.goto('/convite#%ZZ');
+ await expect(page.getByRole('main').getByRole('alert')).toHaveText('Token de convite inválido.');
+ await expect(page).toHaveURL(/\/convite$/);
+ await expect(page.getByLabel('Credencial individual')).toBeVisible();
+});
+
+test('menu móvel devolve o foco ao botão após Escape',async ({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/');
+ const botao=page.getByRole('button',{name:'Abrir menu'});
+ await botao.click();
+ await page.locator('#mobile-navigation a').first().focus();
+ await page.keyboard.press('Escape');
+ await expect(botao).toBeFocused();
+ await expect(page.locator('#mobile-navigation')).toBeHidden();
+});
+
+test('favorito pendente preserva a rota que o passageiro abriu em seguida',async ({page})=>{
+ await mockedLogin(page,'PASSAGEIRO');
+ const rotas=[{id:41,nome:'Rota A'},{id:42,nome:'Rota B'}];
+ await page.route('**/rotas-publicas/catalogo?*',route=>respond(route,{itens:rotas,total:2,pagina:0,totalPaginas:1}));
+ for(const rota of rotas)await page.route('**/rotas-publicas/'+rota.id,req=>respond(req,rota));
+ let liberar;
+ const espera=new Promise(resolve=>{liberar=resolve;});
+ await page.route('**/rotas-publicas/41/favorito',async req=>{await espera;await respond(req,{});});
+ await abrirArea(page,'Explorar rotas');
+ const detalhes=page.getByRole('button',{name:'Detalhes oficiais'});
+ await detalhes.first().click();
+ await expect(page.getByRole('heading',{name:'Rota: Rota A'})).toBeVisible();
+ await page.getByRole('button',{name:'Favoritar'}).first().click();
+ await detalhes.last().click();
+ const titulo=page.getByRole('heading',{name:'Rota: Rota B'});
+ await expect(titulo).toBeVisible();
+ liberar();
+ await expect(page.getByRole('button',{name:'Favoritar'}).first()).toBeEnabled();
+ await expect(titulo).toBeVisible();
 });

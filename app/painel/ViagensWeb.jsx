@@ -96,7 +96,10 @@ export default function ViagensWeb({api,profile,driver}){
   }).catch(e=>{if(!controller.signal.aborted)setErro(err(e));});
   return()=>{mounted.current=false;controller.abort();};
  },[api,driver,profile.id]);
- function resetSelection(){refreshRequest.current++;setEstado(null);setPontos([]);setRoteiroCompleto([]);setRoteiroSelo('');clearLocation();setErro('');setSharing(false);}
+ function resetSelection(){
+  setLoad(false);setFeedback('');setExecucaoId('');setPassageiros([]);setEnderecos([]);
+  setConfirmacao(null);setColetaIda(null);setColetaVolta(null);setPresenca('');setIda('');setVolta('');
+  refreshRequest.current++;setEstado(null);setPontos([]);setRoteiroCompleto([]);setRoteiroSelo('');clearLocation();setErro('');setSharing(false);}
  useEffect(()=>{if(turmaId||tipo==='EXCURSAO'&&excursaoId)Promise.resolve().then(()=>refreshRef.current?.());},[turmaId,tipo,excursaoId]);
  useEffect(()=>{
   if(!active)return;
@@ -209,16 +212,16 @@ export default function ViagensWeb({api,profile,driver}){
   <p className="be-muted">Viagens, presença, embarques e GPS autorizados pelo backend. Localização no navegador exige HTTPS e permissão explícita.</p>
   <Aviso error={erro}/>{feedback&&<p className="be-alert" role="status">{feedback}</p>}
   <div className="be-fieldset">
-   {driver&&<label>Modalidade<select value={tipo} onChange={e=>{resetSelection();setTipo(e.target.value);}}><option value="VIAGEM">Turma fixa / viagem</option><option value="EXCURSAO">Excursão</option></select></label>}
-   {tipo==='VIAGEM'?<label>Turma<select value={turmaId} onChange={e=>{resetSelection();setTurmaId(e.target.value);}}><option value="">Selecione uma turma</option>{turmas.map(t=><option key={t.id} value={t.id}>{t.nome}</option>)}</select></label>:
-   <label>Excursão<select value={excursaoId} onChange={e=>{resetSelection();setExcursaoId(e.target.value);}}><option value="">Selecione uma excursão</option>{excursoes.map(e=><option value={e.id} key={e.id}>{e.titulo}</option>)}</select></label>}
+   {driver&&<label>Modalidade<select disabled={busy} value={tipo} onChange={e=>{resetSelection();setTipo(e.target.value);}}><option value="VIAGEM">Turma fixa / viagem</option><option value="EXCURSAO">Excursão</option></select></label>}
+   {tipo==='VIAGEM'?<label>Turma<select disabled={busy} value={turmaId} onChange={e=>{resetSelection();setTurmaId(e.target.value);}}><option value="">Selecione uma turma</option>{turmas.map(t=><option key={t.id} value={t.id}>{t.nome}</option>)}</select></label>:
+   <label>Excursão<select disabled={busy} value={excursaoId} onChange={e=>{resetSelection();setExcursaoId(e.target.value);}}><option value="">Selecione uma excursão</option>{excursoes.map(e=><option value={e.id} key={e.id}>{e.titulo}</option>)}</select></label>}
    {driver&&tipo==='VIAGEM'&&<label>Sentido<select value={sentido} onChange={e=>setSentido(e.target.value)}><option value="IDA">Ida</option><option value="VOLTA">Volta</option></select></label>}
   </div>
   {tipo==='VIAGEM'&&turmaId||tipo==='EXCURSAO'&&excursaoId?<div className="be-live-stack">
    <Painel titulo="Execução atual">
-    <p><strong>{estado?.status==='ATIVA'?'Viagem ativa':'Sem viagem ativa'}</strong>{estado?.sentido?' · '+estado.sentido:''}{active?' · #'+active:''}</p>
+    <p><strong>{load?'Consultando execução…':estado?.status==='ATIVA'?'Viagem ativa':estado?.status==='INATIVA'?'Sem viagem ativa':'Execução não confirmada'}</strong>{estado?.sentido?' · '+estado.sentido:''}{active?' · #'+active:''}</p>
     <div className="be-actions">
-     {driver&&tipo==='VIAGEM'&&estado?.status!=='ATIVA'&&<button className="be-btn primary" disabled={busy} onClick={start}>Iniciar {sentido==='IDA'?'ida':'volta'}</button>}
+     {driver&&tipo==='VIAGEM'&&estado?.status==='INATIVA'&&!load&&<button className="be-btn primary" disabled={busy} onClick={start}>Iniciar {sentido==='IDA'?'ida':'volta'}</button>}
      {driver&&tipo==='VIAGEM'&&estado?.status==='ATIVA'&&<button className="be-btn danger" disabled={busy} onClick={finish}>Encerrar viagem</button>}
      {driver&&active&&<button className={'be-btn '+(sharing?'danger':'primary')} onClick={()=>{setErro('');if(!navigator.geolocation){setErro('Geolocalização não disponível neste navegador.');return;}setSharing(x=>!x);}}>{sharing?'Parar compartilhamento GPS':'Compartilhar GPS nesta aba'}</button>}
      {driver&&active&&pontos.length>=2&&<button type="button" className="be-btn" onClick={directions}>Traçar percurso rodoviário</button>}
@@ -240,9 +243,9 @@ export default function ViagensWeb({api,profile,driver}){
      {['VOLTA','AMBOS'].includes(presenca)&&coletaVolta?.modo==='PARADAS_DEFINIDAS'&&<p className="be-muted">Parada da volta: {coletaVolta.paradas?.find(p=>p.id===coletaVolta.escolhidaId)?.nome||'Selecione em Coleta privada'}</p>}
      {['VOLTA','AMBOS'].includes(presenca)&&coletaVolta?.modo!=='PARADAS_DEFINIDAS'&&<label>Endereço da volta<select value={volta} onChange={e=>setVolta(e.target.value)}><option value="">Selecione</option>{enderecos.map(e=><option key={e.id} value={e.id}>{e.apelido||e.rua}</option>)}</select></label>}
     </div>
-    <button type="button" className="be-btn primary" disabled={busy||!presenca} onClick={confirmPresence}>Salvar presença</button>
+    <button type="button" className="be-btn primary" disabled={busy||load||!estado||!presenca} onClick={confirmPresence}>Salvar presença</button>
    </Painel>}
-   {driver&&tipo==='VIAGEM'&&<Painel titulo="Passageiros e confirmação"><p>{passageiros.length} passageiro(s) vinculados</p><div className="be-list">{passageiros.map(p=><div className="be-item" key={p.id}><strong>{p.nome}</strong> · {p.status||'Sem resposta'}</div>)}</div></Painel>}
+   {driver&&tipo==='VIAGEM'&&estado&&!load&&<Painel titulo="Passageiros e confirmação"><p>{passageiros.length} passageiro(s) vinculados</p><div className="be-list">{passageiros.map(p=><div className="be-item" key={p.id}><strong>{p.nome}</strong> · {p.status||'Sem resposta'}</div>)}</div></Painel>}
   </div>:<p className="be-muted">Selecione uma turma ou excursão para consultar a operação.</p>}
  </section>;
 }

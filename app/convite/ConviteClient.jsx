@@ -14,8 +14,11 @@ function baseApi(){
  return raw;
 }
 async function publico(path,headers,method='GET',body=undefined){
- const r=await fetch(baseApi()+path,{method,headers:{...headers,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store',referrerPolicy:'no-referrer'});
- if(!r.ok){if(r.status===404)throw Error(path.includes('/operacao')||path.includes('/inscricao/execucoes')?'Credencial ou operação indisponível para esta inscrição.':'Convite inválido, expirado ou indisponível.');if(r.status===429)throw Error('Muitas tentativas. Tente novamente mais tarde.');if(r.status===409)throw Error(path.includes('/operacao')?'O estado mudou ou a execução foi encerrada. Atualize o registro antes de tentar novamente.':'Inscrição não aceita. Confira vagas e estado da excursão.');throw Error('Solicitação recusada (HTTP '+r.status+').');}
+ const url=baseApi()+path;
+ let r;
+ try{r=await fetch(url,{method,headers:{...headers,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store',referrerPolicy:'no-referrer',signal:AbortSignal.timeout(15000)});}
+ catch{throw Error(method==='GET'?'Falha de conexão. Tente consultar novamente.':'A resposta não chegou. Consulte sua inscrição antes de repetir a operação.');}
+ if(!r.ok){if(r.status===401||r.status===403)throw Error('Acesso indisponível. Confira se está usando o convite ou a credencial individual correta.');if(r.status===404)throw Error(path.includes('/operacao')||path.includes('/inscricao/execucoes')?'Credencial ou operação indisponível para esta inscrição.':'Convite inválido, expirado ou indisponível.');if(r.status===429)throw Error('Muitas tentativas. Tente novamente mais tarde.');if(r.status===409)throw Error(path.includes('/operacao')?'O estado mudou ou a execução foi encerrada. Atualize o registro antes de tentar novamente.':'Inscrição não aceita. Confira vagas e estado da excursão.');throw Error('Solicitação recusada (HTTP '+r.status+').');}
  if(r.status===204)return null;
  return r.json();
 }
@@ -27,8 +30,10 @@ export default function ConviteClient(){
  useEffect(()=>{
   if(iniciado.current)return;iniciado.current=true;
   Promise.resolve().then(()=>{
-   let raw='';try{raw=decodeURIComponent(window.location.hash.slice(1));}catch{setErro('Token de convite inválido.');setLoading(false);return;}
-   window.history.replaceState(null,'',window.location.pathname);
+   const fragmento=window.location.hash.slice(1);
+   window.history.replaceState(window.history.state,'',window.location.pathname);
+   if(!fragmento){setLoading(false);return;}
+   let raw='';try{raw=decodeURIComponent(fragmento);}catch{setErro('Token de convite inválido.');setLoading(false);return;}
    if(!raw||raw.length>500||/\s/.test(raw)){setErro('Link sem convite válido. Solicite um novo convite ao organizador.');setLoading(false);return;}
    setConvite(raw);
    publico('/publico/excursoes/convite',{'X-Convite':raw}).then(setDados).catch(e=>setErro(text(e))).finally(()=>setLoading(false));
@@ -97,14 +102,16 @@ export default function ConviteClient(){
    <Link href="/" className="be-brand">BeVans</Link>
    <section className="be-card be-section"><h1>Convite para excursão</h1>
     <p className="be-muted">Inscrição individual. O convite dá acesso apenas a informações públicas autorizadas, sem dados de outros participantes.</p>
-    {loading&&<p>Validando convite…</p>}{erro&&<p className="be-error" role="alert">{erro}</p>}
+    {!loading&&!convite&&!dados&&<p>Para solicitar uma vaga, abra o link enviado pelo organizador. Se recebeu apenas um código de excursão, peça o link completo. Para consultar uma inscrição existente, use sua credencial individual abaixo.</p>}
+    {loading&&<p role="status">Validando convite…</p>}{erro&&<p className="be-error" role="alert">{erro}</p>}
     {dados&&<><h2>{dados.titulo}</h2><p>Destino: <strong>{dados.destinoNome}</strong></p><p>Partida: {new Date(dados.partidaEm).toLocaleString('pt-BR')}</p>
     <p>Vagas disponíveis nesta consulta: <strong>{dados.vagasDisponiveis}</strong>. A reserva só é feita após a inscrição ser confirmada pelo servidor.</p>
     <MapaWeb pontos={[...safePins,{nome:'Destino',latitude:dados.destinoLatitude,longitude:dados.destinoLongitude}]} altura={300}/>
     </>}
    </section>
    {!inscricao&&<section className="be-card be-section"><h2>Já tenho uma credencial</h2><p className="be-muted">Cole a credencial individual que você salvou anteriormente. Ela não será colocada na URL nem armazenada no navegador.</p><div className="be-form"><label>Credencial individual<input autoComplete="off" type="password" value={credencialDigitada} onChange={e=>setCredencialDigitada(e.target.value)} /></label><button className="be-btn" disabled={busy||!credencialDigitada.trim()} onClick={consultarInscricao} type="button">Consultar minha inscrição</button></div></section>}
-   {dados&&!inscricao&&<section className="be-card be-section"><h2>Solicitar inscrição</h2>
+   {dados?.vagasDisponiveis===0&&!inscricao&&<p role="status">As vagas estão esgotadas nesta consulta.</p>}
+   {dados&&dados.vagasDisponiveis!==0&&!inscricao&&<section className="be-card be-section"><h2>Solicitar inscrição</h2>
     <form className="be-form" onSubmit={cadastrar}>
      <label>Nome completo<input required autoComplete="name" maxLength={160} value={nome} onChange={e=>setNome(e.target.value)}/></label>
      <label>E-mail ou telefone<input required autoComplete="email" maxLength={160} value={contato} onChange={e=>setContato(e.target.value)}/></label>
@@ -119,13 +126,15 @@ export default function ConviteClient(){
     </form><p className="be-muted">Sua solicitação poderá ficar pendente até aprovação do organizador. Não é confirmação de pagamento.</p>
    </section>}
    {inscricao&&<section className="be-card be-section"><h2>Minha inscrição</h2><p><strong>{inscricao.nome||nome}</strong> · Estado: {inscricao.estado}</p>
+    {inscricao.estado==='SOLICITADA'&&<p role="status">Reserva temporária. Aguarde a confirmação do organizador.</p>}
+    {inscricao.estado==='CONFIRMADA'&&<p role="status">Sua vaga está confirmada.</p>}
     <p className="be-alert">Salve sua credencial em um local privado. Ela identifica sua inscrição e permite consultar ou cancelar depois. Este navegador não a armazena automaticamente.</p>
     <div className="be-actions"><button type="button" className="be-btn" disabled={!credencial} onClick={copiarCredencial}>Copiar credencial individual</button><button type="button" className="be-btn" disabled={!credencial} onClick={()=>setMostrarCredencial(v=>!v)}>{mostrarCredencial?'Ocultar credencial':'Mostrar para copiar manualmente'}</button><button type="button" className="be-btn" disabled={busy} onClick={avisos}>Consultar notificações</button>{inscricao.estado==='CONFIRMADA'&&<button type="button" className="be-btn" disabled={busy} onClick={mostrarContato}>Contato do organizador</button>}</div>
     {avisoCopia&&<p role="status" className="be-muted">{avisoCopia}</p>}
     {mostrarCredencial&&credencial&&<p className="be-muted">Credencial individual: <code style={{overflowWrap:'anywhere',userSelect:'text'}}>{credencial}</code> <button className="be-btn" type="button" onClick={()=>setMostrarCredencial(false)}>Ocultar</button></p>}
-    {contatoMotorista&&<p><a className="be-btn primary" href={contatoMotorista.waMe} target="_blank" rel="noopener noreferrer">Abrir WhatsApp comercial autorizado</a></p>}
+    {inscricao.estado==='CONFIRMADA'&&contatoMotorista&&<p><a className="be-btn primary" href={contatoMotorista.waMe} target="_blank" rel="noopener noreferrer">Abrir WhatsApp comercial autorizado</a></p>}
     {!!notificacoes.length&&<div className="be-list">{notificacoes.map(n=><div className="be-item" key={n.id}><strong>{n.titulo}</strong><p>{n.mensagem}</p></div>)}</div>}
-    {inscricao.estado!=='CANCELADA'&&<button className="be-btn danger" disabled={busy} onClick={cancelar}>Cancelar minha inscrição</button>}
+    {['SOLICITADA','CONFIRMADA'].includes(inscricao.estado)&&<button className="be-btn danger" disabled={busy} onClick={cancelar}>Cancelar minha inscrição</button>}
    </section>}
    {inscricao?.estado==='CONFIRMADA'&&credencial&&<OperacaoInscricao key={inscricao.id} request={(path,method='GET',body)=>publico(path,{'X-Inscricao':credencial},method,body)}/>}
   </div>
