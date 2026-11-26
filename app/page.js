@@ -1,3 +1,5 @@
+import './home-product.css';
+import ProjectSection from './components/ProjectSection';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -9,5 +11,5 @@ import AccessRoutes from './components/AccessRoutes';
 import PrivacySection from './components/PrivacySection';
 
 export default function Home() {
-  return <><Navbar /><main id="conteudo"><Hero /><Experience /><Features /><PrivacySection /><Pricing /><AccessRoutes /><Faq /></main><Footer /></>;
+  return <><Navbar /><main id="conteudo" className="bev-home"><Hero /><Experience /><AccessRoutes /><Features /><Pricing /><PrivacySection /><ProjectSection /><Faq /></main><Footer /></>;
 }

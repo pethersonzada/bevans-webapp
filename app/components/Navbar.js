@@ -6,7 +6,7 @@ import {useIdentidade} from '../lib/sessao-web.mjs';
 
 const navigation = [
  { label: 'Funcionalidades', href: '/#funcionalidades' },
- { label: 'Para quem é', href: '/#beneficios' },
+ { label: 'Projeto', href: '/#projeto' },
  { label: 'Modalidades', href: '/#precos' },
  { label: 'Excursões', href: '/excursoes' },
  { label: 'Assistente', href: '/assistente' },

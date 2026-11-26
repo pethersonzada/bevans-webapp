@@ -1,6 +1,10 @@
 # BeVans WebApp
 
-Site institucional e painel web do **BeVans**, plataforma para organização de transporte por van, com áreas para motoristas e passageiros.
+Site institucional e painel web do **BeVans**, plataforma para organização de transporte por vans, com áreas para motoristas e passageiros.
+
+**Site:** [bevans-webapp.vercel.app](https://bevans-webapp.vercel.app/) · **Desenvolvimento técnico:** [Miguel Petherson (@pethersonzada)](https://github.com/pethersonzada).
+
+Projeto acadêmico de Análise e Desenvolvimento de Sistemas na UNINASSAU, apresentado em novembro de 2026 e em evolução.
 
 > **Estado do produto (novembro de 2026):** o site apresenta as modalidades do BeVans e o painel já utiliza autenticação Firebase e endpoints do backend. O **cadastro público permanece fechado**. O aplicativo mobile oferece fluxos operacionais que ainda não têm equivalência completa no painel web. Imagens de rotas, indicadores e representações visuais da landing page são ilustrativos.
 

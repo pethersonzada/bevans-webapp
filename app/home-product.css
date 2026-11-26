@@ -1,0 +1,88 @@
+/* Página pública: apresentação do produto e autoria, sem alterar o painel. */
+.bev-home{--home-ink:#14253a;--home-muted:#526780;--home-surface:#fff;--home-border:#dce5ee;--home-soft:#f2f6fa}
+.bev-home .bev-hero{background:radial-gradient(ellipse at 92% 15%,#244c76 0,transparent 52%),linear-gradient(135deg,#14253a,#102239);color:#f5f9ff}
+.bev-home .bev-hero:before{opacity:.16}
+.bev-home .bev-hero-inner{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:center;gap:clamp(28px,5vw,76px);padding-block:clamp(64px,8vw,116px)}
+.bev-home .bev-hero-copy{max-width:none;margin:0;text-align:left;min-width:0}
+.bev-home-kicker{display:inline-flex;align-items:center;gap:9px;color:#c3dfff;font-size:12px;font-weight:650;letter-spacing:.05em}
+.bev-home-kicker i{width:8px;height:8px;border-radius:50%;background:#73b9ff;box-shadow:0 0 0 5px #73b9ff20}
+.bev-home .bev-hero h1{font-size:clamp(38px,5.2vw,72px);font-weight:720;letter-spacing:-.045em;line-height:1.08;margin:24px 0;text-wrap:balance;overflow-wrap:normal}
+.bev-home .bev-hero-copy>p{margin:0;max-width:43ch;font-size:clamp(15px,1.35vw,18px);line-height:1.65;color:#c9d7e8}
+.bev-home .bev-hero-actions{justify-content:flex-start;margin-top:29px;gap:12px}
+.bev-home .bev-hero-actions a{font-weight:650;border-radius:10px;min-height:50px;gap:14px;padding:13px 20px}
+.bev-home .bev-hero-copy>.bev-hero-access-note{font-size:12px;line-height:1.65;margin:19px 0 0;max-width:52ch;color:#aabfd6}
+.bev-home .bev-hero-access-note a{color:#d9ecff;text-decoration:underline;text-underline-offset:3px}
+.bev-product-figure{margin:0;min-width:0;border:1px solid #7299c34a;border-radius:22px;background:#f9fbfe;box-shadow:0 24px 64px #08142360;color:#172b46;overflow:hidden}
+.bev-preview-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:15px 18px;border-bottom:1px solid #dbe5ef}
+.bev-preview-brand{display:flex;align-items:center;gap:8px;font-weight:750;letter-spacing:-.02em;font-size:15px}
+.bev-preview-brand i{display:inline-block;background:#14253a url('/images/vetor-tema-escuro.png') center/contain no-repeat;width:25px;height:25px;border-radius:7px}
+.bev-preview-tag{font-size:11px;font-weight:600;color:#496582}
+.bev-preview-main{padding:14px}
+.bev-preview-map{position:relative;border:1px solid #d7e3f0;border-radius:13px;overflow:hidden;background:#eaf1f8}
+.bev-preview-map svg{display:block;width:100%;height:auto}
+.bev-map-label{position:absolute;left:9px;bottom:9px;border:1px solid #c7d8eb;background:#fff;color:#48617e;border-radius:5px;padding:4px 8px;font-size:10px;font-weight:600}
+.bev-preview-details{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 3px 10px}
+.bev-preview-details small{display:block;color:#5c7088;font-size:11px}
+.bev-preview-details strong{display:block;margin-top:3px;font-size:17px;font-weight:700;letter-spacing:-.02em}
+.bev-preview-chip{border-radius:6px;background:#e5effb;color:#175a9c;font-size:11px;font-weight:650;padding:6px 9px;white-space:nowrap}
+.bev-preview-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:8px 0}
+.bev-preview-steps>div{border:1px solid #dbe5ef;border-radius:8px;background:white;padding:9px;font-size:11px;font-weight:600;line-height:1.4;display:flex;align-items:center;gap:6px;min-width:0}
+.bev-step-indicator{width:8px;height:8px;border:2px solid #1264c5;border-radius:50%;flex:none}
+.bev-product-figure figcaption{padding:9px 14px 13px;font-size:10px;line-height:1.4;color:#526780}
+.bev-home .experience-section,.bev-home .section-pad,.bev-home .new-pricing-section{padding-block:clamp(56px,7vw,96px)}
+.bev-home .experience-intro,.bev-home .audience-intro{margin-bottom:34px}
+.bev-home .experience-intro h2,.bev-home .new-pricing-head h2{margin-top:12px}
+.bev-home .feature-card{min-height:210px;padding:24px;border-radius:15px;box-shadow:0 2px 7px #14253a05}
+.bev-home .feature-card h3{margin-top:18px;font-size:19px}
+.bev-home .feature-card p{font-size:14px;line-height:1.6}
+.bev-home .experience-card{border-radius:18px}
+.bev-home .experience-card-description,.bev-home .experience-step p{font-size:14px}
+.bev-home .audience-card{min-height:345px}
+.bev-home .audience-content>p,.bev-home .audience-card li{font-size:13px}
+.bev-project-section{padding:clamp(58px,8vw,106px) 0;background:var(--home-soft);color:var(--home-ink);border-block:1px solid var(--home-border);scroll-margin-top:92px}
+.bev-project-intro{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);align-items:end;gap:36px;margin-bottom:32px}
+.bev-project-kicker{display:block;font-size:12px;font-weight:650;color:#1763ae;letter-spacing:.06em;text-transform:uppercase}
+.bev-project-intro h2{font-size:clamp(29px,4vw,49px);font-weight:720;letter-spacing:-.038em;line-height:1.13;margin:12px 0 0;text-wrap:balance}
+.bev-project-intro>p{font-size:15px;line-height:1.7;color:var(--home-muted);margin:0}
+.bev-project-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.bev-project-repo{background:var(--home-surface);border:1px solid var(--home-border);border-radius:14px;padding:21px;display:flex;flex-direction:column;min-width:0}
+.bev-project-repo-top{display:flex;justify-content:space-between;align-items:center;color:#1763ae;font-size:13px;font-weight:650}
+.bev-project-repo h3{font-size:18px;line-height:1.25;letter-spacing:-.025em;font-weight:700;margin:23px 0 6px}
+.bev-project-repo p{color:var(--home-muted);font-size:13px;line-height:1.65;margin:0 0 17px}
+.bev-project-repo .bev-project-stack{font-size:11px;font-weight:650;line-height:1.55;color:#1763ae;margin:0 0 12px}
+.bev-project-repo a{font-size:12px;font-weight:650;color:#1763ae;margin-top:auto;padding-top:12px;border-top:1px solid var(--home-border);display:flex;justify-content:space-between;gap:6px}
+.bev-author-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:26px;align-items:center;margin-top:18px;background:var(--home-surface);border:1px solid var(--home-border);border-radius:16px;padding:clamp(20px,3vw,32px)}
+.bev-author-identity{display:flex;align-items:center;gap:18px;min-width:0}
+.bev-author-photo{width:96px;height:96px;border-radius:50%;object-fit:cover;flex:none;background:var(--home-soft);border:3px solid var(--home-border)}
+.bev-author-identity h3{font-size:clamp(20px,2vw,25px);letter-spacing:-.025em;font-weight:700;line-height:1.2;margin:8px 0 4px}
+.bev-author-identity p,.bev-author-content p,.bev-author-content small{color:var(--home-muted);font-size:13px;line-height:1.65;margin:0}
+.bev-author-content small{display:block;margin-top:12px;font-size:11px}
+.bev-author-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.bev-author-links a{border:1px solid var(--home-border);border-radius:8px;padding:8px 12px;color:#1763ae;font-size:12px;font-weight:650;display:inline-flex;gap:9px;align-items:center;min-height:38px}
+.bev-project-section a:hover{text-decoration:underline;text-underline-offset:3px}
+html[data-theme="dark"] .bev-home{--home-ink:#e4eefb;--home-muted:#aec2d8;--home-surface:#17283c;--home-border:#304963;--home-soft:#112033}
+html[data-theme="dark"] .bev-project-section :is(.bev-project-kicker,.bev-project-stack,.bev-project-repo-top,a){color:#a7d5ff}
+@media(max-width:1000px){
+ .bev-home .bev-hero-inner{gap:28px}
+ .bev-project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ .bev-home .bev-hero-inner{grid-template-columns:1fr;padding-block:48px 40px;gap:32px}
+ .bev-home .bev-hero h1{font-size:clamp(37px,8.5vw,54px);margin:19px 0}
+ .bev-home .bev-hero-copy>p{font-size:16px}
+ .bev-home .bev-hero-actions{margin-top:22px}
+ .bev-product-figure{max-width:480px;width:100%;margin-inline:auto;border-radius:16px}
+ .bev-project-intro,.bev-author-card{grid-template-columns:1fr;gap:16px}
+ .bev-author-photo{width:78px;height:78px}
+ .bev-home .experience-card-description,.bev-home .experience-step p{font-size:13px}
+}
+@media(max-width:420px){
+ .bev-home .bev-hero-inner{padding-top:40px}
+ .bev-home .bev-hero h1{font-size:clamp(31px,9vw,38px)}
+ .bev-home .bev-hero-actions{flex-direction:column;align-items:stretch}
+ .bev-preview-steps{grid-template-columns:1fr}
+ .bev-preview-steps>div{padding:7px 9px}
+ .bev-project-grid{grid-template-columns:1fr}
+ .bev-author-identity{gap:12px}
+ .bev-author-photo{width:64px;height:64px}
+}

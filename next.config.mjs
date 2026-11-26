@@ -6,6 +6,7 @@ const nextConfig = {
   poweredByHeader: false,
   images: {
     remotePatterns: [
+      { protocol: 'https', hostname: 'avatars.githubusercontent.com', pathname: '/u/147556184', search: '?v=4' },
       {
         protocol: 'https',
         hostname: 'raw.githubusercontent.com',
