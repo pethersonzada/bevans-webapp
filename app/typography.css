@@ -1,0 +1,83 @@
+/* Tipografia BeVans: uma escala consistente para páginas públicas e painel. */
+:root{
+  --bev-type-body:400;
+  --bev-type-medium:500;
+  --bev-type-semibold:600;
+  --bev-type-bold:700;
+  --bev-type-display:750;
+}
+html{font-synthesis:none;text-size-adjust:100%;-webkit-text-size-adjust:100%}
+body,button,input,textarea,select{
+  font-family:var(--font-geist),Arial,Helvetica,sans-serif;
+  font-optical-sizing:auto;
+}
+body{font-weight:var(--bev-type-body);line-height:1.55}
+:is(.bev-hero h1,.experience-intro h2,.section-intro h2,.audience-intro h2,
+ .pricing-heading h2,.faq-layout h2,.new-pricing-head h2,.footer-cta h2,
+ .journey-copy h2,.excursions-hero h1,.excursions-steps h2,
+ .exp-copy h1,.exp-section-heading h2,.exp-details h2,.reach-copy h1,
+ .site-access-heading h2,.site-privacy-intro h2,.access-story h1,
+ .auth-brand-center h1,.auth-form-inner h2,.access-content h2){
+  font-weight:var(--bev-type-display);
+  letter-spacing:-.038em;
+  line-height:1.12;
+  text-wrap:balance;
+}
+.bev-hero h1{font-size:clamp(42px,6.6vw,82px);letter-spacing:-.045em;line-height:1.08}
+:is(.experience-intro h2,.section-intro h2,.audience-intro h2,.pricing-heading h2,
+ .faq-layout h2,.new-pricing-head h2,.journey-copy h2,.site-privacy-intro h2){
+  font-size:clamp(30px,4.5vw,56px);
+}
+:is(.feature-card h3,.audience-card h3,.experience-card h3,.new-price-card h3,
+ .excursions-step-grid h3,.site-access-card h3,.exp-step-grid h3,.exp-detail-list h3){
+  font-weight:700;
+  letter-spacing:-.025em;
+  line-height:1.28;
+  text-wrap:pretty;
+}
+:is(.bev-hero-copy>p,.experience-intro>p,.section-intro>p,
+ .feature-card p,.audience-intro p,.pricing-heading p,.new-price-description,
+ .excursions-step-grid p,.site-access-card p){
+  line-height:1.65;
+  letter-spacing:0;
+}
+:is(.section-label,.bev-eyebrow,.experience-kicker,.pricing-eyebrow,
+ .bev-hero-trust,.bev-hero-bottom .container>span){
+  font-weight:700;
+  letter-spacing:.075em;
+}
+:is(.brand-name,.footer-logo){font-weight:750;letter-spacing:-.045em}
+:is(.nav-links a,.nav-login,.button,.nav-login-cta){font-weight:600;letter-spacing:0}
+
+/* Painel: títulos claros, informações legíveis e navegação compacta. */
+.be-app,.be-auth-screen{font-weight:400;line-height:1.5}
+.be-app :is(.be-page-heading h1,.be-tools-intro h2,.be-section-title h2,
+ .be-section h2,.be-card h2,.be-card h3),
+.be-auth-screen :is(.be-auth-content h2,.be-story-main h1){
+  font-weight:700;
+  letter-spacing:-.025em;
+  line-height:1.25;
+  text-wrap:balance;
+}
+.be-app .be-page-heading h1{font-size:clamp(27px,2.8vw,35px);line-height:1.18}
+.be-app :is(.be-section-title h2,.be-section h2){font-size:clamp(17px,1.7vw,21px)}
+.be-app .be-card :is(h2,h3){font-size:clamp(15px,1.4vw,18px)}
+.be-app :is(.be-page-heading>div>p:last-child,.be-section-title p,
+ .be-card p,.be-muted,.be-empty-line p){line-height:1.6;letter-spacing:0}
+.be-app :is(.be-primary-navigation button,.be-sidebar-nav button,
+ .be-mobile-tabs button,.be-bottom-navigation button){font-weight:600;letter-spacing:0}
+.be-app :is(.be-btn,.be-text-action,.be-tool-copy strong){font-weight:650;letter-spacing:0}
+.be-auth-screen .be-auth-content h2{font-size:clamp(28px,3vw,36px)}
+.be-auth-screen .be-story-main h1{letter-spacing:-.04em;line-height:1.12}
+
+@media(max-width:650px){
+  .bev-hero h1{font-size:clamp(36px,9vw,53px);letter-spacing:-.04em;line-height:1.1}
+  :is(.experience-intro h2,.section-intro h2,.audience-intro h2,
+    .pricing-heading h2,.faq-layout h2,.new-pricing-head h2,
+    .journey-copy h2,.site-privacy-intro h2){font-size:clamp(28px,7.2vw,38px)}
+  :is(.bev-hero-copy>p,.experience-intro>p,.section-intro>p){font-size:15px;line-height:1.65}
+  .be-app .be-page-heading h1{font-size:clamp(25px,6vw,31px);letter-spacing:-.025em}
+  .be-app :is(.be-section-title h2,.be-section h2){font-size:18px}
+  .be-app .be-card :is(h2,h3){font-size:16px}
+  .be-app .be-bottom-navigation button{font-size:11px;line-height:1.25}
+}
