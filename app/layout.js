@@ -2,6 +2,7 @@ import { Geist } from 'next/font/google';
 import './globals.css';
 import './globals-access.css';
 import './theme.css';
+import './typography.css';
 import ThemeToggle from './components/ThemeToggle';
 import AssistenteFlutuante from './components/AssistenteFlutuante';
 import {metadadosRobots} from './lib/seo-visibility.mjs';
